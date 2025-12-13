@@ -12,7 +12,7 @@
 
 typedef struct Scene Scene;
 
-#define GAME_GRID_SIZE 5
+#define GAME_GRID_SIZE 10
 
 /// @brief Structure représentant la scène du menu principal du jeu.
 typedef struct GameGraphics

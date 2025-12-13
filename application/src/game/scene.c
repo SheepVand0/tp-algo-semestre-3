@@ -131,7 +131,11 @@ void Scene_render(Scene* self)
     SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255);
     SDL_RenderClear(g_renderer);
 
-    SDL_Color bgColor = g_colors.gray9;
+    SDL_Color bgColor = { 0 };
+    bgColor.r = 15;
+    bgColor.g = 15;
+    bgColor.b = 15;
+    bgColor.a = 255;
     SDL_SetRenderDrawColor(g_renderer, bgColor.r, bgColor.g, bgColor.b, 255);
     SDL_RenderFillRect(g_renderer, NULL);
 
