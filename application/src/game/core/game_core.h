@@ -19,6 +19,7 @@ typedef struct GameCore
 
 typedef enum EObjectType
 {
+    NO_OBJECT,
     RABBIT,
     OBSTACLE
 
@@ -68,3 +69,5 @@ void Obstacle_destroy(Obstacle* obstacle);
 SelectedObject* SelectedObject_create(void* object, EObjectType type);
 
 void SelectedObject_destroy(SelectedObject* obj);
+
+// TODO : MOVE FUNCTIONS

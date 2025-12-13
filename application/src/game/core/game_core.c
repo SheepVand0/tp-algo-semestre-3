@@ -70,6 +70,7 @@ SelectedObject* SelectedObject_create(void* object, EObjectType type)
         default: break;
     }
 
+    l_Obj->ObjectType = type;
     return l_Obj;
 }
 

@@ -14,9 +14,16 @@
 #include "game/game_graphics.h"
 #include "game/game_settings.h"
 
+#define RABBIT_COUNT self->m_gameSettings->RabbitCount
+#define FOX_COUNT self->m_gameSettings->FoxCount
+#define MUSHROOM_COUNT self->m_gameSettings->MushroomCount
+#define OBSTACLE_COUNT FOX_COUNT + MUSHROOM_COUNT
+
 typedef struct Rabbit Rabbit;
 
 typedef struct Obstacle Obstacle;
+
+typedef enum EObjectType EObjectType;
 
 /// @brief Structure représentant la scène du menu principal du jeu.
 typedef struct Scene
@@ -70,6 +77,8 @@ void Scene_drawGizmos(Scene* self);
 void Scene_destroyGame(Scene* self);
 
 void Scene_initGame(Scene* self);
+
+EObjectType Scene_getObjTypeAtLocation(Scene* scene, int x, int y);
 
 /// @brief Renvoie le gestionnaire des assets de la scène.
 /// @param self la scène.
