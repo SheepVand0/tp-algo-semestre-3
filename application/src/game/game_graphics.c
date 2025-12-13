@@ -151,8 +151,9 @@ void GameGraphics_render(GameGraphics* self)
 
         SDL_FRect l_Rect = { 0 };
         AABB* l_RectCell = &(self->m_cells[l_CellY][l_CellX]);
+
         l_Rect.x = Camera_worldToViewX(camera, l_RectCell->lower.x);
-        l_Rect.y = Camera_worldToViewX(camera, l_RectCell->upper.y);
+        l_Rect.y = Camera_worldToViewY(camera, l_RectCell->upper.y);
         l_Rect.w = (l_RectCell->upper.x - l_RectCell->lower.x) * scale;
         l_Rect.h = (l_RectCell->upper.y - l_RectCell->lower.y) * scale;
 

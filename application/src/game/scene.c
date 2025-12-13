@@ -99,6 +99,18 @@ void Scene_update(Scene* self)
     if (g_gameConfig.inLevel)
     {
         GameGraphics_update(self->m_gameGraphics);
+
+        for (int x = 0; x < self->m_gameSettings->RabbitCount; x++)
+        {
+            Rabbit* l_Rabb = self->Rabbits[x];
+            if (l_Rabb)
+            {
+                if (l_Rabb->CellX == self->m_gameGraphics->m_selectedColIndex && l_Rabb->CellY == self->m_gameGraphics->m_selectedRowIndex)
+                {
+                    self->m_gameGraphics->Selected = SelectedObject_create((void*)l_Rabb, RABBIT);
+                }
+            }
+        }
     }
 
     if (self->m_input->debug.gizmosPressed)
@@ -214,4 +226,36 @@ void Scene_initGame(Scene* self)
     {
         self->Obstacles[x] = Fox_create(self, 0, 0, 0, 0);
     }
+}
+
+EObjectType Scene_getObjTypeAtLocation(Scene* self, int x, int y)
+{
+
+    for (int x = 0; x < RABBIT_COUNT; x++)
+    {
+        if (self->Rabbits[x])
+        {
+            if (self->Rabbits[x]->CellX == x && self->Rabbits[x]->CellY == y)
+            {
+                return RABBIT;
+            }
+        }
+    }
+
+    for (int x = 0; x < OBSTACLE_COUNT; x++)
+    {
+        if (self->Obstacles[x])
+        {
+            AABB l_AABB = { 0 };
+            l_AABB.lower = Vec2_set(self->Obstacles[x]->CellX0, self->Obstacles[x]->CellY0);
+            l_AABB.upper = Vec2_set(self->Obstacles[x]->CellX1, self->Obstacles[x]->CellY1);
+
+            if (AABB_containsPoint(&l_AABB, Vec2_set(x, y)))
+            {
+                return OBSTACLE;
+            }
+        }
+    }
+
+    return NO_OBJECT;
 }
