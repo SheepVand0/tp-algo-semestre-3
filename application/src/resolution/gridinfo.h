@@ -5,10 +5,10 @@
 
 typedef struct GridInfo
 {
-    int rabbitNumber;
-    Vec2Int* rabbitPositions;
-    int foxNumber;
-    Vec4Int* foxPositions;
+    int Rnbr;           // nombre de lapins
+    Vec2Int* Rpos;     // positions des lapinou
+    int Fnbr;           // nombre de renards
+    Vec2Int* Fpos;     // positions des renardo
 }GridInfo;
 
 /// @brief renvoie la position d'un lapin
@@ -20,10 +20,12 @@ int GetRabbitNumber();
 
 /// @brief renvoie la position d'un renard
 /// @param le renard dont on souhaite obtenir la position
-Vec4Int GetFoxPosition();
+Vec2Int GetFoxPosition();
 
 /// @brief renvoie le nombre de renards sur le plateau
 int GetFoxNumber();
 
 
-
+/// @brief true si les grilles sont identiques
+/// @param grid1, grid2 les grilles a comparer 
+bool isSameGrid(GridInfo* grid1, GridInfo* grid2);

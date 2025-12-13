@@ -27,14 +27,6 @@ typedef struct Vec2Int
     int y;
 } Vec2Int;
 
-typedef struct Vec4Int
-{
-    int x1;
-    int y1;
-    int x2;
-    int y2;
-}Vec4Int;
-
 extern const Vec2 Vec2_up;
 extern const Vec2 Vec2_down;
 extern const Vec2 Vec2_left;
