@@ -6,6 +6,8 @@
 
 #include "game/scene.h"
 #include "game/game_config.h"
+#include "core/game_core.h"
+#include "game/game_settings.h"
 
 Scene* Scene_create()
 {
@@ -14,6 +16,8 @@ Scene* Scene_create()
 
     self->m_assets = AssetManager_create(SPRITE_COUNT, FONT_COUNT);
     Game_addAssets(self->m_assets);
+
+    self->m_gameSettings = GameSettings_create();
 
     self->m_input = Input_create();
 
@@ -25,6 +29,9 @@ Scene* Scene_create()
     self->m_fadingTime = 0.5f;
     self->m_uiManager = GameUIManager_create(self);
     self->m_gameGraphics = GameGraphics_create(self);
+
+    self->Rabbits = NULL;
+    self->Obstacles = NULL;
 
     g_gameConfig.nextScene = GAME_SCENE_QUIT;
 
@@ -40,6 +47,11 @@ void Scene_destroy(Scene* self)
     Camera_destroy(self->m_camera);
     GameUIManager_destroy(self->m_uiManager);
     GameGraphics_destroy(self->m_gameGraphics);
+
+    // TODO : destroy rabbits and foxes and mushrooms
+    // flm de le faire mtn
+
+    GameSettings_destroy(self->m_gameSettings);
 
     free(self);
 }
@@ -143,6 +155,8 @@ void Scene_render(Scene* self)
 
     if (g_gameConfig.inLevel)
     {
+
+        GAME_GRAPHICS_RENDER(self->m_gameGraphics, self->Rabbits, self->m_gameSettings->RabbitCount, self->Obstacles, self->m_gameSettings->MushroomCount + self->m_gameSettings->RabbitCount);
         GameGraphics_render(self->m_gameGraphics);
     }
 
@@ -163,4 +177,41 @@ void Scene_render(Scene* self)
 void Scene_drawGizmos(Scene* self)
 {
     assert(self && "The Scene must be created");
+}
+
+void Scene_destroyGame(Scene* self)
+{
+    if (self->Rabbits)
+    {
+        for (int x = 0; x < self->m_gameSettings->RabbitCount; x++)
+        {
+            Rabbit_destroy(self->Rabbits[x]);
+        }
+    }
+
+    if (self->Obstacles)
+    {
+        for (int x = 0; x < self->m_gameSettings->MushroomCount + self->m_gameSettings->FoxCount; x++)
+        {
+            Obstacle_destroy(self->Obstacles[x]);
+        }
+    }
+}
+
+void Scene_initGame(Scene* self)
+{
+    Scene_destroyGame(self);
+        
+    self->Rabbits = calloc(self->m_gameSettings->RabbitCount, sizeof(Obstacle));
+    assert(self->Rabbits);
+    for (int x = 0; x < self->m_gameSettings->RabbitCount; x++)
+    {
+        self->Rabbits[x] = Rabbit_create(self, rand() % GAME_GRID_SIZE, (rand() % GAME_GRID_SIZE + 1));
+    }
+    self->Obstacles = calloc(self->m_gameSettings->MushroomCount + self->m_gameSettings->FoxCount, sizeof(Obstacle));
+    assert(self->Obstacles);
+    for (int x = 0; x < self->m_gameSettings->MushroomCount + self->m_gameSettings->FoxCount; x++)
+    {
+        self->Obstacles[x] = Fox_create(self, 0, 0, 0, 0);
+    }
 }

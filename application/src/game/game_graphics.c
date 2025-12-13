@@ -23,11 +23,11 @@ GameGraphics* GameGraphics_create(Scene* scene)
     self->m_gridAABB.upper = Vec2_add(Vec2_set(+4.f, +4.f), Vec2_set(8.0f, 4.5f));
     self->m_enabled = false;
 
-    AssetManager* assets = Scene_getAssetManager(scene);
+    /*AssetManager* assets = Scene_getAssetManager(scene);
     SpriteSheet* spriteSheet = AssetManager_getSpriteSheet(assets, SPRITE_GAME);
     AssertNew(spriteSheet);
     self->m_spriteRabbit = SpriteSheet_getGroupByName(spriteSheet, "rabbit");
-    AssertNew(self->m_spriteRabbit);
+    AssertNew(self->m_spriteRabbit);*/
 
     return self;
 }
@@ -113,16 +113,54 @@ void GameGraphics_render(GameGraphics* self)
             rect.w = (cellAABB->upper.x - cellAABB->lower.x) * scale;
             rect.h = (cellAABB->upper.y - cellAABB->lower.y) * scale;
 
-            bool isSelected = (i == self->m_selectedRowIndex && j == self->m_selectedColIndex);
+            bool isSelected = false;
+
+            if (self->Selected)
+            {
+                switch (self->Selected->ObjectType)
+                {
+                case RABBIT:
+                    if (self->Selected->SelectedRabbit)
+                    {
+                        if (self->Selected->SelectedRabbit->CellX == j && self->Selected->SelectedRabbit->CellY == i)
+                        {
+                            isSelected = true;
+                        }
+                    }
+                    break;
+                default: break;
+                }
+            }
 
             SDL_Color color = isSelected ? g_colors.orange9 : g_colors.gray8;
             SDL_SetRenderDrawColor(g_renderer, color.r, color.g, color.b, 255);
             SDL_RenderFillRect(g_renderer, &rect);
 
-            if (isSelected)
-            {
-                SpriteGroup_render(self->m_spriteRabbit, 0, &rect, Vec2_anchor_north_west, 1.0f);
-            }
+            //if (isSelected)
+            //{
+            //    //SpriteGroup_render(self->m_spriteRabbit, 0, &rect, Vec2_anchor_north_west, 1.0f);
+            //}
         }
+    }
+
+    for (int x = 0; x < self->RabbitCount; x++)
+    {
+        Rabbit* l_Rabb = self->RabbitsToRender[x];
+        int l_CellX = l_Rabb->CellX;
+        int l_CellY = l_Rabb->CellY;
+
+        SDL_FRect l_Rect = { 0 };
+        AABB* l_RectCell = &(self->m_cells[l_CellY][l_CellX]);
+        l_Rect.x = Camera_worldToViewX(camera, l_RectCell->lower.x);
+        l_Rect.y = Camera_worldToViewX(camera, l_RectCell->upper.y);
+        l_Rect.w = (l_RectCell->upper.x - l_RectCell->lower.x) * scale;
+        l_Rect.h = (l_RectCell->upper.y - l_RectCell->lower.y) * scale;
+
+        SpriteGroup_render(l_Rabb->RabbitSprite, 0, &l_Rect, Vec2_anchor_north_west, 0.9f);
+    }
+
+    for (int x = 0; x < self->ObstacleCount; x++)
+    {
+
     }
 }

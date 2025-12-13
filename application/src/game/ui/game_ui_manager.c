@@ -77,6 +77,7 @@ void GameUIManager_update(GameUIManager* self, UIInput* input)
             GameUIManager_closePages(self);
             g_gameConfig.inLevel = true;
             GameGraphics_setEnabled(scene->m_gameGraphics, true);
+            Scene_initGame(scene);
             break;
         }
         self->m_nextAction = GAME_UI_ACTION_NONE;

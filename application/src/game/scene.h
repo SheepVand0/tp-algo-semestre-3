@@ -12,6 +12,11 @@
 #include "game/input.h"
 #include "game/ui/game_ui_manager.h"
 #include "game/game_graphics.h"
+#include "game/game_settings.h"
+
+typedef struct Rabbit Rabbit;
+
+typedef struct Obstacle Obstacle;
 
 /// @brief Structure représentant la scène du menu principal du jeu.
 typedef struct Scene
@@ -20,12 +25,16 @@ typedef struct Scene
     Camera* m_camera;
     Input* m_input;
     GameUIManager* m_uiManager;
+    GameSettings* m_gameSettings;
 
     GameGraphics* m_gameGraphics;
     bool m_drawGizmos;
     SceneState m_state;
     float m_accu;
     float m_fadingTime;
+
+    Rabbit** Rabbits;
+    Obstacle** Obstacles;
 } Scene;
 
 /// @brief Crée la scène représentant le menu principal du jeu.
@@ -57,6 +66,10 @@ void Scene_render(Scene* self);
 /// @brief Dessine les gizmos de la scène dans le moteur de rendu.
 /// @param self la scène.
 void Scene_drawGizmos(Scene* self);
+
+void Scene_destroyGame(Scene* self);
+
+void Scene_initGame(Scene* self);
 
 /// @brief Renvoie le gestionnaire des assets de la scène.
 /// @param self la scène.

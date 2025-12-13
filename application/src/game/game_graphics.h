@@ -14,6 +14,13 @@ typedef struct Scene Scene;
 
 #define GAME_GRID_SIZE 10
 
+#define GAME_GRAPHICS_RENDER(gameGraphics, rabbits, rabbcount, obstacles, obstcount) gameGraphics->RabbitsToRender = rabbits; \
+gameGraphics->RabbitCount = rabbcount; \
+gameGraphics->ObstaclesToRender = obstacles; \
+gameGraphics->ObstacleCount = obstcount; \
+GameGraphics_render(gameGraphics); \
+
+
 /// @brief Structure représentant la scène du menu principal du jeu.
 typedef struct GameGraphics
 {
@@ -27,7 +34,14 @@ typedef struct GameGraphics
     int m_selectedRowIndex;
     int m_selectedColIndex;
 
-    SpriteGroup* m_spriteRabbit;
+    //SpriteGroup* m_spriteRabbit;
+
+    Rabbit** RabbitsToRender;
+    int RabbitCount;
+    Obstacle** ObstaclesToRender;
+    int ObstacleCount;
+
+    SelectedObject* Selected;
 
     bool m_enabled;
 } GameGraphics;
