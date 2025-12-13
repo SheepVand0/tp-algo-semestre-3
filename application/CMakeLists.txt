@@ -39,6 +39,8 @@ target_sources(${NAME} PRIVATE
     "src/game/game_config.h"
     "src/game/game_settings.h"
     "src/game/game_settings.c"
+    "src/resolution/hashmap.h"
+    "src/resolution/hahsmap.c" 
 )
 
 find_library(MATH_LIBRARY m)
