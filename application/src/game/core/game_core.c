@@ -29,6 +29,54 @@ void Rabbit_destroy(Rabbit* rabbit)
     free(rabbit);
 }
 
+int signOf(int x)
+{
+    if (x == 0) return 0;
+
+    return x < 0 ? -1 : 1;
+}
+
+bool Rabbit_move(Rabbit* rabbit, Scene* scene, int targetX, int targetY)
+{
+
+    int indexX = rabbit->CellX;
+    int indexY = rabbit->CellY;
+
+    if (indexX != targetX && indexY != targetY) return false;
+
+    if (indexX == targetX && targetY == indexY) return false;
+
+    if (targetX < 0 || targetX >= GAME_GRID_SIZE || targetY < 0 || targetY >= GAME_GRID_SIZE) return false;
+
+    int directionX = signOf(rabbit->CellX - targetX);
+    int directionY = signOf(rabbit->CellY - targetY);
+
+    int itCount = 0;
+
+    do
+    {
+        indexX -= directionX;
+        indexY -= directionY;
+
+        EObjectType l_Type = Scene_getObjTypeAtLocation(scene, indexX, indexY);
+
+        if (l_Type == NO_OBJECT && itCount == 0) return false;
+
+        itCount++;
+
+        if (l_Type == NO_OBJECT)
+        {
+            rabbit->CellX = indexX;
+            rabbit->CellY = indexY;
+            return true;
+        }
+    } while (true);
+
+    return true;
+}
+
+
+
 Obstacle* Fox_create(Scene* scene, int cellX0, int cellY0, int cellX1, int cellY1)
 {
     Obstacle* l_Fox = malloc(sizeof(Obstacle));

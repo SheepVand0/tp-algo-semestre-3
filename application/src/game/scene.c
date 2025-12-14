@@ -111,6 +111,24 @@ void Scene_update(Scene* self)
                 }
             }
         }
+
+        if (self->m_input->mouse.leftPressed)
+        {
+            EObjectType l_Obj = Scene_getObjTypeAtLocation(self, self->m_gameGraphics->m_selectedColIndex, self->m_gameGraphics->m_selectedRowIndex);
+
+            if (l_Obj == NO_OBJECT)
+            {
+                if (self->m_gameGraphics->Selected)
+                {
+                    if (self->m_gameGraphics->Selected->ObjectType == RABBIT)
+                    {
+                        Rabbit* l_Rabb = self->m_gameGraphics->Selected->SelectedRabbit;
+
+                        Rabbit_move(l_Rabb, self, self->m_gameGraphics->m_selectedColIndex, self->m_gameGraphics->m_selectedRowIndex);
+                    }
+                }
+            }
+        }
     }
 
     if (self->m_input->debug.gizmosPressed)
@@ -218,7 +236,7 @@ void Scene_initGame(Scene* self)
     assert(self->Rabbits);
     for (int x = 0; x < self->m_gameSettings->RabbitCount; x++)
     {
-        self->Rabbits[x] = Rabbit_create(self, rand() % GAME_GRID_SIZE, (rand() % GAME_GRID_SIZE + 1));
+        self->Rabbits[x] = Rabbit_create(self, x, GAME_GRID_SIZE / 2);
     }
     self->Obstacles = calloc(self->m_gameSettings->MushroomCount + self->m_gameSettings->FoxCount, sizeof(Obstacle));
     assert(self->Obstacles);
@@ -228,14 +246,14 @@ void Scene_initGame(Scene* self)
     }
 }
 
-EObjectType Scene_getObjTypeAtLocation(Scene* self, int x, int y)
+EObjectType Scene_getObjTypeAtLocation(Scene* self, int cellx, int y)
 {
 
     for (int x = 0; x < RABBIT_COUNT; x++)
     {
         if (self->Rabbits[x])
         {
-            if (self->Rabbits[x]->CellX == x && self->Rabbits[x]->CellY == y)
+            if (self->Rabbits[x]->CellX == cellx && self->Rabbits[x]->CellY == y)
             {
                 return RABBIT;
             }
@@ -250,7 +268,7 @@ EObjectType Scene_getObjTypeAtLocation(Scene* self, int x, int y)
             l_AABB.lower = Vec2_set(self->Obstacles[x]->CellX0, self->Obstacles[x]->CellY0);
             l_AABB.upper = Vec2_set(self->Obstacles[x]->CellX1, self->Obstacles[x]->CellY1);
 
-            if (AABB_containsPoint(&l_AABB, Vec2_set(x, y)))
+            if (AABB_containsPoint(&l_AABB, Vec2_set(cellx, y)))
             {
                 return OBSTACLE;
             }
