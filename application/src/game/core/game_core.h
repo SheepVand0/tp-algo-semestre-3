@@ -12,6 +12,8 @@
 
 typedef struct Scene Scene;
 
+typedef struct Vec2Int Vec2Int;
+
 typedef struct GameCore
 {
     int todo;
@@ -21,7 +23,9 @@ typedef enum EObjectType
 {
     NO_OBJECT,
     RABBIT,
-    OBSTACLE
+    OBSTACLE,
+    FOX,
+    MUSHROOM
 
 } EObjectType;
 
@@ -35,36 +39,18 @@ typedef enum ERabbitDirection
 
 typedef struct Rabbit
 {
-
     SpriteGroup* RabbitSprite;
 
     int CellX;
     int CellY;
 
-} Rabbit;
-
-typedef struct Obstacle
-{
-
-    SpriteGroup* ObstacleSprite;
-
-    int CellX0;
-    int CellY0;
-
-    int CellX1;
-    int CellY1;
+    ERabbitDirection Direction;
 
     bool Movable;
-} Obstacle;
 
-typedef struct SelectedObject
-{
-    Rabbit* SelectedRabbit;
-    Obstacle* SelectedObstacle;
+    EObjectType Type;
 
-    EObjectType ObjectType;
-
-} SelectedObject;
+} Rabbit;
 
 Rabbit* Rabbit_create(Scene* scene, int cellX, int cellY);
 
@@ -73,10 +59,6 @@ void Rabbit_destroy(Rabbit* rabbit);
 // TODO : MOVE FUNCTIONS
 bool Rabbit_move(Rabbit* rabbit, Scene* scene, int targetX, int targetY);
  
-Obstacle* Fox_create(Scene* scene, int cellX0, int cellY0, int cellX1, int cellY1);
+Rabbit* Fox_create(Scene* scene, int cellX0, int cellY0, ERabbitDirection direciton);
 
-void Obstacle_destroy(Obstacle* obstacle);
-
-SelectedObject* SelectedObject_create(void* object, EObjectType type);
-
-void SelectedObject_destroy(SelectedObject* obj);
+Vec2 Fox_getSecondCell(Rabbit* rabbit);

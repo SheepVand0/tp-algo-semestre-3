@@ -115,22 +115,18 @@ void GameGraphics_render(GameGraphics* self)
 
             bool isSelected = false;
 
-            if (self->Selected)
+            /*if (self->Selected)
             {
-                switch (self->Selected->ObjectType)
+
+                if (self->Selected->SelectedRabbit)
                 {
-                case RABBIT:
-                    if (self->Selected->SelectedRabbit)
+                    if (self->Selected->SelectedRabbit->CellX == j && self->Selected->SelectedRabbit->CellY == i)
                     {
-                        if (self->Selected->SelectedRabbit->CellX == j && self->Selected->SelectedRabbit->CellY == i)
-                        {
-                            isSelected = true;
-                        }
+                        isSelected = true;
                     }
-                    break;
-                default: break;
                 }
-            }
+
+            }*/
 
             SDL_Color color = isSelected ? g_colors.orange9 : g_colors.gray8;
             SDL_SetRenderDrawColor(g_renderer, color.r, color.g, color.b, 255);
@@ -146,6 +142,9 @@ void GameGraphics_render(GameGraphics* self)
     for (int x = 0; x < self->RabbitCount; x++)
     {
         Rabbit* l_Rabb = self->RabbitsToRender[x];
+
+        if (!l_Rabb) continue;
+
         int l_CellX = l_Rabb->CellX;
         int l_CellY = l_Rabb->CellY;
 
@@ -157,11 +156,33 @@ void GameGraphics_render(GameGraphics* self)
         l_Rect.w = (l_RectCell->upper.x - l_RectCell->lower.x) * scale;
         l_Rect.h = (l_RectCell->upper.y - l_RectCell->lower.y) * scale;
 
-        SpriteGroup_render(l_Rabb->RabbitSprite, 0, &l_Rect, Vec2_anchor_north_west, 0.9f);
-    }
+        Vec2 l_Anchor = Vec2_anchor_north_west;
+        float l_Angle = 0.f;
+        if (l_Rabb->Type == FOX)
+        {
+            l_Rect.h *= 2;
 
-    for (int x = 0; x < self->ObstacleCount; x++)
-    {
+            switch (l_Rabb->Direction)
+            {
+            case RABBIT_NORTH:
+                l_Angle = -180.f;
+                break;
+            case RABBIT_EAST:
+                l_Angle = -90.f;
+                l_Anchor = Vec2_set(1.f, 1.f);
+                break;
+            case RABBIT_WEST:
+                l_Angle = 90.f;
+                l_Anchor = Vec2_set(0.f, .5f);
+                break;
+            case RABBIT_SOUTH:
+                l_Angle = 0.f;
+                break;
+            default: break;
 
+            }
+        }
+
+        SpriteGroup_renderRotated(l_Rabb->RabbitSprite, self->RabbitsToRender[x] == (self->Selected), &l_Rect, l_Anchor, l_Angle, 0.9f);
     }
 }

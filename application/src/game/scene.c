@@ -31,7 +31,7 @@ Scene* Scene_create()
     self->m_gameGraphics = GameGraphics_create(self);
 
     self->Rabbits = NULL;
-    self->Obstacles = NULL;
+    //self->Obstacles = NULL;
 
     g_gameConfig.nextScene = GAME_SCENE_QUIT;
 
@@ -100,14 +100,23 @@ void Scene_update(Scene* self)
     {
         GameGraphics_update(self->m_gameGraphics);
 
-        for (int x = 0; x < self->m_gameSettings->RabbitCount; x++)
+        for (int x = 0; x < RABBIT_COUNT + FOX_COUNT + MUSHROOM_COUNT; x++)
         {
             Rabbit* l_Rabb = self->Rabbits[x];
             if (l_Rabb)
             {
-                if (l_Rabb->CellX == self->m_gameGraphics->m_selectedColIndex && l_Rabb->CellY == self->m_gameGraphics->m_selectedRowIndex)
+                bool l_Other = false;
+                if (l_Rabb->Type == FOX)
                 {
-                    self->m_gameGraphics->Selected = SelectedObject_create((void*)l_Rabb, RABBIT);
+                    Vec2 l_OtherCell = Fox_getSecondCell(l_Rabb);
+                    l_Other = l_OtherCell.x == self->m_gameGraphics->m_selectedColIndex && l_OtherCell.y == self->m_gameGraphics->m_selectedRowIndex;
+
+                    //printf("%f - %d | %f - %d\n", l_OtherCell.x, self->m_gameGraphics->m_selectedColIndex, l_OtherCell.y, self->m_gameGraphics->m_selectedRowIndex);
+                }
+
+                if ((l_Rabb->CellX == self->m_gameGraphics->m_selectedColIndex && l_Rabb->CellY == self->m_gameGraphics->m_selectedRowIndex) || l_Other)
+                {
+                    self->m_gameGraphics->Selected = l_Rabb;
                 }
             }
         }
@@ -120,9 +129,9 @@ void Scene_update(Scene* self)
             {
                 if (self->m_gameGraphics->Selected)
                 {
-                    if (self->m_gameGraphics->Selected->ObjectType == RABBIT)
+                    if (self->m_gameGraphics->Selected->Type == RABBIT)
                     {
-                        Rabbit* l_Rabb = self->m_gameGraphics->Selected->SelectedRabbit;
+                        Rabbit* l_Rabb = self->m_gameGraphics->Selected;
 
                         Rabbit_move(l_Rabb, self, self->m_gameGraphics->m_selectedColIndex, self->m_gameGraphics->m_selectedRowIndex);
                     }
@@ -186,7 +195,7 @@ void Scene_render(Scene* self)
     if (g_gameConfig.inLevel)
     {
 
-        GAME_GRAPHICS_RENDER(self->m_gameGraphics, self->Rabbits, self->m_gameSettings->RabbitCount, self->Obstacles, self->m_gameSettings->MushroomCount + self->m_gameSettings->RabbitCount);
+        GAME_GRAPHICS_RENDER(self->m_gameGraphics, self->Rabbits, RABBIT_COUNT + FOX_COUNT);
         GameGraphics_render(self->m_gameGraphics);
     }
 
@@ -213,17 +222,9 @@ void Scene_destroyGame(Scene* self)
 {
     if (self->Rabbits)
     {
-        for (int x = 0; x < self->m_gameSettings->RabbitCount; x++)
+        for (int x = 0; x < self->m_gameSettings->RabbitCount + FOX_COUNT + MUSHROOM_COUNT; x++)
         {
             Rabbit_destroy(self->Rabbits[x]);
-        }
-    }
-
-    if (self->Obstacles)
-    {
-        for (int x = 0; x < self->m_gameSettings->MushroomCount + self->m_gameSettings->FoxCount; x++)
-        {
-            Obstacle_destroy(self->Obstacles[x]);
         }
     }
 }
@@ -232,45 +233,35 @@ void Scene_initGame(Scene* self)
 {
     Scene_destroyGame(self);
         
-    self->Rabbits = calloc(self->m_gameSettings->RabbitCount, sizeof(Obstacle));
+    self->Rabbits = calloc(RABBIT_COUNT + FOX_COUNT, sizeof(Rabbit*));
     assert(self->Rabbits);
     for (int x = 0; x < self->m_gameSettings->RabbitCount; x++)
     {
         self->Rabbits[x] = Rabbit_create(self, x, GAME_GRID_SIZE / 2);
     }
-    self->Obstacles = calloc(self->m_gameSettings->MushroomCount + self->m_gameSettings->FoxCount, sizeof(Obstacle));
-    assert(self->Obstacles);
-    for (int x = 0; x < self->m_gameSettings->MushroomCount + self->m_gameSettings->FoxCount; x++)
+    for (int x = RABBIT_COUNT; x < RABBIT_COUNT + FOX_COUNT; x++)
     {
-        self->Obstacles[x] = Fox_create(self, 0, 0, 0, 0);
+        self->Rabbits[x] = Fox_create(self, x, GAME_GRID_SIZE / 2 + 1, RABBIT_WEST);
     }
 }
 
 EObjectType Scene_getObjTypeAtLocation(Scene* self, int cellx, int y)
 {
 
-    for (int x = 0; x < RABBIT_COUNT; x++)
+    for (int x = 0; x < RABBIT_COUNT + FOX_COUNT; x++)
     {
         if (self->Rabbits[x])
         {
-            if (self->Rabbits[x]->CellX == cellx && self->Rabbits[x]->CellY == y)
+            bool l_Other = false;
+            if (self->Rabbits[x]->Type == FOX)
             {
-                return RABBIT;
+                Vec2 l_OtherCell = Fox_getSecondCell(self->Rabbits[x]);
+                l_Other = l_OtherCell.x == cellx && l_OtherCell.y == y;
             }
-        }
-    }
 
-    for (int x = 0; x < OBSTACLE_COUNT; x++)
-    {
-        if (self->Obstacles[x])
-        {
-            AABB l_AABB = { 0 };
-            l_AABB.lower = Vec2_set(self->Obstacles[x]->CellX0, self->Obstacles[x]->CellY0);
-            l_AABB.upper = Vec2_set(self->Obstacles[x]->CellX1, self->Obstacles[x]->CellY1);
-
-            if (AABB_containsPoint(&l_AABB, Vec2_set(cellx, y)))
+            if ((self->Rabbits[x]->CellX == cellx && self->Rabbits[x]->CellY == y) || l_Other)
             {
-                return OBSTACLE;
+                return self->Rabbits[x]->Type;
             }
         }
     }

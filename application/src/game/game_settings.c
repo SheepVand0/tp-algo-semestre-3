@@ -7,8 +7,8 @@ GameSettings* GameSettings_create()
     assert(l_Settings);
 
     l_Settings->RabbitCount = 8;
-    l_Settings->FoxCount = 2;
-    l_Settings->MushroomCount = 2;
+    l_Settings->FoxCount = 1;
+    l_Settings->MushroomCount = 0;
 
     return l_Settings;
 }

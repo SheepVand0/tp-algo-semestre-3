@@ -14,10 +14,8 @@ typedef struct Scene Scene;
 
 #define GAME_GRID_SIZE 10
 
-#define GAME_GRAPHICS_RENDER(gameGraphics, rabbits, rabbcount, obstacles, obstcount) gameGraphics->RabbitsToRender = rabbits; \
+#define GAME_GRAPHICS_RENDER(gameGraphics, rabbits, rabbcount) gameGraphics->RabbitsToRender = rabbits; \
 gameGraphics->RabbitCount = rabbcount; \
-gameGraphics->ObstaclesToRender = obstacles; \
-gameGraphics->ObstacleCount = obstcount; \
 GameGraphics_render(gameGraphics); \
 
 
@@ -38,10 +36,10 @@ typedef struct GameGraphics
 
     Rabbit** RabbitsToRender;
     int RabbitCount;
-    Obstacle** ObstaclesToRender;
-    int ObstacleCount;
+    /*Obstacle** ObstaclesToRender;
+    int ObstacleCount;*/
 
-    SelectedObject* Selected;
+    Rabbit* Selected;
 
     bool m_enabled;
 } GameGraphics;

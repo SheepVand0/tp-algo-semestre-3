@@ -41,7 +41,7 @@ typedef struct Scene
     float m_fadingTime;
 
     Rabbit** Rabbits;
-    Obstacle** Obstacles;
+    //Obstacle** Obstacles;
 } Scene;
 
 /// @brief Crée la scène représentant le menu principal du jeu.
