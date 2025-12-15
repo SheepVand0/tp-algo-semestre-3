@@ -49,12 +49,43 @@ bool Rabbit_move(Rabbit* rabbit, Scene* scene, int targetX, int targetY)
 
     if (indexX == targetX && targetY == indexY) return false;
 
-    if (targetX < 0 || targetX >= GAME_GRID_SIZE || targetY < 0 || targetY >= GAME_GRID_SIZE) return false;
+    if (targetX < 0 || targetX > GAME_GRID_SIZE || targetY < 0 || targetY > GAME_GRID_SIZE) return false;
 
     int directionX = signOf(rabbit->CellX - targetX);
     int directionY = signOf(rabbit->CellY - targetY);
 
+    int l_ToSubX = rabbit->CellX - targetX;
+    int l_ToSubY = rabbit->CellY - targetY;
+
+    Vec2 l_Dir = Fox_getDirection(rabbit);
+    if (rabbit->Type == FOX)
+    {
+        if (directionX == -l_Dir.x && directionY == -l_Dir.y)
+        {
+            indexX -= directionX;
+            indexY -= directionY;
+
+            l_ToSubX -= directionX;
+            l_ToSubY -= directionY;
+            
+        }
+
+        /*if (abs(targetX - indexX) > 1 || abs(targetY - indexY) > 1)
+        {
+            printf("Distance to high\n");
+            return false;
+        }*/
+
+        if (abs(directionX) != abs(l_Dir.x) && abs(directionY) != abs(l_Dir.y))
+        {
+            printf("dir not valid\n");
+            return false;
+        }
+    }
+
     int itCount = 0;
+
+    Vec2 l_SecondCell = Fox_getSecondCell(rabbit);
 
     do
     {
@@ -63,7 +94,17 @@ bool Rabbit_move(Rabbit* rabbit, Scene* scene, int targetX, int targetY)
 
         EObjectType l_Type = Scene_getObjTypeAtLocation(scene, indexX, indexY);
 
-        if (l_Type == NO_OBJECT && itCount == 0) return false;
+        if (rabbit->Type == FOX)
+        {
+            if (l_Type == NO_OBJECT)
+            {
+                rabbit->CellX -= l_ToSubX;
+                rabbit->CellY -= l_ToSubY;
+                return true;
+            }
+        }
+
+        if ((l_Type == NO_OBJECT && itCount == 0) || rabbit->Type != RABBIT) return false;
 
         itCount++;
 
@@ -112,5 +153,21 @@ Vec2 Fox_getSecondCell(Rabbit* rabbit)
     case RABBIT_SOUTH:
         return Vec2_set(rabbit->CellX, rabbit->CellY + 1);
     default: return Vec2_set(rabbit->CellX, rabbit->CellY);
+    }
+}
+
+Vec2 Fox_getDirection(Rabbit* rabbit)
+{
+    switch (rabbit->Direction)
+    {
+    case RABBIT_NORTH:
+        return Vec2_set(0, -1);
+    case RABBIT_EAST:
+        return Vec2_set(1, 0);
+    case RABBIT_WEST:
+        return Vec2_set(-1, 0);
+    case RABBIT_SOUTH:
+        return Vec2_set(0, 1);
+    default: return Vec2_set(0, 0);
     }
 }

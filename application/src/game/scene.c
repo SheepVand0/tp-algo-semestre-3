@@ -129,12 +129,9 @@ void Scene_update(Scene* self)
             {
                 if (self->m_gameGraphics->Selected)
                 {
-                    if (self->m_gameGraphics->Selected->Type == RABBIT)
-                    {
                         Rabbit* l_Rabb = self->m_gameGraphics->Selected;
 
                         Rabbit_move(l_Rabb, self, self->m_gameGraphics->m_selectedColIndex, self->m_gameGraphics->m_selectedRowIndex);
-                    }
                 }
             }
         }
@@ -181,6 +178,7 @@ void Scene_render(Scene* self)
     // Efface le rendu précédent
     SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255);
     SDL_RenderClear(g_renderer);
+    
 
     SDL_Color bgColor = { 0 };
     bgColor.r = 15;
@@ -189,6 +187,14 @@ void Scene_render(Scene* self)
     bgColor.a = 255;
     SDL_SetRenderDrawColor(g_renderer, bgColor.r, bgColor.g, bgColor.b, 255);
     SDL_RenderFillRect(g_renderer, NULL);
+
+    SpriteGroup* l_Larry = SpriteSheet_getGroupByName(AssetManager_getSpriteSheet(Scene_getAssetManager(self), SPRITE_LARRY), "larry");
+    SDL_FRect l_Rec;
+    l_Rec.x = 0;
+    l_Rec.y = 0;
+    l_Rec.w = 1920;
+    l_Rec.h = 1080;
+    SpriteGroup_render(l_Larry, 0, &l_Rec, Vec2_anchor_north_west, 1);
 
     GameUIManager_render(self->m_uiManager);
 
@@ -237,11 +243,11 @@ void Scene_initGame(Scene* self)
     assert(self->Rabbits);
     for (int x = 0; x < self->m_gameSettings->RabbitCount; x++)
     {
-        self->Rabbits[x] = Rabbit_create(self, x, GAME_GRID_SIZE / 2);
+        self->Rabbits[x] = Rabbit_create(self, x + 1, GAME_GRID_SIZE / 2);
     }
     for (int x = RABBIT_COUNT; x < RABBIT_COUNT + FOX_COUNT; x++)
     {
-        self->Rabbits[x] = Fox_create(self, x, GAME_GRID_SIZE / 2 + 1, RABBIT_WEST);
+        self->Rabbits[x] = Fox_create(self, x + 1, GAME_GRID_SIZE / 2, RABBIT_EAST);
     }
 }
 

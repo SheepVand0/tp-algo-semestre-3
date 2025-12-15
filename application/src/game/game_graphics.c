@@ -23,11 +23,16 @@ GameGraphics* GameGraphics_create(Scene* scene)
     self->m_gridAABB.upper = Vec2_add(Vec2_set(+4.f, +4.f), Vec2_set(8.0f, 4.5f));
     self->m_enabled = false;
 
-    /*AssetManager* assets = Scene_getAssetManager(scene);
-    SpriteSheet* spriteSheet = AssetManager_getSpriteSheet(assets, SPRITE_GAME);
+    AssetManager* assets = Scene_getAssetManager(scene);
+    SpriteSheet* spriteSheet = AssetManager_getSpriteSheet(assets, SPRITE_UI_BASE);
     AssertNew(spriteSheet);
-    self->m_spriteRabbit = SpriteSheet_getGroupByName(spriteSheet, "rabbit");
-    AssertNew(self->m_spriteRabbit);*/
+    self->HoverSprite = SpriteSheet_getGroupByName(spriteSheet, "border");
+    AssertNew(self->HoverSprite);
+
+    spriteSheet = AssetManager_getSpriteSheet(assets, SPRITE_UI_SELECT_BOX);
+    AssertNew(spriteSheet);
+    self->HoverSpriteFox = SpriteSheet_getGroupByName(spriteSheet, "select_box");
+    AssertNew(self->HoverSpriteFox);
 
     return self;
 }
@@ -115,27 +120,9 @@ void GameGraphics_render(GameGraphics* self)
 
             bool isSelected = false;
 
-            /*if (self->Selected)
-            {
-
-                if (self->Selected->SelectedRabbit)
-                {
-                    if (self->Selected->SelectedRabbit->CellX == j && self->Selected->SelectedRabbit->CellY == i)
-                    {
-                        isSelected = true;
-                    }
-                }
-
-            }*/
-
             SDL_Color color = isSelected ? g_colors.orange9 : g_colors.gray8;
             SDL_SetRenderDrawColor(g_renderer, color.r, color.g, color.b, 255);
             SDL_RenderFillRect(g_renderer, &rect);
-
-            //if (isSelected)
-            //{
-            //    //SpriteGroup_render(self->m_spriteRabbit, 0, &rect, Vec2_anchor_north_west, 1.0f);
-            //}
         }
     }
 
@@ -166,6 +153,7 @@ void GameGraphics_render(GameGraphics* self)
             {
             case RABBIT_NORTH:
                 l_Angle = -180.f;
+                l_Anchor = Vec2_set(1.f, .5f);
                 break;
             case RABBIT_EAST:
                 l_Angle = -90.f;
@@ -184,5 +172,23 @@ void GameGraphics_render(GameGraphics* self)
         }
 
         SpriteGroup_renderRotated(l_Rabb->RabbitSprite, self->RabbitsToRender[x] == (self->Selected), &l_Rect, l_Anchor, l_Angle, 0.9f);
+
+        if (self->RabbitsToRender[x] == (self->Selected))
+        {
+            SpriteGroup_setColorModFloat(l_Rabb->Type == FOX ? self->HoverSpriteFox : self->HoverSprite, 1.f, 209.f/255.f, 145.f / 255.f);
+
+            if (l_Rabb->Type == FOX)
+            {
+                l_Rect.w *= 2;
+                l_Rect.h /= 2;
+            }
+
+            if (l_Rabb->Type == FOX)
+            {
+                l_Angle -= 90.f;
+            }
+
+            SpriteGroup_renderRotated(l_Rabb->Type == FOX ? self->HoverSpriteFox : self->HoverSprite, 0, &l_Rect, l_Anchor, l_Angle, 1.f);
+        }
     }
 }

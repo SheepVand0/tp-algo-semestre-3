@@ -15,6 +15,14 @@ void Game_addAssets(AssetManager* assets)
         assets, SPRITE_GAME, "atlas/jump_in", "atlas/jump_in_desc"
     );
 
+    AssetManager_addSpriteSheet(
+        assets, SPRITE_LARRY, "atlas/larry_le_malicieu", "atlas/larry_le_malicieu_desc"
+    );
+
+    AssetManager_addSpriteSheet(
+        assets, SPRITE_UI_SELECT_BOX, "atlas/ui_select_box", "atlas/ui_select_box_desc"
+    );
+
     // -------------------------------------------------------------------------
     // Fonts
 

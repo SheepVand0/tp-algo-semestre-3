@@ -11,7 +11,9 @@
 typedef enum SpriteID
 {
     SPRITE_UI_BASE,
+    SPRITE_UI_SELECT_BOX,
     SPRITE_GAME,
+    SPRITE_LARRY,
     //
     SPRITE_COUNT,
 } SpriteID;

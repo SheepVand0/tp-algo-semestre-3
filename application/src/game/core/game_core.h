@@ -23,7 +23,6 @@ typedef enum EObjectType
 {
     NO_OBJECT,
     RABBIT,
-    OBSTACLE,
     FOX,
     MUSHROOM
 
@@ -62,3 +61,5 @@ bool Rabbit_move(Rabbit* rabbit, Scene* scene, int targetX, int targetY);
 Rabbit* Fox_create(Scene* scene, int cellX0, int cellY0, ERabbitDirection direciton);
 
 Vec2 Fox_getSecondCell(Rabbit* rabbit);
+
+Vec2 Fox_getDirection(Rabbit* rabbit);

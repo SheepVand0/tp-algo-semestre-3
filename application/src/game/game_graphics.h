@@ -41,6 +41,9 @@ typedef struct GameGraphics
 
     Rabbit* Selected;
 
+    SpriteGroup* HoverSprite;
+    SpriteGroup* HoverSpriteFox;
+
     bool m_enabled;
 } GameGraphics;
 
