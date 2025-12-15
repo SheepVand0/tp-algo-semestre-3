@@ -9,6 +9,9 @@
 #include "core/game_core.h"
 #include "game/game_settings.h"
 
+#define RABBIT_ARRAY self->Core->Rabbits
+#define RABBIT(x) &self->Core->Rabbits[x]
+
 Scene* Scene_create()
 {
     Scene* self = (Scene*)calloc(1, sizeof(Scene));
@@ -16,8 +19,6 @@ Scene* Scene_create()
 
     self->m_assets = AssetManager_create(SPRITE_COUNT, FONT_COUNT);
     Game_addAssets(self->m_assets);
-
-    self->m_gameSettings = GameSettings_create();
 
     self->m_input = Input_create();
 
@@ -30,7 +31,7 @@ Scene* Scene_create()
     self->m_uiManager = GameUIManager_create(self);
     self->m_gameGraphics = GameGraphics_create(self);
 
-    self->Rabbits = NULL;
+    self->Core = GameCore_create(self->m_assets);
     //self->Obstacles = NULL;
 
     g_gameConfig.nextScene = GAME_SCENE_QUIT;
@@ -50,8 +51,6 @@ void Scene_destroy(Scene* self)
 
     // TODO : destroy rabbits and foxes and mushrooms
     // flm de le faire mtn
-
-    GameSettings_destroy(self->m_gameSettings);
 
     free(self);
 }
@@ -100,41 +99,7 @@ void Scene_update(Scene* self)
     {
         GameGraphics_update(self->m_gameGraphics);
 
-        for (int x = 0; x < RABBIT_COUNT + FOX_COUNT + MUSHROOM_COUNT; x++)
-        {
-            Rabbit* l_Rabb = self->Rabbits[x];
-            if (l_Rabb)
-            {
-                bool l_Other = false;
-                if (l_Rabb->Type == FOX)
-                {
-                    Vec2 l_OtherCell = Fox_getSecondCell(l_Rabb);
-                    l_Other = l_OtherCell.x == self->m_gameGraphics->m_selectedColIndex && l_OtherCell.y == self->m_gameGraphics->m_selectedRowIndex;
-
-                    //printf("%f - %d | %f - %d\n", l_OtherCell.x, self->m_gameGraphics->m_selectedColIndex, l_OtherCell.y, self->m_gameGraphics->m_selectedRowIndex);
-                }
-
-                if ((l_Rabb->CellX == self->m_gameGraphics->m_selectedColIndex && l_Rabb->CellY == self->m_gameGraphics->m_selectedRowIndex) || l_Other)
-                {
-                    self->m_gameGraphics->Selected = l_Rabb;
-                }
-            }
-        }
-
-        if (self->m_input->mouse.leftPressed)
-        {
-            EObjectType l_Obj = Scene_getObjTypeAtLocation(self, self->m_gameGraphics->m_selectedColIndex, self->m_gameGraphics->m_selectedRowIndex);
-
-            if (l_Obj == NO_OBJECT)
-            {
-                if (self->m_gameGraphics->Selected)
-                {
-                        Rabbit* l_Rabb = self->m_gameGraphics->Selected;
-
-                        Rabbit_move(l_Rabb, self, self->m_gameGraphics->m_selectedColIndex, self->m_gameGraphics->m_selectedRowIndex);
-                }
-            }
-        }
+        GameCore_update(self->Core, self->m_input, self->m_gameGraphics->m_selectedColIndex, self->m_gameGraphics->m_selectedRowIndex);
     }
 
     if (self->m_input->debug.gizmosPressed)
@@ -194,14 +159,15 @@ void Scene_render(Scene* self)
     l_Rec.y = 200;
     l_Rec.w = 400;
     l_Rec.h = 400;
-    SpriteGroup_renderRotated(l_Larry, 0, &l_Rec, Vec2_set(0.5f, 0.5f), Timer_getElapsed(g_time) * 360, 0);
+    SpriteGroup_renderRotated(l_Larry, 0, &l_Rec, Vec2_set(0.5f, 0.5f), /*Timer_getElapsed(g_time) * 360*/ 0, 0);
 
     GameUIManager_render(self->m_uiManager);
 
-    if (g_gameConfig.inLevel)
+    if (g_gameConfig.inLevel && self->Core->State != NONE)
     {
+        GameCore* gameCore = self->Core;
 
-        GAME_GRAPHICS_RENDER(self->m_gameGraphics, self->Rabbits, RABBIT_COUNT + FOX_COUNT);
+        GAME_GRAPHICS_RENDER(self->m_gameGraphics, self->Core->Rabbits, RABBIT_COUNT + FOX_COUNT + MUSHROOM_COUNT);
         GameGraphics_render(self->m_gameGraphics);
     }
 
@@ -222,55 +188,4 @@ void Scene_render(Scene* self)
 void Scene_drawGizmos(Scene* self)
 {
     assert(self && "The Scene must be created");
-}
-
-void Scene_destroyGame(Scene* self)
-{
-    if (self->Rabbits)
-    {
-        for (int x = 0; x < self->m_gameSettings->RabbitCount + FOX_COUNT + MUSHROOM_COUNT; x++)
-        {
-            Rabbit_destroy(self->Rabbits[x]);
-        }
-    }
-}
-
-void Scene_initGame(Scene* self)
-{
-    Scene_destroyGame(self);
-        
-    self->Rabbits = calloc(RABBIT_COUNT + FOX_COUNT, sizeof(Rabbit*));
-    assert(self->Rabbits);
-    for (int x = 0; x < self->m_gameSettings->RabbitCount; x++)
-    {
-        self->Rabbits[x] = Rabbit_create(self, x + 1, GAME_GRID_SIZE / 2);
-    }
-    for (int x = RABBIT_COUNT; x < RABBIT_COUNT + FOX_COUNT; x++)
-    {
-        self->Rabbits[x] = Fox_create(self, x + 1, GAME_GRID_SIZE / 2, RABBIT_EAST);
-    }
-}
-
-EObjectType Scene_getObjTypeAtLocation(Scene* self, int cellx, int y)
-{
-
-    for (int x = 0; x < RABBIT_COUNT + FOX_COUNT; x++)
-    {
-        if (self->Rabbits[x])
-        {
-            bool l_Other = false;
-            if (self->Rabbits[x]->Type == FOX)
-            {
-                Vec2 l_OtherCell = Fox_getSecondCell(self->Rabbits[x]);
-                l_Other = l_OtherCell.x == cellx && l_OtherCell.y == y;
-            }
-
-            if ((self->Rabbits[x]->CellX == cellx && self->Rabbits[x]->CellY == y) || l_Other)
-            {
-                return self->Rabbits[x]->Type;
-            }
-        }
-    }
-
-    return NO_OBJECT;
 }

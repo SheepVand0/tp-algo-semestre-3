@@ -14,11 +14,6 @@
 #include "game/game_graphics.h"
 #include "game/game_settings.h"
 
-#define RABBIT_COUNT self->m_gameSettings->RabbitCount
-#define FOX_COUNT self->m_gameSettings->FoxCount
-#define MUSHROOM_COUNT self->m_gameSettings->MushroomCount
-#define OBSTACLE_COUNT FOX_COUNT + MUSHROOM_COUNT
-
 typedef struct Rabbit Rabbit;
 
 typedef struct Obstacle Obstacle;
@@ -32,7 +27,6 @@ typedef struct Scene
     Camera* m_camera;
     Input* m_input;
     GameUIManager* m_uiManager;
-    GameSettings* m_gameSettings;
 
     GameGraphics* m_gameGraphics;
     bool m_drawGizmos;
@@ -40,7 +34,7 @@ typedef struct Scene
     float m_accu;
     float m_fadingTime;
 
-    Rabbit** Rabbits;
+    GameCore* Core;
 } Scene;
 
 /// @brief Crée la scène représentant le menu principal du jeu.
@@ -72,12 +66,6 @@ void Scene_render(Scene* self);
 /// @brief Dessine les gizmos de la scène dans le moteur de rendu.
 /// @param self la scène.
 void Scene_drawGizmos(Scene* self);
-
-void Scene_destroyGame(Scene* self);
-
-void Scene_initGame(Scene* self);
-
-EObjectType Scene_getObjTypeAtLocation(Scene* scene, int x, int y);
 
 /// @brief Renvoie le gestionnaire des assets de la scène.
 /// @param self la scène.

@@ -7,7 +7,143 @@
 #include "game_core.h"
 #include "game/scene.h"
 
-Rabbit* Rabbit_create(Scene* scene, int cellX, int cellY)
+#define RABBIT(x) &gameCore->Rabbits[x]
+
+GameCore* GameCore_create(AssetManager* assetManager)
+{
+    GameCore* l_Core = malloc(sizeof(GameCore));
+    assert(l_Core);
+
+    l_Core->Settings = GameSettings_create();
+    l_Core->Selected = NULL;
+    l_Core->Assets = assetManager;
+    l_Core->State = NONE;
+
+    return l_Core;
+}
+
+void GameCore_update(GameCore* gameCore, Input* input, int selectedX, int selectedY)
+{
+    switch (gameCore->State)
+    {
+    case NONE:
+        GameCore_initNextGame(gameCore);
+        gameCore->State = PLAYING;
+        break;
+
+    case PLAYING:
+        for (int x = 0; x < RABBIT_COUNT + FOX_COUNT + MUSHROOM_COUNT; x++)
+        {
+            Rabbit* l_Rabb = RABBIT(x);
+            if (l_Rabb)
+            {
+                if (!l_Rabb->Movable) continue;
+
+                bool l_Other = false;
+                if (l_Rabb->Type == FOX)
+                {
+                    Vec2 l_OtherCell = Fox_getSecondCell(l_Rabb);
+                    l_Other = l_OtherCell.x == selectedX && l_OtherCell.y == selectedY;
+
+                    //printf("%f - %d | %f - %d\n", l_OtherCell.x, self->m_gameGraphics->m_selectedColIndex, l_OtherCell.y, self->m_gameGraphics->m_selectedRowIndex);
+                }
+
+                if ((l_Rabb->CellX == selectedX && l_Rabb->CellY == selectedY) || l_Other)
+                {
+                    gameCore->Selected = l_Rabb;
+                }
+            }
+        }
+
+        if (input->mouse.leftPressed)
+        {
+            EObjectType l_Obj = GameCore_getObjTypeAtLocation(gameCore, selectedX, selectedY);
+
+            if (l_Obj == NO_OBJECT)
+            {
+                if (gameCore->Selected)
+                {
+                    Rabbit* l_Rabb = gameCore->Selected;
+
+                    Rabbit_move(l_Rabb, gameCore, selectedX, selectedY);
+                }
+            }
+        }
+        break;
+    case WINNING:
+
+        break;
+    default: break;
+    }
+    
+}
+
+void GameCore_destroyGame(GameCore* gameCore)
+{
+    for (int x = 0; x < RABBIT_COUNT + FOX_COUNT + MUSHROOM_COUNT; x++)
+    {
+        Rabbit l_Zero = { 0 };
+        gameCore->Rabbits[x] = l_Zero;
+    }
+}
+
+void GameCore_initNextGame(GameCore* gameCore)
+{
+    for (int x = 0; x < RABBIT_COUNT; x++)
+    {
+        gameCore->Rabbits[x] = *Rabbit_create(gameCore, x + 1, GAME_GRID_SIZE / 2);
+    }
+    for (int x = RABBIT_COUNT; x < RABBIT_COUNT + FOX_COUNT; x++)
+    {
+        gameCore->Rabbits[x] = *Fox_create(gameCore, x + 1, GAME_GRID_SIZE / 2, RABBIT_EAST);
+    }
+    for (int x = RABBIT_COUNT + FOX_COUNT; x < RABBIT_COUNT + FOX_COUNT + MUSHROOM_COUNT; x++)
+    {
+        gameCore->Rabbits[x] = *Mushroom_create(gameCore, x - 4, GAME_GRID_SIZE / 2 + 1);
+    }
+}
+
+
+EObjectType GameCore_getObjTypeAtLocation(GameCore* gameCore, int cellx, int y)
+{
+
+    for (int x = 0; x < RABBIT_COUNT + FOX_COUNT + MUSHROOM_COUNT; x++)
+    {
+        Rabbit* l_Rabb = &gameCore->Rabbits[x];
+
+        bool l_Other = false;
+        if (l_Rabb->Type == FOX)
+        {
+            Vec2 l_OtherCell = Fox_getSecondCell(l_Rabb);
+            l_Other = l_OtherCell.x == cellx && l_OtherCell.y == y;
+        }
+
+        if ((l_Rabb->CellX == cellx && l_Rabb->CellY == y) || l_Other)
+        {
+            return l_Rabb->Type;
+        }
+
+    }
+
+    return NO_OBJECT;
+}
+
+Rabbit* GameCore_getRabbit(GameCore* gameCore, int index)
+{
+    return &(gameCore->Rabbits[index]);
+}
+
+Rabbit* GameCore_getFox(GameCore* gameCore, int index)
+{
+    return &(gameCore->Rabbits[index + gameCore->Settings->RabbitCount]);
+}
+
+Rabbit* GameCore_getMushroom(GameCore* gameCore, int index)
+{
+    return &(gameCore->Rabbits[index + gameCore->Settings->RabbitCount + gameCore->Settings->FoxCount]);
+}
+
+Rabbit* Rabbit_create(GameCore* gameCore, int cellX, int cellY)
 {
     Rabbit* l_Rabbit = malloc(sizeof(Rabbit));
 
@@ -15,7 +151,7 @@ Rabbit* Rabbit_create(Scene* scene, int cellX, int cellY)
     l_Rabbit->CellX = cellX;
     l_Rabbit->CellY = cellY;
 
-    AssetManager* assets = Scene_getAssetManager(scene);
+    AssetManager* assets = gameCore->Assets;
     SpriteSheet* spriteSheet = AssetManager_getSpriteSheet(assets, SPRITE_GAME);
     AssertNew(spriteSheet);
     l_Rabbit->RabbitSprite = SpriteSheet_getGroupByName(spriteSheet, "rabbit");
@@ -39,9 +175,8 @@ int signOf(int x)
     return x < 0 ? -1 : 1;
 }
 
-bool Rabbit_move(Rabbit* rabbit, Scene* scene, int targetX, int targetY)
+bool Rabbit_move(Rabbit* rabbit, GameCore* gameCore, int targetX, int targetY)
 {
-
     int indexX = rabbit->CellX;
     int indexY = rabbit->CellY;
 
@@ -67,7 +202,7 @@ bool Rabbit_move(Rabbit* rabbit, Scene* scene, int targetX, int targetY)
 
             l_ToSubX -= directionX;
             l_ToSubY -= directionY;
-            
+
         }
 
         /*if (abs(targetX - indexX) > 1 || abs(targetY - indexY) > 1)
@@ -92,7 +227,7 @@ bool Rabbit_move(Rabbit* rabbit, Scene* scene, int targetX, int targetY)
         indexX -= directionX;
         indexY -= directionY;
 
-        EObjectType l_Type = Scene_getObjTypeAtLocation(scene, indexX, indexY);
+        EObjectType l_Type = GameCore_getObjTypeAtLocation(gameCore, indexX, indexY);
 
         if (rabbit->Type == FOX)
         {
@@ -119,7 +254,7 @@ bool Rabbit_move(Rabbit* rabbit, Scene* scene, int targetX, int targetY)
     return true;
 }
 
-Rabbit* Fox_create(Scene* scene, int cellX0, int cellY0, ERabbitDirection direction)
+Rabbit* Fox_create(GameCore* gameCore, int cellX0, int cellY0, ERabbitDirection direction)
 {
     Rabbit* l_Fox = malloc(sizeof(Rabbit));
 
@@ -128,7 +263,7 @@ Rabbit* Fox_create(Scene* scene, int cellX0, int cellY0, ERabbitDirection direct
     l_Fox->CellY = cellY0;
     l_Fox->Direction = direction;
 
-    AssetManager* assets = Scene_getAssetManager(scene);
+    AssetManager* assets = gameCore->Assets;
     SpriteSheet* spriteSheet = AssetManager_getSpriteSheet(assets, SPRITE_GAME);
     AssertNew(spriteSheet);
     l_Fox->RabbitSprite = SpriteSheet_getGroupByName(spriteSheet, "fox");
@@ -200,4 +335,24 @@ void Rabbit_getAnchorAngAngleFromDirection(ERabbitDirection direction, Vec2* anc
 
     *anchor = l_Anchor;
     *angle = l_Angle;
+}
+
+Rabbit* Mushroom_create(GameCore* gameCore, int cellX, int cellY)
+{
+    Rabbit* l_Mush = malloc(sizeof(Rabbit));
+    assert(l_Mush);
+
+    l_Mush->CellX = cellX;
+    l_Mush->CellY = cellY;
+
+    AssetManager* assets = gameCore->Assets;
+    SpriteSheet* spriteSheet = AssetManager_getSpriteSheet(assets, SPRITE_GAME);
+    AssertNew(spriteSheet);
+    l_Mush->RabbitSprite = SpriteSheet_getGroupByName(spriteSheet, "mushroom");
+    AssertNew(l_Mush->RabbitSprite);
+
+    l_Mush->Type = MUSHROOM;
+    l_Mush->Movable = false;
+
+    return l_Mush;
 }

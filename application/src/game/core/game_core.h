@@ -7,17 +7,21 @@
 #pragma once
 
 #include "settings.h"
+#include "game/game_settings.h"
+#include "game/input.h"
 
 #define GAME_GRID_SIZE 5
+#define MAX_RABBITS 10
+#define MAX_FOXES 5
+#define MAX_MUSHROOMS 10
+
+#define RABBIT_COUNT gameCore->Settings->RabbitCount
+#define FOX_COUNT gameCore->Settings->FoxCount
+#define MUSHROOM_COUNT gameCore->Settings->MushroomCount
 
 typedef struct Scene Scene;
 
 typedef struct Vec2Int Vec2Int;
-
-typedef struct GameCore
-{
-    int todo;
-} GameCore;
 
 typedef enum EObjectType
 {
@@ -36,6 +40,14 @@ typedef enum ERabbitDirection
     RABBIT_WEST
 } ERabbitDirection;
 
+typedef enum EGameState
+{
+    NONE,
+    PLAYING,
+    WINNING,
+    GETTING_LARRIED
+} EGameState;
+
 typedef struct Rabbit
 {
     SpriteGroup* RabbitSprite;
@@ -51,17 +63,45 @@ typedef struct Rabbit
 
 } Rabbit;
 
-Rabbit* Rabbit_create(Scene* scene, int cellX, int cellY);
+typedef struct GameCore
+{
+    Rabbit Rabbits[MAX_RABBITS + MAX_FOXES + MAX_MUSHROOMS];
+    GameSettings* Settings;
+    Rabbit* Selected;
+    AssetManager* Assets;
+
+    EGameState State;
+} GameCore;
+
+GameCore* GameCore_create(AssetManager* assetManager);
+
+void GameCore_update(GameCore* gameCore, Input* input, int selectedX, int selectedY);
+
+void GameCore_destroyGame(GameCore* gameCore);
+
+void GameCore_initNextGame(GameCore* gameCore);
+
+EObjectType GameCore_getObjTypeAtLocation(GameCore* gameCore, int cellx, int y);
+
+Rabbit* GameCore_getRabbit(GameCore* gameCore, int index);
+
+Rabbit* GameCore_getMushroom(GameCore* gameCore, int index);
+
+Rabbit* GameCore_getFox(GameCore* gameCore, int index);
+
+Rabbit* Rabbit_create(GameCore* scene, int cellX, int cellY);
 
 void Rabbit_destroy(Rabbit* rabbit);
 
 // TODO : MOVE FUNCTIONS
-bool Rabbit_move(Rabbit* rabbit, Scene* scene, int targetX, int targetY);
+bool Rabbit_move(Rabbit* rabbit, GameCore* gameCore, int targetX, int targetY);
  
-Rabbit* Fox_create(Scene* scene, int cellX0, int cellY0, ERabbitDirection direciton);
+Rabbit* Fox_create(GameCore* scene, int cellX0, int cellY0, ERabbitDirection direciton);
 
 Vec2 Fox_getSecondCell(Rabbit* rabbit);
 
 Vec2 Fox_getDirection(Rabbit* rabbit);
 
 void Rabbit_getAnchorAngAngleFromDirection(ERabbitDirection direction, Vec2* anchor, float* angle);
+
+Rabbit* Mushroom_create(GameCore* scene, int cellX, int cellY);

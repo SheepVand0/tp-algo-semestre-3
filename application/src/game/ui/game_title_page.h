@@ -8,6 +8,8 @@
 
 #include "settings.h"
 #include "game/ui/game_ui_manager.h"
+#include "SDL3/SDL_audio.h"
+#include "SDL3/SDL_mixer.h"
 
 typedef struct Scene Scene;
 
@@ -19,6 +21,8 @@ typedef struct GameTitlePage
 
     GameUIAction m_nextAction;
     UIObject* m_mainPanel;
+
+    //MIX_Mixer* Mixer;
 } GameTitlePage;
 
 GameTitlePage* GameTitlePage_create(Scene* scene, GameUIManager *manager);

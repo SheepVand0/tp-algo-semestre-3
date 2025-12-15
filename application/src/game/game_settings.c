@@ -8,7 +8,7 @@ GameSettings* GameSettings_create()
 
     l_Settings->RabbitCount = 4;
     l_Settings->FoxCount = 1;
-    l_Settings->MushroomCount = 0;
+    l_Settings->MushroomCount = 5;
 
     return l_Settings;
 }

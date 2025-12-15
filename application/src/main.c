@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
 
     // Initialisation de la SDL
     const GameInitParams initParams = {
-        .sdlFlags = SDL_INIT_VIDEO | SDL_INIT_GAMEPAD,
+        .sdlFlags = SDL_INIT_VIDEO | SDL_INIT_GAMEPAD | SDL_INIT_AUDIO,
         .projectRootPath = PROJECT_ROOT_PATH,
         .assetsPath = ASSETS_PATH,
     };

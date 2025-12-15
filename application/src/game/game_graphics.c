@@ -128,7 +128,7 @@ void GameGraphics_render(GameGraphics* self)
 
     for (int x = 0; x < self->RabbitCount; x++)
     {
-        Rabbit* l_Rabb = self->RabbitsToRender[x];
+        Rabbit* l_Rabb = &self->RabbitsToRender[x];
 
         if (!l_Rabb) continue;
 
@@ -152,9 +152,9 @@ void GameGraphics_render(GameGraphics* self)
             Rabbit_getAnchorAngAngleFromDirection(l_Rabb->Direction, &l_Anchor, &l_Angle);
         }
 
-        SpriteGroup_renderRotated(l_Rabb->RabbitSprite, self->RabbitsToRender[x] == (self->Selected), &l_Rect, l_Anchor, l_Angle, 0.9f);
+        SpriteGroup_renderRotated(l_Rabb->RabbitSprite, l_Rabb == (self->Selected), &l_Rect, l_Anchor, l_Angle, 0.9f);
 
-        if (self->RabbitsToRender[x] == (self->Selected))
+        if (l_Rabb == (self->Selected))
         {
             SpriteGroup_setColorModFloat(l_Rabb->Type == FOX ? self->HoverSpriteFox : self->HoverSprite, 1.f, 209.f/255.f, 145.f / 255.f);
 

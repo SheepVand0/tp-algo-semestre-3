@@ -8,6 +8,9 @@
 #include "game/ui/game_ui_manager.h"
 #include "game/scene.h"
 #include "common/ui_style.h"
+#include <SDL3/SDL.h>
+#include "SDL3/SDL_audio.h"
+#include "SDL3/SDL_mixer.h"
 
 static void GameTitlePage_onClick(void* selectable)
 {
@@ -83,6 +86,22 @@ GameTitlePage* GameTitlePage_create(Scene* scene, GameUIManager *manager)
             UIFocusManager_setFocused(self->m_focusManager, button);
         }
     }
+
+    /*self->Mixer = MIX_CreateMixerDevice(0, NULL);
+    
+    MIX_Audio* l_Larry = MIX_LoadAudio(self->Mixer, "assets/music/larry_intro.wav", true);
+    MIX_PlayAudio(self->Mixer, l_Larry);*/
+
+    /*SDL_AudioSpec l_WavSpec;
+    Uint8* wavBuffer = NULL;
+    Uint32 wavLength = 0;*/
+
+    //SDL_LoadWAV("larry_intro.wav", &l_WavSpec, &wavBuffer, &wavLength);
+
+    /*SDL_AudioDeviceID device = SDL_OpenAudioDevice(
+        0,
+        &l_WavSpec
+    );*/
 
     return self;
 }

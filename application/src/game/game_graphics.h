@@ -16,6 +16,7 @@ typedef struct Scene Scene;
 
 #define GAME_GRAPHICS_RENDER(gameGraphics, rabbits, rabbcount) gameGraphics->RabbitsToRender = rabbits; \
 gameGraphics->RabbitCount = rabbcount; \
+gameGraphics->Selected = self->Core->Selected; \
 GameGraphics_render(gameGraphics); \
 
 
@@ -34,7 +35,7 @@ typedef struct GameGraphics
 
     //SpriteGroup* m_spriteRabbit;
 
-    Rabbit** RabbitsToRender;
+    Rabbit* RabbitsToRender;
     int RabbitCount;
     /*Obstacle** ObstaclesToRender;
     int ObstacleCount;*/
