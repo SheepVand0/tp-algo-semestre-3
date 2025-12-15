@@ -43,7 +43,7 @@ target_sources(${NAME} PRIVATE
     "src/resolution/hahsmap.c" 
     "src/resolution/gridinfo.h" 
     "src/resolution/gridinfo.c"
-)
+ "src/resolution/resoudre.c")
 
 find_library(MATH_LIBRARY m)
 if(MATH_LIBRARY)

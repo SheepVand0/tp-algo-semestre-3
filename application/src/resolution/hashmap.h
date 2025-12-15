@@ -1,13 +1,14 @@
 #pragma once
 
 #include "settings.h"
+#include "gridinfo.h"
 
 typedef struct HashEntry HashEntry;
 struct HashEntry
 {
     HashEntry* next;
-    char* key;
-    void* value;
+    int* key;
+    GridInfo* grid;
 };
 
 typedef struct HashMap
@@ -42,7 +43,7 @@ int HashMap_GetSize(HashMap* self);
 /// @param self la table de hachage.
 /// @param key la clé.
 /// @return la valeur associée à la clé.
-void* HashMap_Get(HashMap* self, char* key);
+GridInfo* HashMap_Get(HashMap* self, int* key);
 
 /// @brief Ajoute un couple clé/valeur dans une table si la clé n'est pas présente,
 /// sinon modifie la valeur associée à une clé.
@@ -53,7 +54,7 @@ void* HashMap_Get(HashMap* self, char* key);
 /// @param value la valeur associée à la clé.
 /// @return Si la clé était déjà présente dans la table, renvoie la valeur précédente
 /// (pour que l'utilisateur puisse libérer la mémoire), sinon renvoie NULL.
-void* HashMap_Insert(HashMap* self, char* key, void* value);
+void* HashMap_Insert(HashMap* self, int* key, GridInfo* grid);
 
 /// @brief Supprime une clé dans une table de hachage.
 /// Cette fonction est sans effet si la clé n'est pas présente.
@@ -62,4 +63,4 @@ void* HashMap_Insert(HashMap* self, char* key, void* value);
 /// @param key la clé.
 /// @return Si la clé est présente dans la table, renvoie la valeur associée
 /// (pour que l'utilisateur puisse libérer la mémoire), sinon renvoie NULL.
-void* HashMap_Remove(HashMap* self, char* key);
+void* HashMap_Remove(HashMap* self, int* key);

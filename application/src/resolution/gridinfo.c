@@ -6,6 +6,7 @@ int GetRabbitNumber()
     return res;
 }
 
+
 Vec2Int GetRabbitPosition(Rabbit* rabbit)
 {
     Vec2Int pos;
@@ -13,7 +14,6 @@ Vec2Int GetRabbitPosition(Rabbit* rabbit)
     pos.y = rabbit->CellY;
     return pos;
 }
-
 
 
 bool isSameGrid(GridInfo* grid1, GridInfo* grid2)
