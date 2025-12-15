@@ -11,7 +11,7 @@ void* resoudre()    /// alors la globalement j'ai fais un peu n'importe quoi c'e
     {
         capacite *= nbrcases;
     }
-    HashMap* map = HashMap_New(capacite);
+    GameHashmap* map = HashMap_New(capacite);
 
     int key = 0;
 

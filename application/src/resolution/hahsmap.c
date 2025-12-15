@@ -3,53 +3,49 @@
 typedef unsigned int uint32;
 
 // Fonction de hachage des clés de la table de hachage
-static uint32 hash(char* str, uint32 capacity)
+static uint32 hash(GameHashmapEntry grid, uint32 capacity)
 {
     return NULL;
 }
 
-HashMap* HashMap_New(int capacity)
+GameHashmap* HashMap_New(int capacity)
 {
-    HashMap* map = (HashMap*)calloc(1, sizeof(HashMap));
+    GameHashmap* map = (GameHashmap*)calloc(1, sizeof(GameHashmap));
     AssertNew(map);
 
-    map->capacity = capacity;
-    map->entries = (HashEntry**)calloc(capacity, sizeof(HashEntry*));
-    AssertNew(map->entries);
+    map->m_size = 0;
+    map->m_capacity = capacity;
+    map->m_entries = (GameHashmapEntry*)calloc(capacity, sizeof(GameHashmapEntry));
+    map->m_idMap = (size_t*)calloc(capacity, sizeof(size_t));
+    AssertNew(map->m_entries && map->m_idMap);
+
+    for (int i = 0; i < capacity; i++)
+    {
+        map->m_idMap[i] = -1;
+    }
 
     return map;
 }
 
-void HashMap_destroy(HashMap* map)
+void HashMap_destroy(GameHashmap* map)
 {
     if (!map) return;
 
-    int capacity = map->capacity;
-    HashEntry** entries = map->entries;
-    for (int h = 0; h < capacity; h++)
-    {
-        HashEntry* entry = entries[h];
-        while (entry != NULL)
-        {
-            HashEntry* next = entry->next;
-
-            free(entry->key);
-            free(entry);
-
-            entry = next;
-        }
-    }
+    free(map->m_entries);
+    free(map->m_idMap);
     free(map);
 }
 
-int HashMap_GetSize(HashMap* map)
+int HashMap_GetSize(GameHashmap* map)
 {
-    return map->size;
+    return map->m_size;
 }
 
-GridInfo* HashMap_Get(HashMap* map, int* key)
+
+/*  // pas sur sûr ça soit utile cette merde 
+GameHashmapEntry HashMap_Get(GameHashmap map)
 {
-    assert(map && key);
+    assert(map);
 
     uint32 idx = hash(key, map->capacity);
 
@@ -66,48 +62,37 @@ GridInfo* HashMap_Get(HashMap* map, int* key)
 
     return NULL;
 }
+*/
 
-void* HashMap_Insert(HashMap* map, char* key, void* value)
+
+void HashMap_Insert(GameHashmap* map, GameHashmapEntry value)
 {
-    assert(map && key);
+    assert(map);
 
-    uint32 idx = hash(key, map->capacity);
+    uint32 idx = hash(value, map->m_capacity);
 
-    HashEntry* curr = map->entries[idx];
-    HashEntry* prev = NULL;
-
-    while (curr)
+    if (map->m_size * 2 > map->m_capacity)
     {
-        if (strcmp(curr->key, key) == 0)
-        {
-            void* old = curr->grid;
-            curr->grid = value;
-            return old;
-        }
-        prev = curr;
-        curr = curr->next;
+        // TODO redimentionner
+        map = HashMap_Resize(map);
     }
 
-    HashEntry* newOcc = calloc(1, sizeof(HashEntry));
-    newOcc->key = strdup(key);
-    newOcc->grid = value;
-    newOcc->next = NULL;
+    // TODO vérifier qu elle est pas déjà là cette saloperie
 
-    if (prev)
+    map->m_entries[map->m_size] = value;
+
+    while (map->m_idMap[idx] >= 0)
     {
-        prev->next = newOcc;
+        idx++ % map->m_capacity;
     }
-    else
-    {
-        map->entries[idx] = newOcc;
-    }
+    map->m_idMap[idx] = map->m_size;
 
-    map->size++;
-
-    return NULL;
+    map->m_size++;
 }
 
-void* HashMap_Remove(HashMap* map, char* key)
+
+/*   STANDBY je suis même pas sûr d'avoir besoin de remove
+void* HashMap_Remove(GameHashmap* map,)
 {
     assert(map && key);
 
@@ -145,4 +130,19 @@ void* HashMap_Remove(HashMap* map, char* key)
         }
     }
     return NULL;
+}
+*/ 
+
+
+GameHashmap* HashMap_Resize(GameHashmap* map)
+{
+    GameHashmap* NewMap = HashMap_New(map->m_capacity * 2);
+    for (int i = 0; i < map->m_size; i++)
+    {
+        HashMap_Insert(NewMap, map->m_entries[i]);
+    }
+
+    HashMap_destroy(map);
+
+    return NewMap;
 }
