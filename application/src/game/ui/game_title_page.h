@@ -22,7 +22,7 @@ typedef struct GameTitlePage
     GameUIAction m_nextAction;
     UIObject* m_mainPanel;
 
-    //MIX_Mixer* Mixer;
+    MIX_Mixer* Mixer;
 } GameTitlePage;
 
 GameTitlePage* GameTitlePage_create(Scene* scene, GameUIManager *manager);

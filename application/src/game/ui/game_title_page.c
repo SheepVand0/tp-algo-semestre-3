@@ -11,6 +11,8 @@
 #include <SDL3/SDL.h>
 #include "SDL3/SDL_audio.h"
 #include "SDL3/SDL_mixer.h"
+#include "windows.h"
+#include <stdio.h>
 
 static void GameTitlePage_onClick(void* selectable)
 {
@@ -87,10 +89,48 @@ GameTitlePage* GameTitlePage_create(Scene* scene, GameUIManager *manager)
         }
     }
 
-    /*self->Mixer = MIX_CreateMixerDevice(0, NULL);
-    
-    MIX_Audio* l_Larry = MIX_LoadAudio(self->Mixer, "assets/music/larry_intro.wav", true);
-    MIX_PlayAudio(self->Mixer, l_Larry);*/
+    if (!MIX_Init())
+    {
+        printf("\nCannot init mixer\n");
+    }
+    else
+    {
+        self->Mixer = MIX_CreateMixerDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, NULL);
+
+        if (!self->Mixer)
+        {
+            printf("\nERROR CREATING MIXER NO!!!\n");
+            printf("\n%s\n", SDL_GetError());
+        }
+
+        WIN32_FIND_DATA l_Fd;
+
+        char path[1032] = "*.*";
+
+        HANDLE handle = FindFirstFile(path, &l_Fd);
+
+        FindNextFile(handle, &l_Fd);
+        FindNextFile(handle, &l_Fd);
+        FindNextFile(handle, &l_Fd);
+        //FindFirstFile(path, &l_Fd);
+
+        printf("%s\n", l_Fd.cFileName);
+        
+        MIX_Audio* l_Larry = MIX_LoadAudio(self->Mixer, "../../../assets/music/larry_intro.wav", true);
+        if (!l_Larry)
+        {
+            printf("\nLarry disapeared\n");
+        }
+        else
+        {
+            if (!MIX_PlayAudio(self->Mixer, l_Larry))
+            {
+                printf("\nCannot play larry audio!!!!!!!!!\n");
+                printf("\n%s\n", SDL_GetError());
+            }
+        }
+    }
+
 
     /*SDL_AudioSpec l_WavSpec;
     Uint8* wavBuffer = NULL;

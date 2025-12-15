@@ -7,7 +7,7 @@ set_package_properties(SDL3_mixer PROPERTIES
     DESCRIPTION "SDL_mixer is a sample multi-channel audio mixer library"
 )
 
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.0...3.28)
 
 set(SDL3_mixer_FOUND                TRUE)
 
@@ -56,6 +56,9 @@ endif()
 set(_SDL3mixer_incdir       "${CMAKE_CURRENT_LIST_DIR}/../include")
 set(_SDL3mixer_library      "${CMAKE_CURRENT_LIST_DIR}/../lib/${_sdl_arch_subdir}/SDL3_mixer.lib")
 set(_SDL3mixer_dll          "${CMAKE_CURRENT_LIST_DIR}/../lib/${_sdl_arch_subdir}/SDL3_mixer.dll")
+
+message("${CMAKE_CURRENT_LIST_DIR}/../lib/${_sdl_arch_subdir}/SDL3_mixer.lib")
+message("${CMAKE_CURRENT_LIST_DIR}/../lib/${_sdl_arch_subdir}/SDL3_mixer.dll")
 
 # All targets are created, even when some might not be requested though COMPONENTS.
 # This is done for compatibility with CMake generated SDL3_mixer-target.cmake files.
