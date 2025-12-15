@@ -149,26 +149,7 @@ void GameGraphics_render(GameGraphics* self)
         {
             l_Rect.h *= 2;
 
-            switch (l_Rabb->Direction)
-            {
-            case RABBIT_NORTH:
-                l_Angle = -180.f;
-                l_Anchor = Vec2_set(1.f, .5f);
-                break;
-            case RABBIT_EAST:
-                l_Angle = -90.f;
-                l_Anchor = Vec2_set(1.f, 1.f);
-                break;
-            case RABBIT_WEST:
-                l_Angle = 90.f;
-                l_Anchor = Vec2_set(0.f, .5f);
-                break;
-            case RABBIT_SOUTH:
-                l_Angle = 0.f;
-                break;
-            default: break;
-
-            }
+            Rabbit_getAnchorAngAngleFromDirection(l_Rabb->Direction, &l_Anchor, &l_Angle);
         }
 
         SpriteGroup_renderRotated(l_Rabb->RabbitSprite, self->RabbitsToRender[x] == (self->Selected), &l_Rect, l_Anchor, l_Angle, 0.9f);
@@ -176,17 +157,6 @@ void GameGraphics_render(GameGraphics* self)
         if (self->RabbitsToRender[x] == (self->Selected))
         {
             SpriteGroup_setColorModFloat(l_Rabb->Type == FOX ? self->HoverSpriteFox : self->HoverSprite, 1.f, 209.f/255.f, 145.f / 255.f);
-
-            if (l_Rabb->Type == FOX)
-            {
-                l_Rect.w *= 2;
-                l_Rect.h /= 2;
-            }
-
-            if (l_Rabb->Type == FOX)
-            {
-                l_Angle -= 90.f;
-            }
 
             SpriteGroup_renderRotated(l_Rabb->Type == FOX ? self->HoverSpriteFox : self->HoverSprite, 0, &l_Rect, l_Anchor, l_Angle, 1.f);
         }

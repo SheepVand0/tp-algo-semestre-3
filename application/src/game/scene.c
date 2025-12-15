@@ -190,11 +190,11 @@ void Scene_render(Scene* self)
 
     SpriteGroup* l_Larry = SpriteSheet_getGroupByName(AssetManager_getSpriteSheet(Scene_getAssetManager(self), SPRITE_LARRY), "larry");
     SDL_FRect l_Rec;
-    l_Rec.x = 0;
-    l_Rec.y = 0;
-    l_Rec.w = 1920;
-    l_Rec.h = 1080;
-    SpriteGroup_render(l_Larry, 0, &l_Rec, Vec2_anchor_north_west, 1);
+    l_Rec.x = 200;
+    l_Rec.y = 200;
+    l_Rec.w = 400;
+    l_Rec.h = 400;
+    SpriteGroup_renderRotated(l_Larry, 0, &l_Rec, Vec2_set(0.5f, 0.5f), Timer_getElapsed(g_time) * 360, 0);
 
     GameUIManager_render(self->m_uiManager);
 

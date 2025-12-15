@@ -171,3 +171,33 @@ Vec2 Fox_getDirection(Rabbit* rabbit)
     default: return Vec2_set(0, 0);
     }
 }
+
+void Rabbit_getAnchorAngAngleFromDirection(ERabbitDirection direction, Vec2* anchor, float* angle)
+{
+    float l_Angle = 0.f;
+    Vec2 l_Anchor = Vec2_anchor_north_west;
+
+    switch (direction)
+    {
+    case RABBIT_NORTH:
+        l_Angle = -180.f;
+        l_Anchor = Vec2_set(1.f, .5f);
+        break;
+    case RABBIT_EAST:
+        l_Angle = -90.f;
+        l_Anchor = Vec2_set(1.f, 1.f);
+        break;
+    case RABBIT_WEST:
+        l_Angle = 90.f;
+        l_Anchor = Vec2_set(0.f, .5f);
+        break;
+    case RABBIT_SOUTH:
+        l_Angle = 0.f;
+        break;
+    default: break;
+
+    }
+
+    *anchor = l_Anchor;
+    *angle = l_Angle;
+}
