@@ -47,7 +47,7 @@ int HashMap_GetSize(HashMap* map)
     return map->size;
 }
 
-void* HashMap_Get(HashMap* map, char* key)
+GridInfo* HashMap_Get(HashMap* map, int* key)
 {
     assert(map && key);
 
@@ -59,7 +59,7 @@ void* HashMap_Get(HashMap* map, char* key)
     {
         if (!strcmp(tmp->key, key))
         {
-            return tmp->value;
+            return tmp->grid;
         }
         else tmp = tmp->next;
     }
@@ -80,8 +80,8 @@ void* HashMap_Insert(HashMap* map, char* key, void* value)
     {
         if (strcmp(curr->key, key) == 0)
         {
-            void* old = curr->value;
-            curr->value = value;
+            void* old = curr->grid;
+            curr->grid = value;
             return old;
         }
         prev = curr;
@@ -90,7 +90,7 @@ void* HashMap_Insert(HashMap* map, char* key, void* value)
 
     HashEntry* newOcc = calloc(1, sizeof(HashEntry));
     newOcc->key = strdup(key);
-    newOcc->value = value;
+    newOcc->grid = value;
     newOcc->next = NULL;
 
     if (prev)
@@ -129,7 +129,7 @@ void* HashMap_Remove(HashMap* map, char* key)
                 map->entries[idx] = curr->next;
             }
 
-            void* res = curr->value;
+            void* res = curr->grid;
 
             free(curr->key);
             free(curr);

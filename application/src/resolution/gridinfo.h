@@ -5,6 +5,7 @@
 
 typedef struct GridInfo
 {
+    int nbrCoups;      // nombre de coups depuis le début
     int Rnbr;           // nombre de lapins
     Vec2Int* Rpos;     // positions des lapinou
     int Fnbr;           // nombre de renards

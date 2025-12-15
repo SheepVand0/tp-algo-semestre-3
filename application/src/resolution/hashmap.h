@@ -37,7 +37,7 @@ void HashMap_destroy(HashMap* self);
 /// @return La taille de la table de hachage.
 int HashMap_GetSize(HashMap* self);
 
-/// @brief Renvoie la valeur associée à une clé dans la table de hachage
+/// @brief Renvoie la grid associée à une clé dans la table de hachage
 /// ou NULL si la clé n'est pas présente.
 /// 
 /// @param self la table de hachage.
