@@ -38,4 +38,7 @@ void Game_addAssets(AssetManager* assets)
     AssetManager_addFont(
         assets, FONT_BIG_BOLD, "font/noto_sans_bold", 64
     );
+    AssetManager_addFont(
+        assets, FONT_EXTRA_BOLD, "font/noto_sans_bold", 128
+    );
 }

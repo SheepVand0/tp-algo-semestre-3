@@ -24,6 +24,7 @@ typedef enum FontID
     FONT_BIG,
     FONT_BOLD,
     FONT_BIG_BOLD,
+    FONT_EXTRA_BOLD,
     //
     FONT_COUNT,
 } FontID;

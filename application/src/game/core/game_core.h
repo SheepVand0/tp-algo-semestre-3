@@ -9,6 +9,7 @@
 #include "settings.h"
 #include "game/game_settings.h"
 #include "game/input.h"
+#include "../audio/audio_manager.h"
 
 #define GAME_GRID_SIZE 5
 #define MAX_RABBITS 10
@@ -45,6 +46,9 @@ typedef enum EGameState
     NONE,
     PLAYING,
     WINNING,
+    GAMBLING,
+    OUPI_GOUPI,
+    MASTERMIND,
     GETTING_LARRIED
 } EGameState;
 
@@ -71,11 +75,17 @@ typedef struct GameCore
     AssetManager* Assets;
 
     EGameState State;
+
+    SAudio* LarryMusic;
+
+    float Remaining;
+
+    float CurrentAnimationTime;
 } GameCore;
 
-GameCore* GameCore_create(AssetManager* assetManager);
+GameCore* GameCore_create(AssetManager* assetManager, AudioManager* audio);
 
-void GameCore_update(GameCore* gameCore, Input* input, int selectedX, int selectedY);
+void GameCore_update(GameCore* gameCore, Scene* scene, int selectedX, int selectedY);
 
 void GameCore_destroyGame(GameCore* gameCore);
 
@@ -104,4 +114,4 @@ Vec2 Fox_getDirection(Rabbit* rabbit);
 
 void Rabbit_getAnchorAngAngleFromDirection(ERabbitDirection direction, Vec2* anchor, float* angle);
 
-Rabbit* Mushroom_create(GameCore* scene, int cellX, int cellY);
+Rabbit* Mushroom_create(GameCore* scene, int cellX, int cellY); 

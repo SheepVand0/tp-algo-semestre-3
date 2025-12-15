@@ -9,7 +9,7 @@
 
 #define RABBIT(x) &gameCore->Rabbits[x]
 
-GameCore* GameCore_create(AssetManager* assetManager)
+GameCore* GameCore_create(AssetManager* assetManager, AudioManager* audio)
 {
     GameCore* l_Core = malloc(sizeof(GameCore));
     assert(l_Core);
@@ -18,12 +18,16 @@ GameCore* GameCore_create(AssetManager* assetManager)
     l_Core->Selected = NULL;
     l_Core->Assets = assetManager;
     l_Core->State = NONE;
+    l_Core->Remaining = 10.f;
+
+    l_Core->LarryMusic = AudioManager_loadWav(audio, "larry_intro.wav", "larry music");
 
     return l_Core;
 }
 
-void GameCore_update(GameCore* gameCore, Input* input, int selectedX, int selectedY)
+void GameCore_update(GameCore* gameCore, Scene* scene, int selectedX, int selectedY)
 {
+
     switch (gameCore->State)
     {
     case NONE:
@@ -55,7 +59,7 @@ void GameCore_update(GameCore* gameCore, Input* input, int selectedX, int select
             }
         }
 
-        if (input->mouse.leftPressed)
+        if (scene->m_input->mouse.leftPressed)
         {
             EObjectType l_Obj = GameCore_getObjTypeAtLocation(gameCore, selectedX, selectedY);
 
@@ -69,9 +73,29 @@ void GameCore_update(GameCore* gameCore, Input* input, int selectedX, int select
                 }
             }
         }
+
+        gameCore->Remaining -= Timer_getDelta(g_time);
+
+        if (gameCore->Remaining <= 0)
+        {
+            AudioManager_play(scene->m_audio, gameCore->LarryMusic);
+            gameCore->State = GETTING_LARRIED;
+            gameCore->CurrentAnimationTime = 6.f;
+        }
         break;
     case WINNING:
 
+        break;
+    case GETTING_LARRIED:
+        gameCore->CurrentAnimationTime -= Timer_getDelta(g_time);
+
+        if (gameCore->CurrentAnimationTime <= 0)
+        {
+            gameCore->State = NONE;
+            g_gameConfig.nextScene = GAME_SCENE_MAIN;
+            g_gameConfig.inLevel = false;
+            scene->m_uiManager->m_nextAction = GAME_UI_ACTION_OPEN_TITLE;
+        }
         break;
     default: break;
     }
@@ -91,11 +115,11 @@ void GameCore_initNextGame(GameCore* gameCore)
 {
     for (int x = 0; x < RABBIT_COUNT; x++)
     {
-        gameCore->Rabbits[x] = *Rabbit_create(gameCore, x + 1, GAME_GRID_SIZE / 2);
+        gameCore->Rabbits[x] = *Rabbit_create(gameCore, x + 2, GAME_GRID_SIZE / 2);
     }
     for (int x = RABBIT_COUNT; x < RABBIT_COUNT + FOX_COUNT; x++)
     {
-        gameCore->Rabbits[x] = *Fox_create(gameCore, x + 1, GAME_GRID_SIZE / 2, RABBIT_EAST);
+        gameCore->Rabbits[x] = *Fox_create(gameCore, x + 2, GAME_GRID_SIZE / 2, RABBIT_EAST);
     }
     for (int x = RABBIT_COUNT + FOX_COUNT; x < RABBIT_COUNT + FOX_COUNT + MUSHROOM_COUNT; x++)
     {
@@ -231,7 +255,12 @@ bool Rabbit_move(Rabbit* rabbit, GameCore* gameCore, int targetX, int targetY)
 
         if (rabbit->Type == FOX)
         {
-            if (l_Type == NO_OBJECT)
+            if (l_Type != NO_OBJECT)
+            {
+                return false;
+            }
+
+            if (l_Type == NO_OBJECT && indexX == targetX && indexY == targetY)
             {
                 rabbit->CellX -= l_ToSubX;
                 rabbit->CellY -= l_ToSubY;

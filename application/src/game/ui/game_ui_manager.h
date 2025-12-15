@@ -32,6 +32,13 @@ typedef struct GameUIManager
     GameTitlePage* m_titlePage;
     GameSettingsPage* m_settingsPage;
     GameUIAction m_nextAction;
+
+    UILabel* m_timeText;
+    UIGridLayout* m_timeTextLayout;
+
+
+    UIGridLayout* m_lostTextLayout;
+    UILabel* m_lostText;
 } GameUIManager;
 
 GameUIManager* GameUIManager_create(Scene* scene);
@@ -40,3 +47,4 @@ void GameUIManager_destroy(GameUIManager* self);
 void GameUIManager_render(GameUIManager* self);
 void GameUIManager_update(GameUIManager* self, UIInput* input);
 
+char* GameUIManager_formatTime(float time);

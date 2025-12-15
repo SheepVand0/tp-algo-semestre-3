@@ -20,6 +20,8 @@ Scene* Scene_create()
     self->m_assets = AssetManager_create(SPRITE_COUNT, FONT_COUNT);
     Game_addAssets(self->m_assets);
 
+    self->m_audio = AudioManager_create();
+
     self->m_input = Input_create();
 
     int outW = 0, outH = 0;
@@ -31,7 +33,7 @@ Scene* Scene_create()
     self->m_uiManager = GameUIManager_create(self);
     self->m_gameGraphics = GameGraphics_create(self);
 
-    self->Core = GameCore_create(self->m_assets);
+    self->Core = GameCore_create(self->m_assets, self->m_audio);
     //self->Obstacles = NULL;
 
     g_gameConfig.nextScene = GAME_SCENE_QUIT;
@@ -99,7 +101,7 @@ void Scene_update(Scene* self)
     {
         GameGraphics_update(self->m_gameGraphics);
 
-        GameCore_update(self->Core, self->m_input, self->m_gameGraphics->m_selectedColIndex, self->m_gameGraphics->m_selectedRowIndex);
+        GameCore_update(self->Core, self, self->m_gameGraphics->m_selectedColIndex, self->m_gameGraphics->m_selectedRowIndex);
     }
 
     if (self->m_input->debug.gizmosPressed)
@@ -143,7 +145,7 @@ void Scene_render(Scene* self)
     // Efface le rendu précédent
     SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255);
     SDL_RenderClear(g_renderer);
-    
+
 
     SDL_Color bgColor = { 0 };
     bgColor.r = 15;
@@ -159,11 +161,12 @@ void Scene_render(Scene* self)
     l_Rec.y = 200;
     l_Rec.w = 400;
     l_Rec.h = 400;
+    SpriteGroup_setColorModFloat(l_Larry, 1.f, 1.f, 1.f);
     SpriteGroup_renderRotated(l_Larry, 0, &l_Rec, Vec2_set(0.5f, 0.5f), /*Timer_getElapsed(g_time) * 360*/ 0, 0);
 
     GameUIManager_render(self->m_uiManager);
 
-    if (g_gameConfig.inLevel && self->Core->State != NONE)
+    if (g_gameConfig.inLevel && self->Core->State != NONE && self->Core->State != GETTING_LARRIED)
     {
         GameCore* gameCore = self->Core;
 
@@ -181,6 +184,21 @@ void Scene_render(Scene* self)
             opacity = 255 - opacity;
         }
         SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, opacity);
+        SDL_RenderFillRect(g_renderer, NULL);
+    }
+
+    if (self->Core->State == GETTING_LARRIED)
+    {
+        l_Rec.w = 1280;
+        l_Rec.h = 720;
+        l_Rec.x = l_Rec.w / 2.f;
+        l_Rec.y = l_Rec.h / 2;
+        SpriteGroup_setColorModFloat(l_Larry, 1.f, 0.5f, 0.5f);
+        SpriteGroup_renderRotated(l_Larry, 0, &l_Rec, Vec2_set(0.5f, 0.5f), /*Timer_getElapsed(g_time) * 360*/ 0, 0);
+
+        GameUIManager_render(self->m_uiManager);
+
+        SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255 - Float_clamp(((self->Core->CurrentAnimationTime) * 255), 0, 255));
         SDL_RenderFillRect(g_renderer, NULL);
     }
 }

@@ -50,7 +50,7 @@ GameTitlePage* GameTitlePage_create(Scene* scene, GameUIManager *manager)
     rect.offsetMin = Vec2_set(-75.f, 0.0f);
     rect.offsetMax = Vec2_set(+75.f, 0.0f);
     UIObject_setRect(self->m_mainPanel, rect);
-
+    
     UIGridLayout* layout = UIGridLayout_create("main-layout", 4, 1);
     UIObject_setParent(layout, self->m_mainPanel);
     UIGridLayout_setRowSizes(layout, 25.0f);
@@ -59,7 +59,7 @@ GameTitlePage* GameTitlePage_create(Scene* scene, GameUIManager *manager)
 
     font = AssetManager_getFont(assets, FONT_BIG_BOLD);
     UILabel* label = UILabel_create("title-label", font);
-    UILabel_setTextString(label, "SDL3 Template");
+    UILabel_setTextString(label, "LARRY");
     UILabel_setAnchor(label, Vec2_anchor_center);
     UILabel_setColor(label, g_colors.orange2);
 
@@ -89,47 +89,47 @@ GameTitlePage* GameTitlePage_create(Scene* scene, GameUIManager *manager)
         }
     }
 
-    if (!MIX_Init())
-    {
-        printf("\nCannot init mixer\n");
-    }
-    else
-    {
-        self->Mixer = MIX_CreateMixerDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, NULL);
+    //if (!MIX_Init())
+    //{
+    //    printf("\nCannot init mixer\n");
+    //}
+    //else
+    //{
+    //    self->Mixer = MIX_CreateMixerDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, NULL);
 
-        if (!self->Mixer)
-        {
-            printf("\nERROR CREATING MIXER NO!!!\n");
-            printf("\n%s\n", SDL_GetError());
-        }
+    //    if (!self->Mixer)
+    //    {
+    //        printf("\nERROR CREATING MIXER NO!!!\n");
+    //        printf("\n%s\n", SDL_GetError());
+    //    }
 
-        WIN32_FIND_DATA l_Fd;
+    //    WIN32_FIND_DATA l_Fd;
 
-        char path[1032] = "*.*";
+    //    char path[1032] = "*.*";
 
-        HANDLE handle = FindFirstFile(path, &l_Fd);
+    //    HANDLE handle = FindFirstFile(path, &l_Fd);
 
-        FindNextFile(handle, &l_Fd);
-        FindNextFile(handle, &l_Fd);
-        FindNextFile(handle, &l_Fd);
-        //FindFirstFile(path, &l_Fd);
+    //    FindNextFile(handle, &l_Fd);
+    //    FindNextFile(handle, &l_Fd);
+    //    FindNextFile(handle, &l_Fd);
+    //    //FindFirstFile(path, &l_Fd);
 
-        printf("%s\n", l_Fd.cFileName);
-        
-        MIX_Audio* l_Larry = MIX_LoadAudio(self->Mixer, "../../../assets/music/larry_intro.wav", true);
-        if (!l_Larry)
-        {
-            printf("\nLarry disapeared\n");
-        }
-        else
-        {
-            if (!MIX_PlayAudio(self->Mixer, l_Larry))
-            {
-                printf("\nCannot play larry audio!!!!!!!!!\n");
-                printf("\n%s\n", SDL_GetError());
-            }
-        }
-    }
+    //    printf("%s\n", l_Fd.cFileName);
+    //    
+    //    MIX_Audio* l_Larry = MIX_LoadAudio(self->Mixer, "../../../assets/music/larry_intro.wav", true);
+    //    if (!l_Larry)
+    //    {
+    //        printf("\nLarry disapeared\n");
+    //    }
+    //    else
+    //    {
+    //        if (!MIX_PlayAudio(self->Mixer, l_Larry))
+    //        {
+    //            printf("\nCannot play larry audio!!!!!!!!!\n");
+    //            printf("\n%s\n", SDL_GetError());
+    //        }
+    //    }
+    //}
 
 
     /*SDL_AudioSpec l_WavSpec;

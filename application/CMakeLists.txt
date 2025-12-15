@@ -43,7 +43,10 @@ target_sources(${NAME} PRIVATE
     "src/resolution/hahsmap.c" 
     "src/resolution/gridinfo.h" 
     "src/resolution/gridinfo.c"
- "src/resolution/resoudre.c")
+    "src/resolution/resoudre.c" 
+    "src/game/audio/audio_manager.h"
+    "src/game/audio/audio_manager.c"
+)
 
 find_library(MATH_LIBRARY m)
 if(MATH_LIBRARY)
@@ -78,5 +81,6 @@ if(WIN32)
         COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:SDL3::SDL3> $<TARGET_FILE_DIR:${NAME}>
         COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:SDL3_image::SDL3_image> $<TARGET_FILE_DIR:${NAME}>
         COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:SDL3_ttf::SDL3_ttf> $<TARGET_FILE_DIR:${NAME}>
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:SDL3_mixer::SDL3_mixer> $<TARGET_FILE_DIR:${NAME}>
     )
 endif()

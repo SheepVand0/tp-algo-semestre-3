@@ -13,6 +13,7 @@
 #include "game/ui/game_ui_manager.h"
 #include "game/game_graphics.h"
 #include "game/game_settings.h"
+#include "audio/audio_manager.h"
 
 typedef struct Rabbit Rabbit;
 
@@ -24,6 +25,7 @@ typedef enum EObjectType EObjectType;
 typedef struct Scene
 {
     AssetManager* m_assets;
+    AudioManager* m_audio;
     Camera* m_camera;
     Input* m_input;
     GameUIManager* m_uiManager;

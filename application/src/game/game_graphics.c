@@ -102,7 +102,7 @@ void GameGraphics_update(GameGraphics* self)
 void GameGraphics_render(GameGraphics* self)
 {
     assert(self && "self must not be NULL");
-
+    
     Scene* scene = self->m_scene;
     Camera* camera = Scene_getCamera(scene);
     float scale = Camera_getWorldToViewScale(camera);
