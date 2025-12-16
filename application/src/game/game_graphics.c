@@ -10,6 +10,7 @@
 #include "game/input.h"
 #include "game/scene.h"
 #include "game/game_config.h"
+#include "game/game_editor.h"
 
 GameGraphics* GameGraphics_create(Scene* scene)
 {
@@ -82,7 +83,7 @@ void GameGraphics_update(GameGraphics* self)
         return;
     }
 
-    if (input->mouse.leftPressed)
+    if (input->mouse.leftPressed || g_gameEditor.AddingObject)
     {
         for (int i = 0; i < GAME_GRID_SIZE; i++)
         {
@@ -91,18 +92,75 @@ void GameGraphics_update(GameGraphics* self)
                 AABB* cellAABB = &(self->m_cells[i][j]);
                 if (AABB_containsPoint(cellAABB, mouseWorldPos))
                 {
+                    if (g_gameEditor.AddingObject)
+                    {
+                        g_gameEditor.AddingObject->CellX = j;
+                        g_gameEditor.AddingObject->CellY = i;
+
+                        if (input->mouse.leftPressed)
+                        {
+
+                            int indexToAdd = 0;
+                            switch (g_gameEditor.AddingObject->Type)
+                            {
+                            case RABBIT:
+                                if (RABBIT_COUNT == MAX_RABBITS)
+                                {
+                                    indexToAdd = -1;
+                                    break;
+                                }
+
+                                indexToAdd = RABBIT_COUNT;
+                                RABBIT_COUNT += 1;
+                                break;
+                            case FOX:
+                                if (FOX_COUNT == MAX_FOXES)
+                                {
+                                    indexToAdd = -1;
+                                    break;
+                                }
+
+                                indexToAdd = MAX_RABBITS + FOX_COUNT;
+                                FOX_COUNT += 1;
+                                break;
+                            case MUSHROOM:
+                                if (MUSHROOM_COUNT == MAX_MUSHROOMS)
+                                {
+                                    indexToAdd = -1;
+                                    break;
+                                }
+
+                                indexToAdd = MAX_RABBITS + MAX_FOXES + MUSHROOM_COUNT;
+                                MUSHROOM_COUNT += 1;
+                                break;
+                            default: break;
+                            }
+
+                            if (indexToAdd < 0)
+                            {
+                                printf("\nCannot add more of this object\n");
+                                break;
+                            }
+
+                            g_gameConfig.Core->Rabbits[indexToAdd] = *g_gameEditor.AddingObject;
+                            g_gameEditor.AddingObject = NULL;
+                        }
+                    }
+
                     self->m_selectedRowIndex = i;
                     self->m_selectedColIndex = j;
                 }
             }
         }
     }
+
+
 }
 
 void GameGraphics_render(GameGraphics* self)
 {
     assert(self && "self must not be NULL");
-    
+
     Scene* scene = self->m_scene;
     Camera* camera = Scene_getCamera(scene);
     float scale = Camera_getWorldToViewScale(camera);
@@ -126,9 +184,22 @@ void GameGraphics_render(GameGraphics* self)
         }
     }
 
+    if (g_gameConfig.isEditing && g_gameEditor.AddingObject)
+    {
+        self->RabbitCount += 1;
+    }
+
     for (int x = 0; x < self->RabbitCount; x++)
     {
-        Rabbit* l_Rabb = &self->RabbitsToRender[x];
+        Rabbit* l_Rabb;
+        if (x == self->RabbitCount - 1)
+        {
+            l_Rabb = g_gameEditor.AddingObject;
+        }
+        else
+        {
+            l_Rabb = &self->RabbitsToRender[x];
+        }
 
         if (!l_Rabb) continue;
 
@@ -152,11 +223,20 @@ void GameGraphics_render(GameGraphics* self)
             Rabbit_getAnchorAngAngleFromDirection(l_Rabb->Direction, &l_Anchor, &l_Angle);
         }
 
+        SpriteGroup_setColorModFloat(l_Rabb->RabbitSprite, 1, 1, 1);
+        if (x == self->RabbitCount)
+        {
+            SpriteGroup_setOpacityFloat(l_Rabb->RabbitSprite, .5f);
+        }
+        else
+        {
+            SpriteGroup_setOpacityFloat(l_Rabb->RabbitSprite, 1);
+        }
         SpriteGroup_renderRotated(l_Rabb->RabbitSprite, l_Rabb == (self->Selected), &l_Rect, l_Anchor, l_Angle, 0.9f);
 
         if (l_Rabb == (self->Selected))
         {
-            SpriteGroup_setColorModFloat(l_Rabb->Type == FOX ? self->HoverSpriteFox : self->HoverSprite, 1.f, 209.f/255.f, 145.f / 255.f);
+            SpriteGroup_setColorModFloat(l_Rabb->Type == FOX ? self->HoverSpriteFox : self->HoverSprite, 1.f, 209.f / 255.f, 145.f / 255.f);
 
             SpriteGroup_renderRotated(l_Rabb->Type == FOX ? self->HoverSpriteFox : self->HoverSprite, 0, &l_Rect, l_Anchor, l_Angle, 1.f);
         }

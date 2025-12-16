@@ -7,6 +7,7 @@
 #include "game/scene.h"
 #include "game/game_config.h"
 #include "core/game_core.h"
+#include "game_editor.h"
 #include "game/game_settings.h"
 
 #define RABBIT_ARRAY g_gameConfig.Core->Rabbits
@@ -170,7 +171,9 @@ void Scene_render(Scene* self)
     {
         GameCore* gameCore = g_gameConfig.Core;
 
-        GAME_GRAPHICS_RENDER(self->m_gameGraphics, g_gameConfig.Core->Rabbits, RABBIT_COUNT + FOX_COUNT + MUSHROOM_COUNT);
+        GAME_GRAPHICS_RENDER(self->m_gameGraphics,
+            g_gameConfig.isEditing ? GameEditor_buildUsableArray(g_gameConfig.Core->Rabbits) : g_gameConfig.Core->Rabbits,
+            RABBIT_COUNT + FOX_COUNT + MUSHROOM_COUNT);
         GameGraphics_render(self->m_gameGraphics);
     }
 

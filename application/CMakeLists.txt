@@ -46,7 +46,11 @@ target_sources(${NAME} PRIVATE
     "src/resolution/resoudre.c" 
     "src/game/audio/audio_manager.h"
     "src/game/audio/audio_manager.c"
- "src/game/ui/editor_ui_manager.h" "src/game/ui/editor_ui_manager.c")
+    "src/game/ui/editor_ui_manager.h" 
+    "src/game/ui/editor_ui_manager.c" 
+    "src/game/game_editor.h"
+    "src/game/game_editor.c"
+)
 
 find_library(MATH_LIBRARY m)
 if(MATH_LIBRARY)

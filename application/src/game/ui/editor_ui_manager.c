@@ -5,6 +5,7 @@
 #include "game/core/game_core.h"
 #include "windows.h"
 #include <stdio.h>
+#include "game/game_editor.h"
 
 static void EditorUI_levelButtonClick(void* selectable)
 {
@@ -64,12 +65,29 @@ static void EditorUI_goBack(void* selectable)
     EditorUI* l_Ui = (EditorUI*)UISelectable_getUserData(selectable);
 
     assert(l_Ui);
-
+    l_Ui->MainManager->m_nextAction = GAME_UI_ACTION_OPEN_TITLE;
 }
 
 static void EditorUI_onAddButtonClicked(void* selectable)
 {
+    EditorUI* l_UI = (EditorUI*)UISelectable_getUserData(selectable);
+    assert(l_UI);
 
+    EEditorAction l_Action = (EEditorAction)UISelectable_getUserId(selectable);
+
+    switch (l_Action)
+    {
+    case EDITOR_ACTION_ADD_RABBIT:
+        g_gameEditor.AddingObject = Rabbit_create(NULL, 0, 0);
+        break;
+    case EDITOR_ACTION_ADD_FOX:
+        g_gameEditor.AddingObject = Fox_create(NULL, 0, 0, RABBIT_EAST);
+        break;
+    case EDITOR_ACTION_ADD_MUSHROOM:
+        g_gameEditor.AddingObject = Mushroom_create(NULL, 0, 0);
+        break;
+    default: break;
+    }
 }
 
 void EditorUI_loadFiles(EditorUI* self)
@@ -246,6 +264,8 @@ EditorUI* EditorUI_create(Scene* scene, GameUIManager* titlePage)
     self->ActionsButtons = calloc(EDITOR_ACTION_COUNT, sizeof(UIButton*));
     assert(self->ActionsButtons);
 
+    self->EditFocusManager = UIFocusManager_create();
+
     const char* texts[EDITOR_ACTION_COUNT] = {
         "Add rabbit",
         "Add fox",
@@ -264,7 +284,7 @@ EditorUI* EditorUI_create(Scene* scene, GameUIManager* titlePage)
 
         UIGridLayout_addObject(self->ButtonsLayout, l_Button, x, 0, 1, 1);
 
-        UIFocusManager_addSelectable(self->FocusManager, l_Button);
+        UIFocusManager_addSelectable(self->EditFocusManager, l_Button);
 
         self->ActionsButtons[x] = l_Button;
     }
@@ -291,7 +311,14 @@ void EditorUI_destroy(EditorUI* editorUI)
 
 void EditorUI_update(EditorUI* self, UIInput* input)
 {
-    UIFocusManager_update(self->FocusManager, input);
+    if (self->State == SELECTING_LEVEL)
+    {
+        UIFocusManager_update(self->FocusManager, input);
+    }
+    else
+    {
+        UIFocusManager_update(self->EditFocusManager, input);
+    }
 
     UIObject_setEnabled(self->LevelListLayout, self->State == SELECTING_LEVEL);
     

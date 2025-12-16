@@ -114,3 +114,5 @@ Vec2 Fox_getDirection(Rabbit* rabbit);
 void Rabbit_getAnchorAngAngleFromDirection(ERabbitDirection direction, Vec2* anchor, float* angle);
 
 Rabbit* Mushroom_create(GameCore* scene, int cellX, int cellY); 
+
+//bool Rabbit_canBePlaced(GameCore* scene, int cellX, int cellY);

@@ -36,6 +36,7 @@ typedef struct EditorUI
     Scene* Scene;
     GameUIManager* MainManager;
     UIFocusManager* FocusManager;
+    UIFocusManager* EditFocusManager;
 
     UICanvas* MainCanvas;
     UIGridLayout* LevelListLayout;

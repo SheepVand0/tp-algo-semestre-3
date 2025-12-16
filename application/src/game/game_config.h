@@ -10,7 +10,6 @@
 #include "common/common.h"
 #include "game/core/game_core.h"
 
-
 typedef struct GameConfig
 {
     GameScene nextScene;
@@ -25,6 +24,7 @@ typedef struct GameConfig
     AudioManager* Audio;
 
     SAudio* LarryAudio;
+
 } GameConfig;
 
 void GameConfig_init();

@@ -123,6 +123,9 @@ void GameCore_initNextGame(GameCore* gameCore)
         return;
     }
 
+    free(g_gameConfig.Settings);
+    g_gameConfig.Settings = GameSettings_create();
+
     for (int x = 0; x < RABBIT_COUNT; x++)
     {
         gameCore->Rabbits[x] = *Rabbit_create(gameCore, x + 2, GAME_GRID_SIZE / 2);
