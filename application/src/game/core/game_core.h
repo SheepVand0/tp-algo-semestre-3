@@ -11,7 +11,6 @@
 #include "game/input.h"
 #include "../audio/audio_manager.h"
 
-#define GAME_GRID_SIZE 5
 #define MAX_RABBITS 10
 #define MAX_FOXES 5
 #define MAX_MUSHROOMS 10
@@ -115,4 +114,6 @@ void Rabbit_getAnchorAngAngleFromDirection(ERabbitDirection direction, Vec2* anc
 
 Rabbit* Mushroom_create(GameCore* scene, int cellX, int cellY); 
 
-//bool Rabbit_canBePlaced(GameCore* scene, int cellX, int cellY);
+bool Rabbit_canBePlacedByLoc(GameCore* scene, int cellX, int cellY);
+
+bool Rabbit_canBePlaced(GameCore* scene, Rabbit* rabb);

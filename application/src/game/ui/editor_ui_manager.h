@@ -26,6 +26,7 @@ typedef enum EEditorAction
     EDITOR_ACTION_ADD_RABBIT,
     EDITOR_ACTION_ADD_FOX,
     EDITOR_ACTION_ADD_MUSHROOM,
+    EDITOR_ACTION_PLAY,
     EDITOR_ACTION_SAVE,
     EDITOR_ACTION_LEAVE,
     EDITOR_ACTION_COUNT
@@ -53,11 +54,15 @@ typedef struct EditorUI
 
     UILabel* PageText;
 
+    UIList* LoadPlayList;
+
     //////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////////
 
     UIGridLayout* LevelEditLayout;
     UIGridLayout* ButtonsLayout;
+
+    UIList* TimeList;
 
     UIButton** ActionsButtons;
 
@@ -81,4 +86,4 @@ void EditorUI_destroy(EditorUI* editorUI);
 
 void EditorUI_update(EditorUI* self, UIInput* input);
 
-void EditorUI_loadFiles(EditorUI* self);
+int EditorUI_loadFiles(EditorUI* self);

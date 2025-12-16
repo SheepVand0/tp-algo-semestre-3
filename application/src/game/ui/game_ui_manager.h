@@ -37,8 +37,11 @@ typedef struct GameUIManager
     EditorUI* m_editorPage;
     GameUIAction m_nextAction;
 
+    UIFocusManager* FocusManager;
+
     UILabel* m_timeText;
     UIGridLayout* m_timeTextLayout;
+    UIButton* LeaveGameButton;
 
     UIGridLayout* m_lostTextLayout;
     UILabel* m_lostText;
@@ -51,3 +54,5 @@ void GameUIManager_render(GameUIManager* self);
 void GameUIManager_update(GameUIManager* self, UIInput* input);
 
 char* GameUIManager_formatTime(float time);
+
+SDL_Color GameUIManager_getColorByTime(float time);

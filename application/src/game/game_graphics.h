@@ -12,7 +12,7 @@
 
 typedef struct Scene Scene;
 
-#define GAME_GRID_SIZE 10
+#define GAME_GRID_SIZE 5
 
 #define GAME_GRAPHICS_RENDER(gameGraphics, rabbits, rabbcount) gameGraphics->RabbitsToRender = rabbits; \
 gameGraphics->RabbitCount = rabbcount; \
@@ -44,6 +44,8 @@ typedef struct GameGraphics
 
     SpriteGroup* HoverSprite;
     SpriteGroup* HoverSpriteFox;
+
+    SpriteGroup* HoleSprite;
 
     bool m_enabled;
 } GameGraphics;

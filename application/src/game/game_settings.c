@@ -9,6 +9,8 @@ GameSettings* GameSettings_create()
     l_Settings->RabbitCount = 4;
     l_Settings->FoxCount = 1;
     l_Settings->MushroomCount = 5;
+    l_Settings->TotalTime = 10.f;
+    l_Settings->GridSize = 10;
 
     return l_Settings;
 }

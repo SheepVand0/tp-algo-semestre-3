@@ -24,7 +24,7 @@ typedef struct GameConfig
     AudioManager* Audio;
 
     SAudio* LarryAudio;
-
+    SAudio* AmongUsAudio;
 } GameConfig;
 
 void GameConfig_init();

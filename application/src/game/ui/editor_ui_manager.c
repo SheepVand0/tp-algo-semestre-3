@@ -6,16 +6,46 @@
 #include "windows.h"
 #include <stdio.h>
 #include "game/game_editor.h"
+#include "game/game_loader.h"
 
 static void EditorUI_levelButtonClick(void* selectable)
 {
     EditorUI* l_Ui = (EditorUI*)UISelectable_getUserData(selectable);
     assert(l_Ui);
 
-    //l_Ui->MainManager->m_nextAction = GAME_UI_ACTION_OPEN_TITLE;
-    l_Ui->EditingFile = l_Ui->FileNames[UISelectable_getUserId(selectable)];
-    l_Ui->State = EDITING_LEVEL;
-    l_Ui->MainManager->m_nextAction = GAME_UI_ACTION_START_EDITOR;
+    //printf("\nFirst filename: %s\n", l_Ui->FileNames[0]);
+    //printf("\nSelected: %s\n", l_Ui->EditingFile);
+
+    int edit = UIList_getSelectedItem(l_Ui->LoadPlayList);
+
+    if (edit == 0)
+    {
+        l_Ui->EditingFile = calloc(260, sizeof(char));
+        assert(l_Ui->EditingFile);
+        strcpy(l_Ui->EditingFile, l_Ui->FileNames[UISelectable_getUserId(selectable)]);
+        l_Ui->State = EDITING_LEVEL;
+        l_Ui->MainManager->m_nextAction = GAME_UI_ACTION_START_EDITOR;
+
+        char* l_Path = calloc(260, sizeof(char));
+        assert(l_Path);
+        sprintf(l_Path, "../../../levels/%s", l_Ui->EditingFile);
+
+        GameLoader_loadGame(l_Path, false);
+
+        UIList_setSelectedItem(l_Ui->TimeList, (g_gameConfig.Settings->TotalTime - 10) / 25);
+    }
+    else
+    {
+        char* l_Path = calloc(260, sizeof(char));
+        assert(l_Path);
+        sprintf(l_Path, "../../../levels/%s", l_Ui->FileNames[UISelectable_getUserId(selectable)]);
+
+        l_Ui->MainManager->m_nextAction = GAME_UI_ACTION_START;
+
+        GameLoader_loadGame(l_Path, true);
+
+        g_gameConfig.Core->Remaining = g_gameConfig.Settings->TotalTime;
+    }
 }
 
 static void EditorUI_pageButtonClick(void* selectable)
@@ -45,17 +75,23 @@ static void EditorUI_newLevelButtonClick(void* selectable)
 
     EditorUI* self = (EditorUI*)UISelectable_getUserData(selectable);
 
-    WIN32_FIND_DATA fd;
-    HANDLE handle;
+    g_gameConfig.Settings->RabbitCount = 0;
+    g_gameConfig.Settings->MushroomCount = 0;
+    g_gameConfig.Settings->FoxCount = 0;
+    g_gameConfig.Settings->TotalTime = 60.f;
 
-    char path[1032] = "*.*";
+    GameCore_destroyGame(g_gameConfig.Core);
 
-    handle = FindFirstFileA(path, &fd);
-    BOOL l_Res = FindNextFileA(handle, &fd);
+    char* l_Path = calloc(260, sizeof(char));
+    assert(l_Path);
 
+    int fileCount = EditorUI_loadFiles(self);
+
+    sprintf(l_Path, "../../../levels/level%d.txt", fileCount);
+
+    GameLoader_saveGame(l_Path);
 
     EditorUI_loadFiles(self);
-
 }
 
 static void EditorUI_goBack(void* selectable)
@@ -86,11 +122,27 @@ static void EditorUI_onAddButtonClicked(void* selectable)
     case EDITOR_ACTION_ADD_MUSHROOM:
         g_gameEditor.AddingObject = Mushroom_create(NULL, 0, 0);
         break;
+    case EDITOR_ACTION_PLAY:
+        g_gameConfig.Core->State = g_gameConfig.Core->State == PLAYING ? NONE : PLAYING;
+        break;
+    case EDITOR_ACTION_SAVE:
+        char* l_Path = calloc(1024, sizeof(char));
+        assert(l_Path);
+
+        sprintf(l_Path, "../../../levels/%s", l_UI->EditingFile);
+        GameLoader_saveGame(l_Path);
+        break;
+    case EDITOR_ACTION_LEAVE:
+        g_gameConfig.isEditing = false;
+        g_gameConfig.inLevel = false;
+
+        l_UI->MainManager->m_nextAction = GAME_UI_ACTION_OPEN_TITLE;
+        break;
     default: break;
     }
 }
 
-void EditorUI_loadFiles(EditorUI* self)
+int EditorUI_loadFiles(EditorUI* self)
 {
     printf("premiere ligne de code");
     int loading = 1;
@@ -100,21 +152,27 @@ void EditorUI_loadFiles(EditorUI* self)
 
     char path[1032] = "../../../levels/*.*";
 
+    if (self->FileNames)
+        free(self->FileNames);
+
     self->FileNames = calloc(LEVEL_LIST_MAX_BUTTON_COUNT, sizeof(char*));
     assert(self->FileNames);
 
     handle = FindFirstFile(path, &fd);
     BOOL l_Res = FindNextFileA(handle, &fd);
 
+    int fileCount = 0;
+
     for (int x = 0; x < LEVEL_LIST_MAX_BUTTON_COUNT * self->CurrentPage; x++)
     {
         if (l_Res = FindNextFile(handle, &fd))
         {
+            fileCount++;
             continue;
         }
         else
         {
-            if (self->CurrentPage)
+            if (self->CurrentPage && x == 0)
             {
                 self->CurrentPage -= 1;
                 EditorUI_loadFiles(self);
@@ -127,15 +185,23 @@ void EditorUI_loadFiles(EditorUI* self)
     {
         if (l_Res = FindNextFile(handle, &fd))
         {
+            fileCount++;
             UIObject_setEnabled(self->ExistingLevelsButtons[x], true);
             UIButton_setLabelString(self->ExistingLevelsButtons[x], fd.cFileName);
-            self->FileNames[x] = fd.cFileName;
+            self->FileNames[x] = calloc(260, sizeof(char));
+            assert(self->FileNames[x]);
+            strcpy(self->FileNames[x], fd.cFileName);
+            //self->FileNames[x] = fd.cFileName;
+            
         }
         else
         {
             UIObject_setEnabled(self->ExistingLevelsButtons[x], false);
         }
     }
+
+    printf("\nFilename: %s\n", self->FileNames[0]);
+    return fileCount;
 }
 
 
@@ -159,9 +225,9 @@ EditorUI* EditorUI_create(Scene* scene, GameUIManager* titlePage)
 
     l_UI->LevelEditLayout = NULL;
 
-    l_UI->LevelListLayout = UIGridLayout_create("level-list-layout", LEVEL_LIST_MAX_BUTTON_COUNT + 4, 1);
+    l_UI->LevelListLayout = UIGridLayout_create("level-list-layout", LEVEL_LIST_MAX_BUTTON_COUNT + 5, 1);
     UIGridLayout_setAnchor(l_UI->LevelListLayout, Vec2_anchor_center);
-    UIGridLayout_setColumnSizes(l_UI->LevelListLayout, 100.f);
+    UIGridLayout_setColumnSizes(l_UI->LevelListLayout, 150.f);
     UIGridLayout_setRowSizes(l_UI->LevelListLayout, 25.f);
     UIGridLayout_setRowSpacings(l_UI->LevelListLayout, 2.f);
 
@@ -226,12 +292,21 @@ EditorUI* EditorUI_create(Scene* scene, GameUIManager* titlePage)
     UISelectable_setUserData(self->CreateNewLevelButton, self);
     UISelectable_setUserId(self->CreateNewLevelButton, 0);
     UIButton_setOnClickCallback(self->CreateNewLevelButton, EditorUI_newLevelButtonClick);
-
+        
     UIFocusManager_addSelectable(self->FocusManager, self->CreateNewLevelButton);
 
     UIGridLayout_addObject(self->LevelListLayout, self->CreateNewLevelButton, LEVEL_LIST_MAX_BUTTON_COUNT + 2, 0, 1, 1);
 
     UIObject_setParent(self->LevelListLayout, titlePage->m_canvas);
+
+    self->LoadPlayList = UIList_create("play-edit-list", AssetManager_getFont(assets, FONT_NORMAL), 2, UI_LIST_CONFIG_CYCLE | UI_LIST_CONFIG_AUTO_NAVIGATION);
+    UIList_setLabelString(self->LoadPlayList, "Edit or play");
+    UIList_setItemString(self->LoadPlayList, 0, "edit");
+    UIList_setItemString(self->LoadPlayList, 1, "play");
+
+    UIFocusManager_addSelectable(self->FocusManager, self->LoadPlayList);
+
+    UIGridLayout_addObject(self->LevelListLayout, self->LoadPlayList, LEVEL_LIST_MAX_BUTTON_COUNT + 3, 0, 1, 1);
 
     self->BackButon = UIButton_create("back-button", AssetManager_getFont(assets, FONT_NORMAL));
     UIButton_setLabelString(self->BackButon, "Back");
@@ -241,7 +316,7 @@ EditorUI* EditorUI_create(Scene* scene, GameUIManager* titlePage)
 
     UIFocusManager_addSelectable(self->FocusManager, self->BackButon);
 
-    UIGridLayout_addObject(self->LevelListLayout, self->BackButon, LEVEL_LIST_MAX_BUTTON_COUNT + 3, 0, 1, 1);
+    UIGridLayout_addObject(self->LevelListLayout, self->BackButon, LEVEL_LIST_MAX_BUTTON_COUNT + 4, 0, 1, 1);
 
     EditorUI_loadFiles(self);
 
@@ -254,22 +329,37 @@ EditorUI* EditorUI_create(Scene* scene, GameUIManager* titlePage)
     UIGridLayout_setAnchor(self->LevelEditLayout, Vec2_anchor_center);
     UIObject_setParent(self->LevelEditLayout, titlePage->m_canvas);
 
-    self->ButtonsLayout = UIGridLayout_create("add-buttons-layout", EDITOR_ACTION_COUNT, 1);
+    self->ButtonsLayout = UIGridLayout_create("add-buttons-layout", EDITOR_ACTION_COUNT + 1, 1);
     UIGridLayout_setColumnSizes(self->ButtonsLayout, 100.f);
     UIGridLayout_setRowSizes(self->ButtonsLayout, 25.f);
     UIGridLayout_setRowSpacings(self->ButtonsLayout, 5.f);
 
     UIGridLayout_addObject(self->LevelEditLayout, self->ButtonsLayout, 0, 0, 1, 1);
 
+
+    self->EditFocusManager = UIFocusManager_create();
+
+    self->TimeList = UIList_create("time-list", AssetManager_getFont(assets, FONT_NORMAL), 10, UI_LIST_CONFIG_CYCLE | UI_LIST_CONFIG_AUTO_NAVIGATION);
+    UIList_setLabelString(self->TimeList, "Time:");
+
+    for (int x = 0; x < 10; x++)
+    {
+        UIList_setItemString(self->TimeList, x, GameUIManager_formatTime(10.f + x * 25));
+    }
+
+    UIFocusManager_addSelectable(self->EditFocusManager, self->TimeList);
+
+    UIGridLayout_addObject(self->ButtonsLayout, self->TimeList, 0, 0, 1, 1);
+
     self->ActionsButtons = calloc(EDITOR_ACTION_COUNT, sizeof(UIButton*));
     assert(self->ActionsButtons);
 
-    self->EditFocusManager = UIFocusManager_create();
 
     const char* texts[EDITOR_ACTION_COUNT] = {
         "Add rabbit",
         "Add fox",
         "Add mushroom",
+        "Play",
         "Save",
         "Leave"
     };
@@ -282,7 +372,7 @@ EditorUI* EditorUI_create(Scene* scene, GameUIManager* titlePage)
         UISelectable_setUserId(l_Button, x);
         UIButton_setOnClickCallback(l_Button, EditorUI_onAddButtonClicked);
 
-        UIGridLayout_addObject(self->ButtonsLayout, l_Button, x, 0, 1, 1);
+        UIGridLayout_addObject(self->ButtonsLayout, l_Button, x + 1, 0, 1, 1);
 
         UIFocusManager_addSelectable(self->EditFocusManager, l_Button);
 
@@ -299,13 +389,20 @@ void EditorUI_destroy(EditorUI* editorUI)
     UIButton_destroy(editorUI->BackButon);
     UIButton_destroy(editorUI->LevelListNextPage);
     UIButton_destroy(editorUI->LevelListPreviousPage);
-    /*UIButton_destroy(editorUI->RabbitButton);
-    UIButton_destroy(editorUI->FoxButton);
-    UIButton_destroy(editorUI->MushroomButton);*/
+
+    for (int x = 0; x < LEVEL_LIST_MAX_BUTTON_COUNT; x++)
+    {
+        UIButton_destroy(editorUI->ExistingLevelsButtons[x]);
+    }
+
+    for (int x = 0; x < EDITOR_ACTION_COUNT; x++)
+    {
+        UIButton_destroy(editorUI->ActionsButtons[x]);
+    }
 
     UIGridLayout_destroy(editorUI->PageButtonsLayout);
     UIGridLayout_destroy(editorUI->LevelListLayout);
-    //UIGridLayout_destroy(editorUI->LevelEditLayout);
+    UIGridLayout_destroy(editorUI->LevelEditLayout);
     free(editorUI);
 }
 
@@ -318,6 +415,7 @@ void EditorUI_update(EditorUI* self, UIInput* input)
     else
     {
         UIFocusManager_update(self->EditFocusManager, input);
+        g_gameConfig.Settings->TotalTime = 10 + (UIList_getSelectedItem(self->TimeList) * 25);
     }
 
     UIObject_setEnabled(self->LevelListLayout, self->State == SELECTING_LEVEL);

@@ -6,6 +6,10 @@ typedef struct GameSettings
     int FoxCount;
     int MushroomCount;
 
+    float TotalTime;
+
+    int GridSize;
+
 } GameSettings;
 
 GameSettings* GameSettings_create();

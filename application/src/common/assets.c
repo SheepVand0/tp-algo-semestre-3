@@ -20,6 +20,10 @@ void Game_addAssets(AssetManager* assets)
     );
 
     AssetManager_addSpriteSheet(
+        assets, SPRITE_ELECTRICIAN, "atlas/electrician", "atlas/electrician_desc"
+    );
+
+    AssetManager_addSpriteSheet(
         assets, SPRITE_UI_SELECT_BOX, "atlas/ui_select_box", "atlas/ui_select_box_desc"
     );
 

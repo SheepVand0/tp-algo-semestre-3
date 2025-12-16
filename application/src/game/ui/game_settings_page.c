@@ -70,6 +70,8 @@ GameSettingsPage* GameSettingsPage_create(Scene* scene, GameUIManager* manager)
     UILabel_setColor(label, g_colors.orange2);
     UIGridLayout_addObject(layout, label, 0, 0, 1, 1);
 
+    
+
     font = AssetManager_getFont(assets, FONT_NORMAL);
 
     const char *toggleItems[] = { "OFF", "ON" };

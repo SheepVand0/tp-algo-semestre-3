@@ -1,0 +1,9 @@
+{
+    "pixelArt": false,
+    "rectangles": [
+        {"x":  0, "y": 0, "w": 712, "h": 614}
+    ],
+    "groups": [
+        {"name": "electrician", "frames": [0]}
+    ]
+}

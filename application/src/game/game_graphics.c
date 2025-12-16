@@ -11,6 +11,7 @@
 #include "game/scene.h"
 #include "game/game_config.h"
 #include "game/game_editor.h"
+#include "game/core/game_core.h"
 
 GameGraphics* GameGraphics_create(Scene* scene)
 {
@@ -30,10 +31,15 @@ GameGraphics* GameGraphics_create(Scene* scene)
     self->HoverSprite = SpriteSheet_getGroupByName(spriteSheet, "border");
     AssertNew(self->HoverSprite);
 
+    spriteSheet = AssetManager_getSpriteSheet(assets, SPRITE_GAME);
+    self->HoleSprite = SpriteSheet_getGroupByName(spriteSheet, "rabbit-hole");
+
     spriteSheet = AssetManager_getSpriteSheet(assets, SPRITE_UI_SELECT_BOX);
     AssertNew(spriteSheet);
     self->HoverSpriteFox = SpriteSheet_getGroupByName(spriteSheet, "select_box");
     AssertNew(self->HoverSpriteFox);
+
+    
 
     return self;
 }
@@ -92,58 +98,91 @@ void GameGraphics_update(GameGraphics* self)
                 AABB* cellAABB = &(self->m_cells[i][j]);
                 if (AABB_containsPoint(cellAABB, mouseWorldPos))
                 {
-                    if (g_gameEditor.AddingObject)
+                    if (g_gameConfig.Core->State != PLAYING)
                     {
-                        g_gameEditor.AddingObject->CellX = j;
-                        g_gameEditor.AddingObject->CellY = i;
 
-                        if (input->mouse.leftPressed)
+                        if (g_gameConfig.isEditing && input->mouse.leftPressed)
                         {
-
-                            int indexToAdd = 0;
-                            switch (g_gameEditor.AddingObject->Type)
+                            for (int x = MAX_RABBITS; x < MAX_RABBITS + FOX_COUNT; x++)
                             {
-                            case RABBIT:
-                                if (RABBIT_COUNT == MAX_RABBITS)
-                                {
-                                    indexToAdd = -1;
-                                    break;
-                                }
+                                Rabbit* l_Fox = &(g_gameConfig.Core->Rabbits[x]);
 
-                                indexToAdd = RABBIT_COUNT;
-                                RABBIT_COUNT += 1;
-                                break;
-                            case FOX:
-                                if (FOX_COUNT == MAX_FOXES)
+                                if (l_Fox->CellX == j && l_Fox->CellY == i)
                                 {
-                                    indexToAdd = -1;
-                                    break;
+                                    printf("directioning\n");
+                                    do
+                                    {
+                                        if (l_Fox->Direction == RABBIT_WEST)
+                                        {
+                                            l_Fox->Direction = RABBIT_NORTH;
+                                        }
+                                        else
+                                        {
+                                            l_Fox->Direction += 1;
+                                        }
+                                    } while (!Rabbit_canBePlaced(g_gameConfig.Core, l_Fox));
                                 }
-
-                                indexToAdd = MAX_RABBITS + FOX_COUNT;
-                                FOX_COUNT += 1;
-                                break;
-                            case MUSHROOM:
-                                if (MUSHROOM_COUNT == MAX_MUSHROOMS)
-                                {
-                                    indexToAdd = -1;
-                                    break;
-                                }
-
-                                indexToAdd = MAX_RABBITS + MAX_FOXES + MUSHROOM_COUNT;
-                                MUSHROOM_COUNT += 1;
-                                break;
-                            default: break;
                             }
+                        }
 
-                            if (indexToAdd < 0)
+                        if (g_gameEditor.AddingObject)
+                        {
+                            g_gameEditor.AddingObject->CellX = j;
+                            g_gameEditor.AddingObject->CellY = i;
+
+                            if (input->mouse.leftPressed)
                             {
-                                printf("\nCannot add more of this object\n");
-                                break;
-                            }
+                                if (!Rabbit_canBePlaced(g_gameConfig.Core, g_gameEditor.AddingObject))
+                                {
+                                    printf("\nCannot add here\n");
+                                    break;
+                                }
 
-                            g_gameConfig.Core->Rabbits[indexToAdd] = *g_gameEditor.AddingObject;
-                            g_gameEditor.AddingObject = NULL;
+                                int indexToAdd = 0;
+                                switch (g_gameEditor.AddingObject->Type)
+                                {
+                                case RABBIT:
+                                    if (RABBIT_COUNT == MAX_RABBITS)
+                                    {
+                                        indexToAdd = -1;
+                                        break;
+                                    }
+
+                                    indexToAdd = RABBIT_COUNT;
+                                    RABBIT_COUNT += 1;
+                                    break;
+                                case FOX:
+                                    if (FOX_COUNT == MAX_FOXES)
+                                    {
+                                        indexToAdd = -1;
+                                        break;
+                                    }
+
+                                    indexToAdd = MAX_RABBITS + FOX_COUNT;
+                                    FOX_COUNT += 1;
+                                    break;
+                                case MUSHROOM:
+                                    if (MUSHROOM_COUNT == MAX_MUSHROOMS)
+                                    {
+                                        indexToAdd = -1;
+                                        break;
+                                    }
+
+                                    indexToAdd = MAX_RABBITS + MAX_FOXES + MUSHROOM_COUNT;
+                                    MUSHROOM_COUNT += 1;
+                                    break;
+                                default: break;
+                                }
+
+                                if (indexToAdd < 0)
+                                {
+                                    printf("\nCannot add more of this object\n");
+                                    break;
+                                }
+
+                                g_gameConfig.Core->Rabbits[indexToAdd] = *g_gameEditor.AddingObject;
+                                g_gameEditor.AddingObject = NULL;
+                            }
                         }
                     }
 
@@ -153,8 +192,6 @@ void GameGraphics_update(GameGraphics* self)
             }
         }
     }
-
-
 }
 
 void GameGraphics_render(GameGraphics* self)
@@ -179,20 +216,23 @@ void GameGraphics_render(GameGraphics* self)
             bool isSelected = false;
 
             SDL_Color color = isSelected ? g_colors.orange9 : g_colors.gray8;
+
             SDL_SetRenderDrawColor(g_renderer, color.r, color.g, color.b, 255);
             SDL_RenderFillRect(g_renderer, &rect);
+
+            if (i == GAME_GRID_SIZE / 2 && j == GAME_GRID_SIZE / 2 || i == 0 && j == 0 || j == 0 && i == GAME_GRID_SIZE - 1 || i == 0 && j == GAME_GRID_SIZE - 1 || (i == GAME_GRID_SIZE - 1 && j == GAME_GRID_SIZE - 1))
+            {
+                SpriteGroup_render(self->HoleSprite, 0, &rect, Vec2_anchor_north_west, 1.0f);
+            }
         }
     }
 
-    if (g_gameConfig.isEditing && g_gameEditor.AddingObject)
-    {
-        self->RabbitCount += 1;
-    }
+    bool l_Cond = g_gameConfig.isEditing && g_gameEditor.AddingObject;
 
-    for (int x = 0; x < self->RabbitCount; x++)
+    for (int x = 0; x < self->RabbitCount + l_Cond; x++)
     {
         Rabbit* l_Rabb;
-        if (x == self->RabbitCount - 1)
+        if (x == self->RabbitCount)
         {
             l_Rabb = g_gameEditor.AddingObject;
         }
@@ -234,7 +274,7 @@ void GameGraphics_render(GameGraphics* self)
         }
         SpriteGroup_renderRotated(l_Rabb->RabbitSprite, l_Rabb == (self->Selected), &l_Rect, l_Anchor, l_Angle, 0.9f);
 
-        if (l_Rabb == (self->Selected))
+        if ((l_Rabb == (self->Selected) || self->Selected ? l_Rabb->CellX == self->Selected->CellX && l_Rabb->CellY == self->Selected->CellY : false) && g_gameConfig.Core->State == PLAYING)
         {
             SpriteGroup_setColorModFloat(l_Rabb->Type == FOX ? self->HoverSpriteFox : self->HoverSprite, 1.f, 209.f / 255.f, 145.f / 255.f);
 

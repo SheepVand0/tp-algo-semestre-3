@@ -166,6 +166,7 @@ void GameTitlePage_update(GameTitlePage* self, UIInput* input)
     switch (self->m_nextAction)
     {
     case GAME_UI_ACTION_START:
+        GameCore_initNextGame(g_gameConfig.Core);
         self->m_manager->m_nextAction = GAME_UI_ACTION_START;
         break;
     case GAME_UI_ACTION_OPEN_SETTINGS:
