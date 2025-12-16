@@ -3,39 +3,56 @@
 #include "settings.h"
 #include "gridinfo.h"
 
-typedef struct HashEntry HashEntry;
-struct HashEntry
-{
-    HashEntry* next;
-    int* key;
-    GridInfo* grid;
-};
+//typedef struct HashEntry HashEntry;
+//struct HashEntry
+//{
+//    HashEntry* next;
+//    int* key;
+//    GridInfo* grid;
+//};
+//
+//typedef struct HashMap
+//{
+//    int size;
+//    int capacity;
+//    HashEntry** entries;
+//} HashMap;
 
-typedef struct HashMap
+typedef struct GameHashmapEntry
 {
-    int size;
-    int capacity;
-    HashEntry** entries;
-} HashMap;
+    //int nbrCoups;
+    GameCore prevState;
+    GameCore currState;
+} GameHashmapEntry;
+
+typedef struct GameHashmap
+{
+    GameHashmapEntry* m_entries;
+    size_t* m_idMap;
+    size_t m_capacity;
+    size_t m_size;
+} GameHashmap;
+
+
 
 /// @brief Crée une table de hachage vide.
 /// 
 /// @param capacity la capacité de la table.
 /// @return La table de hachage créée.
-HashMap* HashMap_New(int capacity);
+GameHashmap* HashMap_New(int capacity);
 
 /// @brief Détruit une table de hachage.
 /// Les clés sont automatiquement libérées mais les données associées ne le sont pas.
 /// L'utilisateur doit donc parcourir le dictionnaire pour les libérer avant d'appeler cette méthode.
 /// 
 /// @param self la table de hachage.
-void HashMap_destroy(HashMap* self);
+void HashMap_destroy(GameHashmap* self);
 
 /// @brief Renvoie la taille d'une table de hachage.
 /// 
 /// @param self la table de hachage.
 /// @return La taille de la table de hachage.
-int HashMap_GetSize(HashMap* self);
+int HashMap_GetSize(GameHashmap* self);
 
 /// @brief Renvoie la grid associée à une clé dans la table de hachage
 /// ou NULL si la clé n'est pas présente.
@@ -43,7 +60,7 @@ int HashMap_GetSize(HashMap* self);
 /// @param self la table de hachage.
 /// @param key la clé.
 /// @return la valeur associée à la clé.
-GridInfo* HashMap_Get(HashMap* self, int* key);
+//GridInfo* HashMap_Get(GameHashmap* self, int* key);
 
 /// @brief Ajoute un couple clé/valeur dans une table si la clé n'est pas présente,
 /// sinon modifie la valeur associée à une clé.
@@ -54,7 +71,7 @@ GridInfo* HashMap_Get(HashMap* self, int* key);
 /// @param value la valeur associée à la clé.
 /// @return Si la clé était déjà présente dans la table, renvoie la valeur précédente
 /// (pour que l'utilisateur puisse libérer la mémoire), sinon renvoie NULL.
-void* HashMap_Insert(HashMap* self, int* key, GridInfo* grid);
+void HashMap_Insert(GameHashmap* map, GameHashmapEntry value);
 
 /// @brief Supprime une clé dans une table de hachage.
 /// Cette fonction est sans effet si la clé n'est pas présente.
@@ -63,4 +80,8 @@ void* HashMap_Insert(HashMap* self, int* key, GridInfo* grid);
 /// @param key la clé.
 /// @return Si la clé est présente dans la table, renvoie la valeur associée
 /// (pour que l'utilisateur puisse libérer la mémoire), sinon renvoie NULL.
-void* HashMap_Remove(HashMap* self, int* key);
+//void* HashMap_Remove(GameHashmap* self, int* key);
+
+
+/// @brief double la taille de la hashmap
+GameHashmap* HashMap_Resize(GameHashmap* map);
