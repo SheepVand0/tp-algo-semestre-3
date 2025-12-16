@@ -73,7 +73,7 @@ void GameCore_update(GameCore* gameCore, Scene* scene, int selectedX, int select
             }
         }
 
-        if (validRabbCount == RABBIT_COUNT)
+        if (validRabbCount == RABBIT_COUNT && !g_gameConfig.isEditing)
         {
             gameCore->State = WINNING;
             gameCore->CurrentAnimationTime = 6.f;
@@ -196,7 +196,7 @@ EObjectType GameCore_getObjTypeAtLocation(GameCore* gameCore, int cellx, int y)
     {
         Rabbit* l_Rabb = &gameCore->Rabbits[x];
 
-        if (l_Rabb->Type == NONE) return NO_OBJECT;
+        if (l_Rabb->Type == NONE) continue;
 
         bool l_Other = false;
         if (l_Rabb->Type == FOX)
@@ -373,8 +373,8 @@ bool Rabbit_move(Rabbit* rabbit, GameCore* gameCore, int targetX, int targetY)
 
         if (directionX == -l_Dir.x && directionY == -l_Dir.y)
         {
-            /*indexX -= directionX;
-            indexY -= directionY;*/
+            indexX -= directionX;
+            indexY -= directionY;
 
             l_ToSubX -= directionX;
             l_ToSubY -= directionY;

@@ -106,7 +106,7 @@ static void GameUIManager_closePages(GameUIManager* self)
 
 void GameUIManager_update(GameUIManager* self, UIInput* input)
 {
-    UIObject_setEnabled(self->m_timeTextLayout, g_gameConfig.Core->State == PLAYING);
+    UIObject_setEnabled(self->m_timeTextLayout, g_gameConfig.Core->State == PLAYING && !g_gameConfig.isEditing);
     UIObject_setEnabled(self->m_lostText, g_gameConfig.Core->State == GETTING_LARRIED || g_gameConfig.Core->State == WINNING);
 
     if (g_gameConfig.Core && g_gameConfig.inLevel)

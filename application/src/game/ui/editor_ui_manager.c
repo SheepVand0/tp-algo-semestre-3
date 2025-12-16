@@ -124,6 +124,7 @@ static void EditorUI_onAddButtonClicked(void* selectable)
         break;
     case EDITOR_ACTION_PLAY:
         g_gameConfig.Core->State = g_gameConfig.Core->State == PLAYING ? NONE : PLAYING;
+        UIButton_setLabelString(l_UI->ActionsButtons[EDITOR_ACTION_PLAY], g_gameConfig.Core->State == PLAYING ? "Stop" : "Simulate");
         break;
     case EDITOR_ACTION_SAVE:
         char* l_Path = calloc(1024, sizeof(char));
@@ -359,7 +360,7 @@ EditorUI* EditorUI_create(Scene* scene, GameUIManager* titlePage)
         "Add rabbit",
         "Add fox",
         "Add mushroom",
-        "Play",
+        "Simulate",
         "Save",
         "Leave"
     };
@@ -416,6 +417,14 @@ void EditorUI_update(EditorUI* self, UIInput* input)
     {
         UIFocusManager_update(self->EditFocusManager, input);
         g_gameConfig.Settings->TotalTime = 10 + (UIList_getSelectedItem(self->TimeList) * 25);
+    }
+
+    for (int x = 0; x < EDITOR_ACTION_COUNT; x++)
+    {
+        if (x != EDITOR_ACTION_PLAY && x != EDITOR_ACTION_SAVE && x != EDITOR_ACTION_LEAVE)
+        {
+            UIObject_setEnabled(self->ActionsButtons[x], g_gameConfig.Core->State != PLAYING);
+        }
     }
 
     UIObject_setEnabled(self->LevelListLayout, self->State == SELECTING_LEVEL);
