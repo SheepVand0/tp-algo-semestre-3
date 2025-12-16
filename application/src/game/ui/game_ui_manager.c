@@ -9,6 +9,7 @@
 #include "game/ui/game_settings_page.h"
 #include "game/scene.h"
 #include "game/game_config.h"
+#include "game/ui/editor_ui_manager.h"
 
 static void GameUIManager_closePages(GameUIManager* self);
 
@@ -34,7 +35,7 @@ GameUIManager* GameUIManager_create(Scene* scene)
     UIGridLayout_setAnchor(self->m_timeTextLayout, Vec2_anchor_north);
 
     self->m_timeText = UILabel_create("time-text", AssetManager_getFont(assets, FONT_NORMAL));
-    UILabel_setTextString(self->m_timeText, "bite");
+    UILabel_setTextString(self->m_timeText, "time_text");
     UILabel_setAnchor(self->m_timeText, Vec2_anchor_north);
     UILabel_setColor(self->m_timeText, g_colors.orange4);
 
@@ -72,9 +73,11 @@ static void GameUIManager_closePages(GameUIManager* self)
 {
     GameTitlePage_destroy(self->m_titlePage);
     GameSettingsPage_destroy(self->m_settingsPage);
+    EditorUI_destroy(self->m_editorPage);
 
     self->m_titlePage = NULL;
     self->m_settingsPage = NULL;
+    self->m_editorPage = NULL;
 }
 
 void GameUIManager_update(GameUIManager* self, UIInput* input)
@@ -118,6 +121,10 @@ void GameUIManager_update(GameUIManager* self, UIInput* input)
             GameUIManager_closePages(self);
             g_gameConfig.inLevel = true;
             GameGraphics_setEnabled(scene->m_gameGraphics, true);
+            break;
+        case GAME_UI_ACTION_OPEN_EDITOR:
+            GameUIManager_closePages(self);
+            self->m_editorPage = EditorUI_create(scene, self->m_titlePage);
             break;
         }
         self->m_nextAction = GAME_UI_ACTION_NONE;

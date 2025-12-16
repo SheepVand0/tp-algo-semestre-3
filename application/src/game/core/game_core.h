@@ -45,6 +45,7 @@ typedef enum EGameState
 {
     NONE,
     PLAYING,
+    EDITING,
     WINNING,
     GAMBLING,
     OUPI_GOUPI,
@@ -103,7 +104,10 @@ Rabbit* Rabbit_create(GameCore* scene, int cellX, int cellY);
 
 void Rabbit_destroy(Rabbit* rabbit);
 
+
 // TODO : MOVE FUNCTIONS
+bool Rabbit_canMove(Rabbit* rabbit, GameCore* gameCore, int targetX, int targetY);
+
 bool Rabbit_move(Rabbit* rabbit, GameCore* gameCore, int targetX, int targetY);
  
 Rabbit* Fox_create(GameCore* scene, int cellX0, int cellY0, ERabbitDirection direciton);

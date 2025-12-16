@@ -199,6 +199,87 @@ int signOf(int x)
     return x < 0 ? -1 : 1;
 }
 
+bool Rabbit_canMove(Rabbit* rabbit, GameCore* gameCore, int targetX, int targetY)
+{
+    int indexX = rabbit->CellX;
+    int indexY = rabbit->CellY;
+
+    if (indexX != targetX && indexY != targetY) return false;
+
+    if (indexX == targetX && targetY == indexY) return false;
+
+    if (targetX < 0 || targetX > GAME_GRID_SIZE || targetY < 0 || targetY > GAME_GRID_SIZE) return false;
+
+    int directionX = signOf(rabbit->CellX - targetX);
+    int directionY = signOf(rabbit->CellY - targetY);
+
+    int l_ToSubX = rabbit->CellX - targetX;
+    int l_ToSubY = rabbit->CellY - targetY;
+
+    Vec2 l_Dir = Fox_getDirection(rabbit);
+    if (rabbit->Type == FOX)
+    {
+        if (directionX == -l_Dir.x && directionY == -l_Dir.y)
+        {
+            indexX -= directionX;
+            indexY -= directionY;
+
+            l_ToSubX -= directionX;
+            l_ToSubY -= directionY;
+
+        }
+
+        if (abs(directionX) != abs(l_Dir.x) && abs(directionY) != abs(l_Dir.y))
+        {
+            printf("dir not valid\n");
+            return false;
+        }
+    }
+
+    int itCount = 0;
+
+    Vec2 l_SecondCell = Fox_getSecondCell(rabbit);
+
+    do
+    {
+        indexX -= directionX;
+        indexY -= directionY;
+
+        EObjectType l_Type = GameCore_getObjTypeAtLocation(gameCore, indexX, indexY);
+
+        if (rabbit->Type == FOX)
+        {
+            if (l_Type != NO_OBJECT)
+            {
+                return false;
+            }
+
+            if (l_Type == NO_OBJECT && indexX == targetX && indexY == targetY)
+            {
+                return true;
+            }
+
+            continue;
+        }
+
+        if ((l_Type == NO_OBJECT && itCount == 0) || rabbit->Type != RABBIT) return false;
+
+        itCount++;
+
+        if (l_Type == NO_OBJECT)
+        {
+            if ((targetX != indexX || targetY != indexY))
+            {
+                return false;
+            }
+
+            return true;
+        }
+    } while (true);
+
+    return false;
+}
+
 bool Rabbit_move(Rabbit* rabbit, GameCore* gameCore, int targetX, int targetY)
 {
     int indexX = rabbit->CellX;
@@ -266,6 +347,8 @@ bool Rabbit_move(Rabbit* rabbit, GameCore* gameCore, int targetX, int targetY)
                 rabbit->CellY -= l_ToSubY;
                 return true;
             }
+
+            continue;
         }
 
         if ((l_Type == NO_OBJECT && itCount == 0) || rabbit->Type != RABBIT) return false;
@@ -274,13 +357,18 @@ bool Rabbit_move(Rabbit* rabbit, GameCore* gameCore, int targetX, int targetY)
 
         if (l_Type == NO_OBJECT)
         {
+            if ((targetX != indexX || targetY != indexY))
+            {
+                return false;
+            }
+
             rabbit->CellX = indexX;
             rabbit->CellY = indexY;
             return true;
         }
     } while (true);
 
-    return true;
+    return false;
 }
 
 Rabbit* Fox_create(GameCore* gameCore, int cellX0, int cellY0, ERabbitDirection direction)

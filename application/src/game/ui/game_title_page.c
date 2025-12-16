@@ -51,7 +51,7 @@ GameTitlePage* GameTitlePage_create(Scene* scene, GameUIManager *manager)
     rect.offsetMax = Vec2_set(+75.f, 0.0f);
     UIObject_setRect(self->m_mainPanel, rect);
     
-    UIGridLayout* layout = UIGridLayout_create("main-layout", 4, 1);
+    UIGridLayout* layout = UIGridLayout_create("main-layout", 5, 1);
     UIObject_setParent(layout, self->m_mainPanel);
     UIGridLayout_setRowSizes(layout, 25.0f);
     UIGridLayout_setRowSpacings(layout, 5.f);
@@ -65,15 +65,16 @@ GameTitlePage* GameTitlePage_create(Scene* scene, GameUIManager *manager)
 
     UIGridLayout_addObject(layout, label, 0, 0, 1, 1);
 
-    const char* buttonNames[3] = { "start-button", "settings-button", "quit-button" };
-    GameUIAction buttonActions[3] = {
+    const char* buttonNames[4] = { "start-button", "settings-button", "custom-levels-button", "quit-button" };
+    GameUIAction buttonActions[4] = {
         GAME_UI_ACTION_START,
         GAME_UI_ACTION_OPEN_SETTINGS,
+        GAME_UI_ACTION_OPEN_EDITOR,
         GAME_UI_ACTION_QUIT
     };
-    const char* buttonLabels[3] = { "Start", "Settings", "Quit" };
+    const char* buttonLabels[4] = { "Start", "Settings", "Custom levels", "Quit" };
     font = AssetManager_getFont(assets, FONT_NORMAL);
-    for (int i = 0; i < 3; ++i)
+    for (int i = 0; i < 4; ++i)
     {
         UIButton* button = UIButton_create(buttonNames[i], font);
         UIButton_setLabelString(button, buttonLabels[i]);
@@ -170,6 +171,9 @@ void GameTitlePage_update(GameTitlePage* self, UIInput* input)
         break;
     case GAME_UI_ACTION_QUIT:
         Scene_quit(self->m_scene);
+        break;
+    case GAME_UI_ACTION_OPEN_EDITOR:
+        self->m_manager->m_nextAction = GAME_UI_ACTION_OPEN_EDITOR;
         break;
     default:
         break;

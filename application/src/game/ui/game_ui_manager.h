@@ -12,6 +12,7 @@ typedef struct Scene Scene;
 typedef struct GameSettingsPage GameSettingsPage;
 typedef struct GameTitlePage GameTitlePage;
 typedef struct GameHUD GameHUD;
+typedef struct EditorUI EditorUI;
 
 typedef enum GameUIAction
 {
@@ -19,6 +20,7 @@ typedef enum GameUIAction
     GAME_UI_ACTION_START,
     GAME_UI_ACTION_OPEN_SETTINGS,
     GAME_UI_ACTION_OPEN_TITLE,
+    GAME_UI_ACTION_OPEN_EDITOR,
     GAME_UI_ACTION_CHANGE_FULLSCREEN,
     GAME_UI_ACTION_APPLY_SETTINGS,
     GAME_UI_ACTION_QUIT,
@@ -31,11 +33,11 @@ typedef struct GameUIManager
     UICanvas* m_canvas;
     GameTitlePage* m_titlePage;
     GameSettingsPage* m_settingsPage;
+    EditorUI* m_editorPage;
     GameUIAction m_nextAction;
 
     UILabel* m_timeText;
     UIGridLayout* m_timeTextLayout;
-
 
     UIGridLayout* m_lostTextLayout;
     UILabel* m_lostText;
