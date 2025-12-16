@@ -17,6 +17,14 @@ typedef struct GameConfig
 
     bool showElapsedTime;
     bool inLevel;
+    bool isEditing;
+
+    GameCore* Core;
+    GameSettings* Settings;
+    AssetManager* Assets;
+    AudioManager* Audio;
+
+    SAudio* LarryAudio;
 } GameConfig;
 
 void GameConfig_init();

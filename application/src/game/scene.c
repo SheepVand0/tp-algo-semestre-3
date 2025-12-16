@@ -9,8 +9,8 @@
 #include "core/game_core.h"
 #include "game/game_settings.h"
 
-#define RABBIT_ARRAY self->Core->Rabbits
-#define RABBIT(x) &self->Core->Rabbits[x]
+#define RABBIT_ARRAY g_gameConfig.Core->Rabbits
+#define RABBIT(x) &g_gameConfig.Core->Rabbits[x]
 
 Scene* Scene_create()
 {
@@ -20,7 +20,6 @@ Scene* Scene_create()
     self->m_assets = AssetManager_create(SPRITE_COUNT, FONT_COUNT);
     Game_addAssets(self->m_assets);
 
-    self->m_audio = AudioManager_create();
 
     self->m_input = Input_create();
 
@@ -33,7 +32,8 @@ Scene* Scene_create()
     self->m_uiManager = GameUIManager_create(self);
     self->m_gameGraphics = GameGraphics_create(self);
 
-    self->Core = GameCore_create(self->m_assets, self->m_audio);
+    g_gameConfig.Core = GameCore_create();
+    g_gameConfig.Assets = self->m_assets;
     //self->Obstacles = NULL;
 
     g_gameConfig.nextScene = GAME_SCENE_QUIT;
@@ -101,7 +101,7 @@ void Scene_update(Scene* self)
     {
         GameGraphics_update(self->m_gameGraphics);
 
-        GameCore_update(self->Core, self, self->m_gameGraphics->m_selectedColIndex, self->m_gameGraphics->m_selectedRowIndex);
+        GameCore_update(g_gameConfig.Core, self, self->m_gameGraphics->m_selectedColIndex, self->m_gameGraphics->m_selectedRowIndex);
     }
 
     if (self->m_input->debug.gizmosPressed)
@@ -166,11 +166,11 @@ void Scene_render(Scene* self)
 
     GameUIManager_render(self->m_uiManager);
 
-    if (g_gameConfig.inLevel && self->Core->State != NONE && self->Core->State != GETTING_LARRIED)
+    if (g_gameConfig.inLevel && g_gameConfig.Core->State != NONE && g_gameConfig.Core->State != GETTING_LARRIED)
     {
-        GameCore* gameCore = self->Core;
+        GameCore* gameCore = g_gameConfig.Core;
 
-        GAME_GRAPHICS_RENDER(self->m_gameGraphics, self->Core->Rabbits, RABBIT_COUNT + FOX_COUNT + MUSHROOM_COUNT);
+        GAME_GRAPHICS_RENDER(self->m_gameGraphics, g_gameConfig.Core->Rabbits, RABBIT_COUNT + FOX_COUNT + MUSHROOM_COUNT);
         GameGraphics_render(self->m_gameGraphics);
     }
 
@@ -187,7 +187,7 @@ void Scene_render(Scene* self)
         SDL_RenderFillRect(g_renderer, NULL);
     }
 
-    if (self->Core->State == GETTING_LARRIED)
+    if (g_gameConfig.Core->State == GETTING_LARRIED)
     {
         l_Rec.w = 1280;
         l_Rec.h = 720;
@@ -198,7 +198,7 @@ void Scene_render(Scene* self)
 
         GameUIManager_render(self->m_uiManager);
 
-        SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255 - Float_clamp(((self->Core->CurrentAnimationTime) * 255), 0, 255));
+        SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255 - Float_clamp(((g_gameConfig.Core->CurrentAnimationTime) * 255), 0, 255));
         SDL_RenderFillRect(g_renderer, NULL);
     }
 }

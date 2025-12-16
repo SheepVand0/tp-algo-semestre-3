@@ -5,6 +5,7 @@
 typedef struct Scene Scene;
 typedef struct GameTitlePage GameTitlePage;
 typedef struct Rabbit Rabbit;
+typedef struct GameUIManager GameUIManager;
 
 #define LEVEL_LIST_MAX_BUTTON_COUNT 5
 
@@ -12,23 +13,35 @@ typedef enum EPage
 {
     PAGE_NEXT = 0,
     PAGE_PREVIOUS = 1
-};
+} EPage;
 
 typedef enum EEditorState
 {
     SELECTING_LEVEL,
     EDITING_LEVEL
-};
+} EEditorState;
+
+typedef enum EEditorAction
+{
+    EDITOR_ACTION_ADD_RABBIT,
+    EDITOR_ACTION_ADD_FOX,
+    EDITOR_ACTION_ADD_MUSHROOM,
+    EDITOR_ACTION_SAVE,
+    EDITOR_ACTION_LEAVE,
+    EDITOR_ACTION_COUNT
+} EEditorAction;
 
 typedef struct EditorUI
 {
     Scene* Scene;
-    GameTitlePage* TitlePage;
+    GameUIManager* MainManager;
+    UIFocusManager* FocusManager;
 
     UICanvas* MainCanvas;
-
     UIGridLayout* LevelListLayout;
     UIButton** ExistingLevelsButtons;
+
+    UIButton* BackButon;
 
     UIGridLayout* PageButtonsLayout;
 
@@ -37,19 +50,23 @@ typedef struct EditorUI
 
     UIButton* CreateNewLevelButton;
 
+    UILabel* PageText;
+
     //////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////////
 
     UIGridLayout* LevelEditLayout;
     UIGridLayout* ButtonsLayout;
 
-    UIButton* RabbitButton;
-    UIButton* FoxButton;
-    UIButton* MushroomButton;
+    UIButton** ActionsButtons;
 
     Rabbit* PlacingTemp;
 
     char* EditingFile;
+
+    char** FileNames;
+
+    EEditorState State;
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -57,6 +74,10 @@ typedef struct EditorUI
     int CurrentPage;
 } EditorUI;
 
-EditorUI* EditorUI_create(Scene* scene, GameTitlePage* titlePage);
+EditorUI* EditorUI_create(Scene* scene, GameUIManager* titlePage);
 
 void EditorUI_destroy(EditorUI* editorUI);
+
+void EditorUI_update(EditorUI* self, UIInput* input);
+
+void EditorUI_loadFiles(EditorUI* self);

@@ -16,7 +16,7 @@ typedef struct Scene Scene;
 
 #define GAME_GRAPHICS_RENDER(gameGraphics, rabbits, rabbcount) gameGraphics->RabbitsToRender = rabbits; \
 gameGraphics->RabbitCount = rabbcount; \
-gameGraphics->Selected = self->Core->Selected; \
+gameGraphics->Selected = g_gameConfig.Core->Selected; \
 GameGraphics_render(gameGraphics); \
 
 

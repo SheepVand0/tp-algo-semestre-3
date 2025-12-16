@@ -16,9 +16,9 @@
 #define MAX_FOXES 5
 #define MAX_MUSHROOMS 10
 
-#define RABBIT_COUNT gameCore->Settings->RabbitCount
-#define FOX_COUNT gameCore->Settings->FoxCount
-#define MUSHROOM_COUNT gameCore->Settings->MushroomCount
+#define RABBIT_COUNT g_gameConfig.Settings->RabbitCount
+#define FOX_COUNT g_gameConfig.Settings->FoxCount
+#define MUSHROOM_COUNT g_gameConfig.Settings->MushroomCount
 
 typedef struct Scene Scene;
 
@@ -71,20 +71,16 @@ typedef struct Rabbit
 typedef struct GameCore
 {
     Rabbit Rabbits[MAX_RABBITS + MAX_FOXES + MAX_MUSHROOMS];
-    GameSettings* Settings;
     Rabbit* Selected;
-    AssetManager* Assets;
 
     EGameState State;
-
-    SAudio* LarryMusic;
 
     float Remaining;
 
     float CurrentAnimationTime;
 } GameCore;
 
-GameCore* GameCore_create(AssetManager* assetManager, AudioManager* audio);
+GameCore* GameCore_create();
 
 void GameCore_update(GameCore* gameCore, Scene* scene, int selectedX, int selectedY);
 
@@ -103,7 +99,6 @@ Rabbit* GameCore_getFox(GameCore* gameCore, int index);
 Rabbit* Rabbit_create(GameCore* scene, int cellX, int cellY);
 
 void Rabbit_destroy(Rabbit* rabbit);
-
 
 // TODO : MOVE FUNCTIONS
 bool Rabbit_canMove(Rabbit* rabbit, GameCore* gameCore, int targetX, int targetY);

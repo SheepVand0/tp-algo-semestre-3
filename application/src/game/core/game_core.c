@@ -9,18 +9,14 @@
 
 #define RABBIT(x) &gameCore->Rabbits[x]
 
-GameCore* GameCore_create(AssetManager* assetManager, AudioManager* audio)
+GameCore* GameCore_create()
 {
     GameCore* l_Core = malloc(sizeof(GameCore));
     assert(l_Core);
 
-    l_Core->Settings = GameSettings_create();
     l_Core->Selected = NULL;
-    l_Core->Assets = assetManager;
     l_Core->State = NONE;
     l_Core->Remaining = 10.f;
-
-    l_Core->LarryMusic = AudioManager_loadWav(audio, "larry_intro.wav", "larry music");
 
     return l_Core;
 }
@@ -32,7 +28,12 @@ void GameCore_update(GameCore* gameCore, Scene* scene, int selectedX, int select
     {
     case NONE:
         GameCore_initNextGame(gameCore);
-        gameCore->State = PLAYING;
+        if (!g_gameConfig.isEditing)
+            gameCore->State = PLAYING;
+        else
+        {
+            gameCore->State = EDITING;
+        }
         break;
 
     case PLAYING:
@@ -78,7 +79,7 @@ void GameCore_update(GameCore* gameCore, Scene* scene, int selectedX, int select
 
         if (gameCore->Remaining <= 0)
         {
-            AudioManager_play(scene->m_audio, gameCore->LarryMusic);
+            AudioManager_play(g_gameConfig.Audio, g_gameConfig.LarryAudio);
             gameCore->State = GETTING_LARRIED;
             gameCore->CurrentAnimationTime = 6.f;
         }
@@ -113,6 +114,15 @@ void GameCore_destroyGame(GameCore* gameCore)
 
 void GameCore_initNextGame(GameCore* gameCore)
 {
+    if (g_gameConfig.isEditing)
+    {
+        g_gameConfig.Settings->FoxCount = 0;
+        g_gameConfig.Settings->MushroomCount = 0;
+        g_gameConfig.Settings->RabbitCount = 0;
+
+        return;
+    }
+
     for (int x = 0; x < RABBIT_COUNT; x++)
     {
         gameCore->Rabbits[x] = *Rabbit_create(gameCore, x + 2, GAME_GRID_SIZE / 2);
@@ -159,12 +169,12 @@ Rabbit* GameCore_getRabbit(GameCore* gameCore, int index)
 
 Rabbit* GameCore_getFox(GameCore* gameCore, int index)
 {
-    return &(gameCore->Rabbits[index + gameCore->Settings->RabbitCount]);
+    return &(gameCore->Rabbits[index + g_gameConfig.Settings->RabbitCount]);
 }
 
 Rabbit* GameCore_getMushroom(GameCore* gameCore, int index)
 {
-    return &(gameCore->Rabbits[index + gameCore->Settings->RabbitCount + gameCore->Settings->FoxCount]);
+    return &(gameCore->Rabbits[index + g_gameConfig.Settings->RabbitCount + g_gameConfig.Settings->FoxCount]);
 }
 
 Rabbit* Rabbit_create(GameCore* gameCore, int cellX, int cellY)
@@ -175,7 +185,7 @@ Rabbit* Rabbit_create(GameCore* gameCore, int cellX, int cellY)
     l_Rabbit->CellX = cellX;
     l_Rabbit->CellY = cellY;
 
-    AssetManager* assets = gameCore->Assets;
+    AssetManager* assets = g_gameConfig.Assets;
     SpriteSheet* spriteSheet = AssetManager_getSpriteSheet(assets, SPRITE_GAME);
     AssertNew(spriteSheet);
     l_Rabbit->RabbitSprite = SpriteSheet_getGroupByName(spriteSheet, "rabbit");
@@ -380,7 +390,7 @@ Rabbit* Fox_create(GameCore* gameCore, int cellX0, int cellY0, ERabbitDirection 
     l_Fox->CellY = cellY0;
     l_Fox->Direction = direction;
 
-    AssetManager* assets = gameCore->Assets;
+    AssetManager* assets = g_gameConfig.Assets;
     SpriteSheet* spriteSheet = AssetManager_getSpriteSheet(assets, SPRITE_GAME);
     AssertNew(spriteSheet);
     l_Fox->RabbitSprite = SpriteSheet_getGroupByName(spriteSheet, "fox");
@@ -462,7 +472,7 @@ Rabbit* Mushroom_create(GameCore* gameCore, int cellX, int cellY)
     l_Mush->CellX = cellX;
     l_Mush->CellY = cellY;
 
-    AssetManager* assets = gameCore->Assets;
+    AssetManager* assets = g_gameConfig.Assets;
     SpriteSheet* spriteSheet = AssetManager_getSpriteSheet(assets, SPRITE_GAME);
     AssertNew(spriteSheet);
     l_Mush->RabbitSprite = SpriteSheet_getGroupByName(spriteSheet, "mushroom");

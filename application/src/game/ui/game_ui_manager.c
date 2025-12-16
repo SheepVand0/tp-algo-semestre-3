@@ -82,14 +82,14 @@ static void GameUIManager_closePages(GameUIManager* self)
 
 void GameUIManager_update(GameUIManager* self, UIInput* input)
 {
-    UIObject_setEnabled(self->m_timeTextLayout, self->m_scene->Core->State == PLAYING);
-    UIObject_setEnabled(self->m_lostText, self->m_scene->Core->State == GETTING_LARRIED);
-    //UIObject_setEnabled(self->m_timeText, self->m_scene->Core->State == PLAYING);
+    UIObject_setEnabled(self->m_timeTextLayout, g_gameConfig.Core->State == PLAYING);
+    UIObject_setEnabled(self->m_lostText, g_gameConfig.Core->State == GETTING_LARRIED);
+    //UIObject_setEnabled(self->m_timeText, g_gameConfig.Core->State == PLAYING);
 
-    if (self->m_scene->Core)
+    if (g_gameConfig.Core && g_gameConfig.inLevel)
     {
-        printf("%s\n", GameUIManager_formatTime(self->m_scene->Core->Remaining));
-        UILabel_setTextString(self->m_timeText, GameUIManager_formatTime(self->m_scene->Core->Remaining));
+        //printf("%s\n", GameUIManager_formatTime(g_gameConfig.Core->Remaining));
+        UILabel_setTextString(self->m_timeText, GameUIManager_formatTime(g_gameConfig.Core->Remaining));
     }
 
     Scene* scene = self->m_scene;
@@ -101,6 +101,10 @@ void GameUIManager_update(GameUIManager* self, UIInput* input)
     if (self->m_settingsPage)
     {
         GameSettingsPage_update(self->m_settingsPage, input);
+    }
+    if (self->m_editorPage)
+    {
+        EditorUI_update(self->m_editorPage, input);
     }
 
     if (self->m_nextAction != GAME_UI_ACTION_NONE)
@@ -124,7 +128,12 @@ void GameUIManager_update(GameUIManager* self, UIInput* input)
             break;
         case GAME_UI_ACTION_OPEN_EDITOR:
             GameUIManager_closePages(self);
-            self->m_editorPage = EditorUI_create(scene, self->m_titlePage);
+            self->m_editorPage = EditorUI_create(scene, self);
+            break;
+        case GAME_UI_ACTION_START_EDITOR:
+            g_gameConfig.inLevel = true;
+            g_gameConfig.isEditing = true;
+            GameGraphics_setEnabled(scene->m_gameGraphics, true);
             break;
         }
         self->m_nextAction = GAME_UI_ACTION_NONE;

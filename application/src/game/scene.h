@@ -25,7 +25,6 @@ typedef enum EObjectType EObjectType;
 typedef struct Scene
 {
     AssetManager* m_assets;
-    AudioManager* m_audio;
     Camera* m_camera;
     Input* m_input;
     GameUIManager* m_uiManager;
@@ -35,8 +34,6 @@ typedef struct Scene
     SceneState m_state;
     float m_accu;
     float m_fadingTime;
-
-    GameCore* Core;
 } Scene;
 
 /// @brief Crée la scène représentant le menu principal du jeu.

@@ -104,11 +104,13 @@ GameTitlePage* GameTitlePage_create(Scene* scene, GameUIManager *manager)
     //        printf("\n%s\n", SDL_GetError());
     //    }
 
-    //    WIN32_FIND_DATA l_Fd;
+        WIN32_FIND_DATA l_Fd;
 
-    //    char path[1032] = "*.*";
+        char path[1032] = "*.*";
 
-    //    HANDLE handle = FindFirstFile(path, &l_Fd);
+        HANDLE handle = FindFirstFile(path, &l_Fd);
+
+        printf("\n%s\n", l_Fd.cFileName);
 
     //    FindNextFile(handle, &l_Fd);
     //    FindNextFile(handle, &l_Fd);
