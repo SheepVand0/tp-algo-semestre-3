@@ -89,6 +89,29 @@ void GameGraphics_update(GameGraphics* self)
         return;
     }
 
+    if (input->mouse.rightPressed && g_gameConfig.isEditing)
+    {
+        for (int i = 0; i < GAME_GRID_SIZE; i++)
+        {
+            for (int j = 0; j < GAME_GRID_SIZE; j++)
+            {
+                AABB* cellAABB = &(self->m_cells[i][j]);
+
+                if (AABB_containsPoint(cellAABB, mouseWorldPos))
+                {
+                    Rabbit* l_Aimed = NULL;
+                    if (GameCore_isAimingRabbit(g_gameConfig.Core, j, i, &l_Aimed))
+                    {
+                        if (l_Aimed)
+                        {
+                            GameCore_deletePiece(g_gameConfig.Core, l_Aimed);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     if (input->mouse.leftPressed || g_gameEditor.AddingObject)
     {
         for (int i = 0; i < GAME_GRID_SIZE; i++)

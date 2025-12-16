@@ -63,6 +63,8 @@ void GameLoader_loadGame(char* fileName, bool forPlay)
             }
         }
     }
+
+    fclose(l_File);
 }
 
 void GameLoader_saveGame(char* fileName)

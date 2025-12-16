@@ -8,6 +8,8 @@
 #include "game/game_editor.h"
 #include "game/game_loader.h"
 
+#pragma warning(disable: 6031);
+
 static void EditorUI_levelButtonClick(void* selectable)
 {
     EditorUI* l_Ui = (EditorUI*)UISelectable_getUserData(selectable);
@@ -18,17 +20,27 @@ static void EditorUI_levelButtonClick(void* selectable)
 
     int edit = UIList_getSelectedItem(l_Ui->LoadPlayList);
 
+    char* l_Path = calloc(260, sizeof(char));
+    assert(l_Path);
+    sprintf(l_Path, "../../../levels/%s", l_Ui->FileNames[UISelectable_getUserId(selectable)]);
+
+    printf("Path: %s", l_Path);
+
+    if (l_Ui->Deleting)
+    {
+        remove(l_Path);
+        EditorUI_loadFiles(l_Ui);
+        return;
+    }
+
     if (edit == 0)
     {
         l_Ui->EditingFile = calloc(260, sizeof(char));
         assert(l_Ui->EditingFile);
         strcpy(l_Ui->EditingFile, l_Ui->FileNames[UISelectable_getUserId(selectable)]);
+
         l_Ui->State = EDITING_LEVEL;
         l_Ui->MainManager->m_nextAction = GAME_UI_ACTION_START_EDITOR;
-
-        char* l_Path = calloc(260, sizeof(char));
-        assert(l_Path);
-        sprintf(l_Path, "../../../levels/%s", l_Ui->EditingFile);
 
         GameLoader_loadGame(l_Path, false);
 
@@ -36,10 +48,6 @@ static void EditorUI_levelButtonClick(void* selectable)
     }
     else
     {
-        char* l_Path = calloc(260, sizeof(char));
-        assert(l_Path);
-        sprintf(l_Path, "../../../levels/%s", l_Ui->FileNames[UISelectable_getUserId(selectable)]);
-
         l_Ui->MainManager->m_nextAction = GAME_UI_ACTION_START;
 
         GameLoader_loadGame(l_Path, true);
@@ -71,8 +79,6 @@ static void EditorUI_pageButtonClick(void* selectable)
 
 static void EditorUI_newLevelButtonClick(void* selectable)
 {
-    printf("click");
-
     EditorUI* self = (EditorUI*)UISelectable_getUserData(selectable);
 
     g_gameConfig.Settings->RabbitCount = 0;
@@ -87,7 +93,31 @@ static void EditorUI_newLevelButtonClick(void* selectable)
 
     int fileCount = EditorUI_loadFiles(self);
 
-    sprintf(l_Path, "../../../levels/level%d.txt", fileCount);
+    if (fileCount == 9)
+    {
+        printf("\nToo many levels\n");
+        return false;
+    }
+
+    int index = 0;
+    if (fileCount > 0)
+    {
+        if (self->FileNames[(fileCount - 1) % LEVEL_LIST_MAX_BUTTON_COUNT])
+        {
+            sscanf(self->FileNames[(fileCount - 1) % LEVEL_LIST_MAX_BUTTON_COUNT], "level%d.txt", &index);
+            printf("\n%d\n", index);
+        }
+        else
+        {
+            index = fileCount - 1;
+        }
+    }
+    else
+    {
+        index = fileCount - 1;
+    }
+
+    sprintf(l_Path, "../../../levels/level%d.txt", index + 1);
 
     GameLoader_saveGame(l_Path);
 
@@ -145,9 +175,6 @@ static void EditorUI_onAddButtonClicked(void* selectable)
 
 int EditorUI_loadFiles(EditorUI* self)
 {
-    printf("premiere ligne de code");
-    int loading = 1;
-
     WIN32_FIND_DATA fd;
     HANDLE handle;
 
@@ -176,9 +203,8 @@ int EditorUI_loadFiles(EditorUI* self)
             if (self->CurrentPage && x == 0)
             {
                 self->CurrentPage -= 1;
-                EditorUI_loadFiles(self);
+                return EditorUI_loadFiles(self);
             }
-            break;
         }
     }
 
@@ -192,16 +218,22 @@ int EditorUI_loadFiles(EditorUI* self)
             self->FileNames[x] = calloc(260, sizeof(char));
             assert(self->FileNames[x]);
             strcpy(self->FileNames[x], fd.cFileName);
-            //self->FileNames[x] = fd.cFileName;
-            
         }
         else
         {
             UIObject_setEnabled(self->ExistingLevelsButtons[x], false);
+
+            if (x == 0)
+            {
+                if (self->CurrentPage)
+                {
+                    self->CurrentPage -= 1;
+                    return EditorUI_loadFiles(self);
+                }
+            }
         }
     }
 
-    printf("\nFilename: %s\n", self->FileNames[0]);
     return fileCount;
 }
 
@@ -225,8 +257,9 @@ EditorUI* EditorUI_create(Scene* scene, GameUIManager* titlePage)
     l_UI->FileNames = NULL;
 
     l_UI->LevelEditLayout = NULL;
+    l_UI->Deleting = false;
 
-    l_UI->LevelListLayout = UIGridLayout_create("level-list-layout", LEVEL_LIST_MAX_BUTTON_COUNT + 5, 1);
+    l_UI->LevelListLayout = UIGridLayout_create("level-list-layout", LEVEL_LIST_MAX_BUTTON_COUNT + 6, 1);
     UIGridLayout_setAnchor(l_UI->LevelListLayout, Vec2_anchor_center);
     UIGridLayout_setColumnSizes(l_UI->LevelListLayout, 150.f);
     UIGridLayout_setRowSizes(l_UI->LevelListLayout, 25.f);
@@ -261,7 +294,6 @@ EditorUI* EditorUI_create(Scene* scene, GameUIManager* titlePage)
 
     self->PageButtonsLayout = UIGridLayout_create("page-buttons-layout", 1, 2);
     UIGridLayout_setAnchor(self->PageButtonsLayout, Vec2_anchor_center);
-    //UIGridLayout_setColumnSizes(self->PageButtonsLayout, 25.f);
     UIGridLayout_setRowSizes(self->PageButtonsLayout, 5.f);
     UIGridLayout_setColumnSizes(self->PageButtonsLayout, 50.f);
     UIGridLayout_setRowSizes(self->PageButtonsLayout, 25.f);
@@ -304,10 +336,20 @@ EditorUI* EditorUI_create(Scene* scene, GameUIManager* titlePage)
     UIList_setLabelString(self->LoadPlayList, "Edit or play");
     UIList_setItemString(self->LoadPlayList, 0, "edit");
     UIList_setItemString(self->LoadPlayList, 1, "play");
+    UIList_setSelectedItem(self->LoadPlayList, 1);
 
     UIFocusManager_addSelectable(self->FocusManager, self->LoadPlayList);
 
     UIGridLayout_addObject(self->LevelListLayout, self->LoadPlayList, LEVEL_LIST_MAX_BUTTON_COUNT + 3, 0, 1, 1);
+
+    self->OpenDeleteList = UIList_create("open-delete-list", AssetManager_getFont(assets, FONT_NORMAL), 2, UI_LIST_CONFIG_CYCLE | UI_LIST_CONFIG_AUTO_NAVIGATION);
+    UIList_setLabelString(self->OpenDeleteList, "");
+    UIList_setItemString(self->OpenDeleteList, 0, "open");
+    UIList_setItemString(self->OpenDeleteList, 1, "delete");
+
+    UIFocusManager_addSelectable(self->FocusManager, self->OpenDeleteList);
+
+    UIGridLayout_addObject(self->LevelListLayout, self->OpenDeleteList, LEVEL_LIST_MAX_BUTTON_COUNT + 4, 0, 1, 1);
 
     self->BackButon = UIButton_create("back-button", AssetManager_getFont(assets, FONT_NORMAL));
     UIButton_setLabelString(self->BackButon, "Back");
@@ -317,7 +359,7 @@ EditorUI* EditorUI_create(Scene* scene, GameUIManager* titlePage)
 
     UIFocusManager_addSelectable(self->FocusManager, self->BackButon);
 
-    UIGridLayout_addObject(self->LevelListLayout, self->BackButon, LEVEL_LIST_MAX_BUTTON_COUNT + 4, 0, 1, 1);
+    UIGridLayout_addObject(self->LevelListLayout, self->BackButon, LEVEL_LIST_MAX_BUTTON_COUNT + 5, 0, 1, 1);
 
     EditorUI_loadFiles(self);
 
@@ -390,6 +432,9 @@ void EditorUI_destroy(EditorUI* editorUI)
     UIButton_destroy(editorUI->BackButon);
     UIButton_destroy(editorUI->LevelListNextPage);
     UIButton_destroy(editorUI->LevelListPreviousPage);
+    UIList_destroy(editorUI->LoadPlayList);
+    UIList_destroy(editorUI->OpenDeleteList);
+    UIList_destroy(editorUI->TimeList);
 
     for (int x = 0; x < LEVEL_LIST_MAX_BUTTON_COUNT; x++)
     {
@@ -412,6 +457,7 @@ void EditorUI_update(EditorUI* self, UIInput* input)
     if (self->State == SELECTING_LEVEL)
     {
         UIFocusManager_update(self->FocusManager, input);
+        self->Deleting = UIList_getSelectedItem(self->OpenDeleteList);
     }
     else
     {

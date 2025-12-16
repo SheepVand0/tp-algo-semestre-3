@@ -117,3 +117,12 @@ Rabbit* Mushroom_create(GameCore* scene, int cellX, int cellY);
 bool Rabbit_canBePlacedByLoc(GameCore* scene, int cellX, int cellY);
 
 bool Rabbit_canBePlaced(GameCore* scene, Rabbit* rabb);
+
+/// <summary>
+/// FOR EDIT MODE ONLY
+/// </summary>
+/// <param name="scene"></param>
+/// <param name="rabb"></param>
+void GameCore_deletePiece(GameCore* gameCore, Rabbit* rabb);
+
+bool GameCore_isAimingRabbit(GameCore* gameCore, int cellX, int cellY, Rabbit** res);

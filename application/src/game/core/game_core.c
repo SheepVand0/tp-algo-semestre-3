@@ -589,3 +589,86 @@ bool Rabbit_canBePlaced(GameCore* scene, Rabbit* rabb)
         return Rabbit_canBePlacedByLoc(scene, rabb->CellX, rabb->CellY, rabb);
     }
 }
+
+void GameCore_deletePiece(GameCore* gameCore, Rabbit* rabb)
+{
+    bool l_Passed = false;
+
+    int baseIndex = -1;
+    int* count = 0;
+
+    switch (rabb->Type)
+    {
+    case RABBIT:
+        count = &RABBIT_COUNT;
+        baseIndex = 0;
+        break;
+    case FOX:
+        count = &FOX_COUNT;
+        baseIndex = MAX_RABBITS;
+        break;
+    case MUSHROOM:
+        count = &MUSHROOM_COUNT;
+        baseIndex = MAX_RABBITS + MAX_FOXES;
+        break;
+    default: break;
+    }
+
+    for (int x = baseIndex; x < baseIndex + *count; x++)
+    {
+        Rabbit* l_Index = RABBIT(x);
+
+        if (l_Index->CellX == rabb->CellX && l_Index->CellY == rabb->CellY && l_Index->Type != NONE)
+        {
+            l_Index->Type = NONE;
+            l_Index->CellX = -1;
+            l_Index->CellY = -1;
+
+            l_Passed = true;
+            continue;
+        }
+
+        if (l_Passed)
+        {
+            //printf("\nPassed\n");
+            if (x - 1 >= baseIndex && x - 1 < baseIndex + *count)
+            {
+                gameCore->Rabbits[x - 1] = *l_Index;
+            }
+        }
+    }
+    
+    if (l_Passed && baseIndex >= 0 && count)
+    {
+        *count -= 1;
+        gameCore->Rabbits[baseIndex + *count].Type = NONE;
+        gameCore->Rabbits[baseIndex + *count].CellX = -1;
+        gameCore->Rabbits[baseIndex + *count].CellY = -1;
+    }
+}
+
+bool GameCore_isAimingRabbit(GameCore* gameCore, int cellX, int cellY, Rabbit** res)
+{
+    for (int x = 0; x < MAX_RABBITS + MAX_FOXES + MAX_MUSHROOMS; x++)
+    {
+        Rabbit* l_Rabb = RABBIT(x);
+
+        if (l_Rabb->Type == NONE) continue;
+
+        bool l_OtherCond = false;
+        if (l_Rabb->Type == FOX)
+        {
+            Vec2 l_Pos = Fox_getSecondCell(l_Rabb);
+            l_OtherCond = l_Pos.x == cellX && l_Pos.y == cellY;
+        }
+
+        if (l_Rabb->CellX == cellX && l_Rabb->CellY == cellY || l_OtherCond)
+        {
+            *res = l_Rabb;
+            return true;
+        }
+    }
+
+    *res = NULL;
+    return false;
+}
