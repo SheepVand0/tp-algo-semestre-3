@@ -5,3 +5,4 @@ _out/
 build/
 
 .vs
+/enc_temp_folder
