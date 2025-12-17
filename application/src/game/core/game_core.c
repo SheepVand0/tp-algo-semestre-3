@@ -264,7 +264,11 @@ bool Rabbit_canMove(Rabbit* rabbit, GameCore* gameCore, int targetX, int targetY
     int indexX = rabbit->CellX;
     int indexY = rabbit->CellY;
 
+    //printf("%d %d %d %d\n", indexX, indexY, targetX, targetY);
+
     if (indexX != targetX && indexY != targetY) return false;
+
+    if (indexX == targetX && indexY == targetY) return false;
 
     if (indexX == targetX && targetY == indexY) return false;
 
@@ -277,8 +281,11 @@ bool Rabbit_canMove(Rabbit* rabbit, GameCore* gameCore, int targetX, int targetY
     int l_ToSubY = rabbit->CellY - targetY;
 
     Vec2 l_Dir = Fox_getDirection(rabbit);
+    Vec2 l_Second = Fox_getSecondCell(rabbit);
     if (rabbit->Type == FOX)
     {
+        if (indexX == l_Second.x && indexY == l_Second.y) return false;
+
         if (directionX == -l_Dir.x && directionY == -l_Dir.y)
         {
             indexX -= directionX;
@@ -286,12 +293,10 @@ bool Rabbit_canMove(Rabbit* rabbit, GameCore* gameCore, int targetX, int targetY
 
             l_ToSubX -= directionX;
             l_ToSubY -= directionY;
-
         }
 
         if (abs(directionX) != abs(l_Dir.x) && abs(directionY) != abs(l_Dir.y))
         {
-            printf("dir not valid\n");
             return false;
         }
     }
@@ -302,6 +307,7 @@ bool Rabbit_canMove(Rabbit* rabbit, GameCore* gameCore, int targetX, int targetY
 
     do
     {
+
         indexX -= directionX;
         indexY -= directionY;
 
@@ -345,7 +351,7 @@ bool Rabbit_move(Rabbit* rabbit, GameCore* gameCore, int targetX, int targetY)
     int indexX = rabbit->CellX;
     int indexY = rabbit->CellY;
 
-    printf("%d %d %d %d\n", indexX, indexY, targetX, targetY);
+    //printf("%d %d %d %d\n", indexX, indexY, targetX, targetY);
 
     if (indexX != targetX && indexY != targetY) return false;
 
@@ -376,15 +382,8 @@ bool Rabbit_move(Rabbit* rabbit, GameCore* gameCore, int targetX, int targetY)
             l_ToSubY -= directionY;
         }
 
-        /*if (abs(targetX - indexX) > 1 || abs(targetY - indexY) > 1)
-        {
-            printf("Distance to high\n");
-            return false;
-        }*/
-
         if (abs(directionX) != abs(l_Dir.x) && abs(directionY) != abs(l_Dir.y))
         {
-            printf("dir not valid\n");
             return false;
         }
     }
