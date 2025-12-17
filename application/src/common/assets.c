@@ -16,7 +16,7 @@ void Game_addAssets(AssetManager* assets)
     );
 
     AssetManager_addSpriteSheet(
-        assets, SPRITE_LARRY, "atlas/larry_le_malicieu", "atlas/larry_le_malicieu_desc"
+        assets, SPRITE_LARRY, "atlas/larry", "atlas/larry_desc"
     );
 
     AssetManager_addSpriteSheet(
@@ -29,6 +29,18 @@ void Game_addAssets(AssetManager* assets)
 
     AssetManager_addSpriteSheet(
         assets, SPRITE_UI_SELECT_BOX, "atlas/ui_select_box", "atlas/ui_select_box_desc"
+    );
+
+    AssetManager_addSpriteSheet(
+        assets, SPRITE_NUMBERS, "atlas/numbers", "atlas/numbers"
+    );
+
+    AssetManager_addSpriteSheet(
+        assets, SPRITE_CANDY, "atlas/candy", "atlas/candy_desc"
+    );
+
+    AssetManager_addSpriteSheet(
+        assets, SPRITE_MASTERMIND, "atlas/mastermind", "atlas/mastermind_desc"
     );
 
     // -------------------------------------------------------------------------

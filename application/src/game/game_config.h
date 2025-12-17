@@ -17,10 +17,16 @@ typedef enum EGameState
     EDITING,
     WINNING,
     GAMBLING,
-    OUPI_GOUPI,
-    MASTERMIND,
     GETTING_LARRIED
 } EGameState;
+
+typedef enum EGamblingResult
+{
+    CANDY,
+    OUPI_GOUPI,
+    MASTERMIND,
+    GAMBLING_COUNT
+} EGamblingResult;
 
 typedef struct GameConfig
 {
@@ -29,6 +35,8 @@ typedef struct GameConfig
     bool showElapsedTime;
     bool inLevel;
     bool isEditing;
+
+    float GamblingAnimTime;
 
     GameCore* Core;
     GameSettings* Settings;
@@ -45,6 +53,10 @@ typedef struct GameConfig
     float Remaining;
 
     float CurrentAnimationTime;
+
+    EGamblingResult GamblingResult;
+    Vec2 CandyPos;
+    Vec2 CandyAcc;
 } GameConfig;
 
 void GameConfig_init();

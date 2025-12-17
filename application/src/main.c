@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
 
     // Crée la fenêtre et le moteur de rendu
     Uint32 windowFlags = SDL_WINDOW_RESIZABLE;
-    Game_createWindow(WINDOW_WIDTH, WINDOW_HEIGHT, u8"SDL3 Template", windowFlags);
+    Game_createWindow(WINDOW_WIDTH, WINDOW_HEIGHT, u8"larry templating rabbits", windowFlags);
     Game_createRenderer(LOGICAL_WIDTH, LOGICAL_HEIGHT);
 
     //--------------------------------------------------------------------------

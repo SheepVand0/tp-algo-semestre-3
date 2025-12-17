@@ -36,20 +36,11 @@ void GameCore_update(GameCore* gameCore, Scene* scene, int selectedX, int select
         break;
 
     case PLAYING:
-        int validRabbCount = 0;
         for (int x = 0; x < MAX_RABBITS + MAX_FOXES + MAX_MUSHROOMS; x++)
         {
             Rabbit* l_Rabb = RABBIT(x);
             if (l_Rabb)
             {
-                if (l_Rabb->Type == RABBIT)
-                {
-                    int i = l_Rabb->CellX;
-                    int j = l_Rabb->CellY;
-
-                    validRabbCount += (i == GAME_GRID_SIZE / 2 && j == GAME_GRID_SIZE / 2 || i == 0 && j == 0 || j == 0 && i == GAME_GRID_SIZE - 1 || i == 0 && j == GAME_GRID_SIZE - 1 || (i == GAME_GRID_SIZE - 1 && j == GAME_GRID_SIZE - 1));
-                }
-
                 if (l_Rabb->Type != NONE)
                 {
                     if (!l_Rabb->Movable) continue;
@@ -69,7 +60,7 @@ void GameCore_update(GameCore* gameCore, Scene* scene, int selectedX, int select
             }
         }
 
-        if (validRabbCount == RABBIT_COUNT && !g_gameConfig.isEditing)
+        if (GameCore_isWinning(gameCore) && !g_gameConfig.isEditing)
         {
             g_gameConfig.State = WINNING;
             g_gameConfig.CurrentAnimationTime = 6.f;
@@ -124,6 +115,11 @@ void GameCore_update(GameCore* gameCore, Scene* scene, int selectedX, int select
             g_gameConfig.inLevel = false;
             scene->m_uiManager->m_nextAction = GAME_UI_ACTION_OPEN_TITLE;
         }
+        break;
+    case GAMBLING:
+
+
+
         break;
     default: break;
     }
@@ -666,4 +662,25 @@ bool GameCore_isAimingRabbit(GameCore* gameCore, int cellX, int cellY, Rabbit** 
 
     *res = NULL;
     return false;
+}
+
+bool GameCore_isWinning(GameCore* gameCore)
+{
+    int validRabbCount = 0;
+    for (int x = 0; x < MAX_RABBITS + MAX_FOXES + MAX_MUSHROOMS; x++)
+    {
+        Rabbit* l_Rabb = RABBIT(x);
+        if (l_Rabb)
+        {
+            if (l_Rabb->Type == RABBIT)
+            {
+                int i = l_Rabb->CellX;
+                int j = l_Rabb->CellY;
+
+                validRabbCount += (i == GAME_GRID_SIZE / 2 && j == GAME_GRID_SIZE / 2 || i == 0 && j == 0 || j == 0 && i == GAME_GRID_SIZE - 1 || i == 0 && j == GAME_GRID_SIZE - 1 || (i == GAME_GRID_SIZE - 1 && j == GAME_GRID_SIZE - 1));
+            }
+        }
+    }
+
+    return validRabbCount == RABBIT_COUNT;
 }

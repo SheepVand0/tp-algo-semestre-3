@@ -42,6 +42,7 @@ typedef struct GameUIManager
     UILabel* m_timeText;
     UIGridLayout* m_timeTextLayout;
     UIButton* LeaveGameButton;
+    UIButton* GambleButton;
 
     UIGridLayout* m_lostTextLayout;
     UILabel* m_lostText;

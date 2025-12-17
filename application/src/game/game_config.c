@@ -16,6 +16,7 @@ void GameConfig_init()
     g_gameConfig.nextScene = GAME_SCENE_MAIN;
     g_gameConfig.inLevel = false;
     g_gameConfig.isEditing = false;
+    g_gameConfig.GamblingAnimTime = 0;
     g_gameConfig.Core = NULL;
     g_gameConfig.Assets = NULL;
     g_gameConfig.LarryAudio = NULL;

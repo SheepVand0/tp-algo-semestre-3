@@ -13,7 +13,7 @@
 typedef struct Scene Scene;
 
 #define GAME_GRID_SIZE g_gameConfig.Settings->GridSize
-#define MAX_GAME_GRID_SIZE 25
+#define MAX_GAME_GRID_SIZE 40
 
 #define GAME_GRAPHICS_RENDER(gameGraphics, rabbits, rabbcount) gameGraphics->RabbitsToRender = rabbits; \
 gameGraphics->RabbitCount = rabbcount; \
@@ -47,6 +47,10 @@ typedef struct GameGraphics
     SpriteGroup* HoverSpriteFox;
 
     SpriteGroup* HoleSprite;
+
+    SpriteGroup* MastermindSprite;
+
+    SAudio* CandyBoomAudio;
 
     bool m_enabled;
 } GameGraphics;

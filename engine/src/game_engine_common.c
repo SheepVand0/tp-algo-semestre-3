@@ -84,6 +84,7 @@ SDL_AppResult Game_createWindow(int width, int height, const char* title, Uint32
     assert(g_window == NULL && "The window is already created");
 
     g_window = SDL_CreateWindow(title, width, height, flags);
+
     if (!g_window)
     {
         SDL_LogError(SDL_LOG_CATEGORY_SYSTEM, "Create window %s\n", SDL_GetError());

@@ -11,9 +11,9 @@
 #include "game/input.h"
 #include "../audio/audio_manager.h"
 
-#define MAX_RABBITS 10
-#define MAX_FOXES 5
-#define MAX_MUSHROOMS 10
+#define MAX_RABBITS 5
+#define MAX_FOXES 50
+#define MAX_MUSHROOMS 50
 
 #define RABBIT_COUNT g_gameConfig.Settings->RabbitCount
 #define FOX_COUNT g_gameConfig.Settings->FoxCount
@@ -107,3 +107,5 @@ bool Rabbit_canBePlaced(GameCore* scene, Rabbit* rabb);
 void GameCore_deletePiece(GameCore* gameCore, Rabbit* rabb);
 
 bool GameCore_isAimingRabbit(GameCore* gameCore, int cellX, int cellY, Rabbit** res);
+
+bool GameCore_isWinning(GameCore* gameCore);

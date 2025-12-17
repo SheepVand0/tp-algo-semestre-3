@@ -26,6 +26,21 @@ static void GameUIManager_onLeaveClicked(void* selectable)
     l_Manager->m_nextAction = GAME_UI_ACTION_OPEN_TITLE;
 }
 
+static void GameUIManager_startGambling(void* selectable)
+{
+    GameUIManager* l_Man = (GameUIManager*)UISelectable_getUserData(selectable);
+    assert(l_Man);
+
+    printf("Gambled\n");
+
+    g_gameConfig.GamblingResult = MASTERMIND;
+    g_gameConfig.GamblingAnimTime = 0.f;
+    g_gameConfig.State = GAMBLING;
+
+    g_gameConfig.CandyAcc = Vec2_zero;
+    g_gameConfig.CandyPos = Vec2_set(HD_WIDTH / 2, 12);
+}
+
 GameUIManager* GameUIManager_create(Scene* scene)
 {
     GameUIManager* self = (GameUIManager*)calloc(1, sizeof(GameUIManager));
@@ -62,6 +77,14 @@ GameUIManager* GameUIManager_create(Scene* scene)
 
     UIFocusManager_addSelectable(self->FocusManager, self->LeaveGameButton);
 
+    self->GambleButton = UIButton_create("gamble-button", AssetManager_getFont(assets, FONT_NORMAL));
+    UIButton_setLabelString(self->GambleButton, "gabmle");
+    UISelectable_setUserData(self->GambleButton, self);
+    UISelectable_setUserId(self->GambleButton, 0);
+    UIButton_setOnClickCallback(self->GambleButton, GameUIManager_startGambling);
+
+    UIFocusManager_addSelectable(self->FocusManager, self->GambleButton);
+
     self->m_lostTextLayout = UIGridLayout_create("lost-text-layout", 2, 1);
     UIObject_setParent(self->m_lostTextLayout, canvas);
     UIGridLayout_setRowSizes(self->m_lostTextLayout, 25.0f);
@@ -79,6 +102,7 @@ GameUIManager* GameUIManager_create(Scene* scene)
     UIGridLayout_addObject(self->m_timeTextLayout, self->m_timeText, 0, 2, 1, 1);
     UIGridLayout_addObject(self->m_timeTextLayout, self->LeaveGameButton, 2, 0, 1, 1);
     UIGridLayout_addObject(self->m_lostTextLayout, self->m_lostText, 0, 0, 1, 1);
+    UIGridLayout_addObject(self->m_timeTextLayout, self->GambleButton, 2, 4, 1, 1);
 
     return self;
 }

@@ -14,6 +14,11 @@
 #include "windows.h"
 #include <stdio.h>
 
+static void GameTitlePage_emptyCallback(void* selectable)
+{
+
+}
+
 static void GameTitlePage_onClick(void* selectable)
 {
     GameTitlePage* self = (GameTitlePage*)UISelectable_getUserData(selectable);
@@ -166,6 +171,7 @@ void GameTitlePage_render(GameTitlePage* self)
             if (fixedAnimTime >= ANIM_DURATION_IN_SEC + (ANIM_EAT_SUPP_TIME - 1) && self->lastFixedTime <= ANIM_DURATION_IN_SEC + (ANIM_EAT_SUPP_TIME - 1))
             {
                 UIObject_setEnabled(self->SettingsButton, false);
+                UIButton_setOnClickCallback(self->SettingsButton, GameTitlePage_emptyCallback);
                 AudioManager_play(g_gameConfig.Audio, self->Eating);
             }
         }

@@ -13,6 +13,8 @@
 #define RABBIT_ARRAY g_gameConfig.Core->Rabbits
 #define RABBIT(x) &g_gameConfig.Core->Rabbits[x]
 
+#define GAMBLING_PRE_ANIM_DURATION 5.f
+
 Scene* Scene_create()
 {
     Scene* self = (Scene*)calloc(1, sizeof(Scene));
@@ -147,6 +149,7 @@ void Scene_render(Scene* self)
     SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255);
     SDL_RenderClear(g_renderer);
 
+    /// 1150 - 175
 
     SDL_Color bgColor = { 0 };
     bgColor.r = 15;

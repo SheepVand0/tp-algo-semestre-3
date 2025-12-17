@@ -250,7 +250,7 @@ EditorUI* EditorUI_create(Scene* scene, GameUIManager* titlePage)
     l_UI->MainManager = titlePage;
     l_UI->FocusManager = UIFocusManager_create();
 
-    l_UI->MainCanvas = UICanvas_create("editor-canvas");
+    //l_UI->MainCanvas = UICanvas_create("editor-canvas");
 
     l_UI->CurrentPage = 0;
 
@@ -396,10 +396,10 @@ EditorUI* EditorUI_create(Scene* scene, GameUIManager* titlePage)
     UIGridLayout_addObject(self->ButtonsLayout, self->TimeList, 0, 0, 1, 1);
 
 
-    self->GridSizeList = UIList_create("grid-size-list", AssetManager_getFont(assets, FONT_NORMAL), 10 , UI_LIST_CONFIG_CYCLE | UI_LIST_CONFIG_AUTO_NAVIGATION);
+    self->GridSizeList = UIList_create("grid-size-list", AssetManager_getFont(assets, FONT_NORMAL), 15 , UI_LIST_CONFIG_CYCLE | UI_LIST_CONFIG_AUTO_NAVIGATION);
     UIList_setLabelString(self->GridSizeList, "Grid size:");
 
-    for (int x = 0; x < 10; x++)
+    for (int x = 0; x < 15; x++)
     {
         /*char l_Val[2] = "0";
         l_Val[0] = 5 + (2 * x) + '0';*/

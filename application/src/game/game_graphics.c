@@ -12,6 +12,7 @@
 #include "game/game_config.h"
 #include "game/game_editor.h"
 #include "game/core/game_core.h"
+#include "game/game_loader.h"
 
 GameGraphics* GameGraphics_create(Scene* scene)
 {
@@ -24,6 +25,7 @@ GameGraphics* GameGraphics_create(Scene* scene)
     self->m_gridAABB.lower = Vec2_add(Vec2_set(-4.f, -4.f), Vec2_set(8.0f, 4.5f));
     self->m_gridAABB.upper = Vec2_add(Vec2_set(+4.f, +4.f), Vec2_set(8.0f, 4.5f));
     self->m_enabled = false;
+    self->CandyBoomAudio = AudioManager_loadWav(g_gameConfig.Audio, "bang_effect.wav", "bang-effect");
 
     AssetManager* assets = Scene_getAssetManager(scene);
     SpriteSheet* spriteSheet = AssetManager_getSpriteSheet(assets, SPRITE_UI_BASE);
@@ -39,7 +41,7 @@ GameGraphics* GameGraphics_create(Scene* scene)
     self->HoverSpriteFox = SpriteSheet_getGroupByName(spriteSheet, "select_box");
     AssertNew(self->HoverSpriteFox);
 
-    
+    self->MastermindSprite = SpriteSheet_getGroupByName(AssetManager_getSpriteSheet(assets, SPRITE_MASTERMIND), "mastermind");
 
     return self;
 }
@@ -83,6 +85,8 @@ void GameGraphics_update(GameGraphics* self)
 
     Vec2 mouseWorldPos = { 0 };
     Camera_viewToWorld(camera, input->mouse.position.x, input->mouse.position.y, &mouseWorldPos);
+
+    //printf("%f %f\n", input->mouse.position.x, input->mouse.position.y);
 
     if (self->m_enabled == false)
     {
@@ -217,6 +221,12 @@ void GameGraphics_update(GameGraphics* self)
     }
 }
 
+#define MASTERMIND_ANIM_FADE_DUR 4.f
+#define MASTERMIND_ANIM_EFFECT_DUR 6.f
+#define MASTERMIND_OUT_FADE_DUR 3.f
+#define MASTERMIND_APPLY_DELAY 4.f
+#define MASTERMIND_LEVEL "../../../mastermind_level.txt"
+
 void GameGraphics_render(GameGraphics* self)
 {
     assert(self && "self must not be NULL");
@@ -303,5 +313,110 @@ void GameGraphics_render(GameGraphics* self)
 
             SpriteGroup_renderRotated(l_Rabb->Type == FOX ? self->HoverSpriteFox : self->HoverSprite, 0, &l_Rect, l_Anchor, l_Angle, 1.f);
         }
+    }
+
+    if (g_gameConfig.State == GAMBLING && g_gameConfig.GamblingResult == CANDY)
+    {
+        Vec2 l_LastCandyPos = g_gameConfig.CandyPos;
+
+        SpriteGroup* l_Candy = SpriteSheet_getGroupByName(AssetManager_getSpriteSheet(scene->m_assets, SPRITE_CANDY), "candy");
+        SDL_FRect l_Rec;
+        l_Rec.x = g_gameConfig.CandyPos.x;
+        l_Rec.y = g_gameConfig.CandyPos.y;
+        l_Rec.w = 200.0;
+        l_Rec.h = 200.f;
+
+        g_gameConfig.CandyAcc = Vec2_add(g_gameConfig.CandyAcc, Vec2_set(0, (9.81f * Timer_getDelta(g_time) * 2)));
+        g_gameConfig.CandyPos = Vec2_add(g_gameConfig.CandyPos, Vec2_scale(g_gameConfig.CandyAcc, 20*Timer_getDelta(g_time)));
+
+        if (g_gameConfig.CandyPos.y >= HD_HEIGHT && l_LastCandyPos.y < HD_HEIGHT)
+        {
+            AudioManager_play(g_gameConfig.Audio, self->CandyBoomAudio);
+        }
+
+        if (g_gameConfig.CandyPos.y >= HD_HEIGHT)
+        {
+            g_gameConfig.CandyPos.y = HD_HEIGHT;
+            int wx;
+            int wy;
+            SDL_GetWindowPosition(g_window, &wx, &wy);
+
+            //printf("%d %d /=> %f %f\n", wx, wy, wx + ceil(g_gameConfig.CandyAcc.x * 20 * Timer_getDelta(g_time)), wy + ceil(g_gameConfig.CandyAcc.y * 20 * Timer_getDelta(g_time)));
+            SDL_SetWindowPosition(g_window, wx + ceil(g_gameConfig.CandyAcc.x * 20 * Timer_getDelta(g_time)), wy + ceil(g_gameConfig.CandyAcc.y * 20 * Timer_getDelta(g_time)));
+
+            if (wy >= 5000)
+            {
+                SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING, "IMPORTANT INFO", "you lost btw", g_window);
+                exit(0);
+            }
+        }
+
+        SpriteGroup_render(l_Candy, 0, &l_Rec, Vec2_anchor_center, 5.f);
+    }
+
+    if (g_gameConfig.State == GAMBLING && g_gameConfig.GamblingResult == MASTERMIND)
+    {
+        float l_LastTime = g_gameConfig.GamblingAnimTime;
+
+        g_gameConfig.GamblingAnimTime += Timer_getDelta(g_time);
+
+
+        if (g_gameConfig.GamblingAnimTime < MASTERMIND_ANIM_FADE_DUR)
+        {
+            SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, Float_clamp((g_gameConfig.GamblingAnimTime / (MASTERMIND_ANIM_FADE_DUR - 1)) * 150, 0, 150));
+            SDL_RenderFillRect(g_renderer, NULL);
+        }
+        else if (g_gameConfig.GamblingAnimTime >= MASTERMIND_ANIM_FADE_DUR && g_gameConfig.GamblingAnimTime < MASTERMIND_ANIM_FADE_DUR + MASTERMIND_ANIM_EFFECT_DUR)
+        {
+            SpriteGroup* l_Master = self->MastermindSprite;
+
+            SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 150);
+            SDL_RenderFillRect(g_renderer, NULL);
+
+            float l_FixedTime = g_gameConfig.GamblingAnimTime - MASTERMIND_ANIM_FADE_DUR;
+
+            SDL_FRect l_Rec;
+            l_Rec.x = HD_WIDTH / 2;
+            l_Rec.y = HD_HEIGHT / 2;
+            l_Rec.w = 200;
+            l_Rec.h = 200;
+
+            SpriteGroup_setOpacityFloat(l_Master, 1);
+            SpriteGroup_render(l_Master, 0, &l_Rec, Vec2_anchor_center, 1.f);
+
+            l_Rec.w = 200 + 200 * (l_FixedTime / (MASTERMIND_ANIM_EFFECT_DUR / 6));
+            l_Rec.h = 200 + 200 * (l_FixedTime / (MASTERMIND_ANIM_EFFECT_DUR / 6));
+
+            SpriteGroup_setOpacityFloat(l_Master, 0.99f - (l_FixedTime / (MASTERMIND_ANIM_EFFECT_DUR / 6)));
+            SpriteGroup_render(l_Master, 0, &l_Rec, Vec2_anchor_center, 1.f);
+        }
+        else if (g_gameConfig.GamblingAnimTime >= MASTERMIND_ANIM_FADE_DUR + MASTERMIND_ANIM_EFFECT_DUR && g_gameConfig.GamblingAnimTime < MASTERMIND_ANIM_FADE_DUR + MASTERMIND_ANIM_EFFECT_DUR + MASTERMIND_OUT_FADE_DUR)
+        {
+            float l_FixedTime = g_gameConfig.GamblingAnimTime - MASTERMIND_ANIM_FADE_DUR - MASTERMIND_ANIM_EFFECT_DUR;
+
+            SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 150 - (l_FixedTime / MASTERMIND_OUT_FADE_DUR) * 150);
+            SDL_RenderFillRect(g_renderer, NULL);
+
+            SDL_FRect l_Rec;
+            l_Rec.x = HD_WIDTH / 2;
+            l_Rec.y = HD_HEIGHT / 2;
+            l_Rec.w = 200;
+            l_Rec.h = 200;
+
+            SpriteGroup* l_Master = self->MastermindSprite;
+
+            SpriteGroup_setOpacityFloat(l_Master, 1 - (l_FixedTime / MASTERMIND_OUT_FADE_DUR));
+            SpriteGroup_render(l_Master, 0, &l_Rec, Vec2_anchor_center, 1.f);
+        }
+        else if (g_gameConfig.GamblingAnimTime >= MASTERMIND_ANIM_FADE_DUR + MASTERMIND_ANIM_EFFECT_DUR + MASTERMIND_OUT_FADE_DUR + MASTERMIND_APPLY_DELAY)
+        {
+            float l_Remaining = g_gameConfig.Remaining;
+
+            GameLoader_loadGame(MASTERMIND_LEVEL, true);
+
+            g_gameConfig.Remaining = l_Remaining;
+            g_gameConfig.State = PLAYING;
+        }
+
     }
 }
