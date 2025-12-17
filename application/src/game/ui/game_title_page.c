@@ -42,6 +42,8 @@ GameTitlePage* GameTitlePage_create(Scene* scene, GameUIManager *manager)
     self->m_mainPanel = UIObject_create("main-panel");
     self->m_nextAction = GAME_UI_ACTION_NONE;
     self->m_focusManager = UIFocusManager_create();
+
+    self->LowQualityCatSprite = SpriteSheet_getGroupByName(AssetManager_getSpriteSheet(assets, SPRITE_LOW_QUALITY_CAT), "cat");
     UIFocusManager_setCanvas(self->m_focusManager, canvas);
 
     UIObject_setParent(self->m_mainPanel, canvas);
@@ -162,6 +164,13 @@ void GameTitlePage_destroy(GameTitlePage* self)
 void GameTitlePage_update(GameTitlePage* self, UIInput* input)
 {
     UIFocusManager_update(self->m_focusManager, input);
+
+    self->AnimationTime += Timer_getDelta(g_time);
+
+    if (self->AnimationTime)
+    {
+
+    }
 
     switch (self->m_nextAction)
     {

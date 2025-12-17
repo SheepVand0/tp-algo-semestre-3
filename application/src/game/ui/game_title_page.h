@@ -23,6 +23,9 @@ typedef struct GameTitlePage
     UIObject* m_mainPanel;
 
     MIX_Mixer* Mixer;
+
+    SpriteGroup* LowQualityCatSprite;
+    float AnimationTime;
 } GameTitlePage;
 
 GameTitlePage* GameTitlePage_create(Scene* scene, GameUIManager *manager);
