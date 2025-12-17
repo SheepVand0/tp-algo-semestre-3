@@ -40,18 +40,6 @@ typedef enum ERabbitDirection
     RABBIT_WEST
 } ERabbitDirection;
 
-typedef enum EGameState
-{
-    NONE,
-    PLAYING,
-    EDITING,
-    WINNING,
-    GAMBLING,
-    OUPI_GOUPI,
-    MASTERMIND,
-    GETTING_LARRIED
-} EGameState;
-
 typedef struct Rabbit
 {
     SpriteGroup* RabbitSprite;
@@ -70,13 +58,6 @@ typedef struct Rabbit
 typedef struct GameCore
 {
     Rabbit Rabbits[MAX_RABBITS + MAX_FOXES + MAX_MUSHROOMS];
-    Rabbit* Selected;
-
-    EGameState State;
-
-    float Remaining;
-
-    float CurrentAnimationTime;
 } GameCore;
 
 GameCore* GameCore_create();

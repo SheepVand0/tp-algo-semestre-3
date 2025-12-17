@@ -12,11 +12,12 @@
 
 typedef struct Scene Scene;
 
-#define GAME_GRID_SIZE 5
+#define GAME_GRID_SIZE g_gameConfig.Settings->GridSize
+#define MAX_GAME_GRID_SIZE 25
 
 #define GAME_GRAPHICS_RENDER(gameGraphics, rabbits, rabbcount) gameGraphics->RabbitsToRender = rabbits; \
 gameGraphics->RabbitCount = rabbcount; \
-gameGraphics->Selected = g_gameConfig.Core->Selected; \
+gameGraphics->Selected = g_gameConfig.Selected; \
 GameGraphics_render(gameGraphics); \
 
 
@@ -28,7 +29,7 @@ typedef struct GameGraphics
     Vec2 m_padding;
     Vec2 m_spacing;
 
-    AABB m_cells[GAME_GRID_SIZE][GAME_GRID_SIZE];
+    AABB m_cells[MAX_GAME_GRID_SIZE][MAX_GAME_GRID_SIZE];
 
     int m_selectedRowIndex;
     int m_selectedColIndex;

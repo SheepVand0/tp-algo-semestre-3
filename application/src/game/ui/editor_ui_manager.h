@@ -66,6 +66,8 @@ typedef struct EditorUI
 
     UIList* TimeList;
 
+    UIList* GridSizeList;
+
     UIButton** ActionsButtons;
 
     Rabbit* PlacingTemp;

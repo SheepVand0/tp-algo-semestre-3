@@ -160,7 +160,7 @@ void Scene_render(Scene* self)
 
     GameUIManager_render(self->m_uiManager);
 
-    if (g_gameConfig.inLevel && g_gameConfig.Core->State != NONE && g_gameConfig.Core->State != GETTING_LARRIED && g_gameConfig.Core->State != WINNING)
+    if (g_gameConfig.inLevel && g_gameConfig.State != NONE && g_gameConfig.State != GETTING_LARRIED && g_gameConfig.State != WINNING)
     {
         GameCore* gameCore = g_gameConfig.Core;
 
@@ -183,11 +183,11 @@ void Scene_render(Scene* self)
         SDL_RenderFillRect(g_renderer, NULL);
     }
 
-    if (g_gameConfig.Core->State == GETTING_LARRIED || g_gameConfig.Core->State == WINNING)
+    if (g_gameConfig.State == GETTING_LARRIED || g_gameConfig.State == WINNING)
     {
         SpriteGroup* l_Larry = NULL;
         
-        if (g_gameConfig.Core->State == GETTING_LARRIED)
+        if (g_gameConfig.State == GETTING_LARRIED)
         {
             l_Larry = SpriteSheet_getGroupByName(AssetManager_getSpriteSheet(Scene_getAssetManager(self), SPRITE_LARRY), "larry");
             SpriteGroup_setColorModFloat(l_Larry, 1.f, 0.5f, 0.5f);
@@ -208,7 +208,7 @@ void Scene_render(Scene* self)
 
         GameUIManager_render(self->m_uiManager);
 
-        SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255 - Float_clamp((sin(g_gameConfig.Core->CurrentAnimationTime / 6.f * M_PI) * (255.f)), 0, 255));
+        SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255 - Float_clamp((sin(g_gameConfig.CurrentAnimationTime / 6.f * M_PI) * (255.f)), 0, 255));
         SDL_RenderFillRect(g_renderer, NULL);
     }
 }

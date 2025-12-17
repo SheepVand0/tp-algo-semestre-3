@@ -16,7 +16,7 @@ static void GameUIManager_closePages(GameUIManager* self);
 static void GameUIManager_onLeaveClicked(void* selectable)
 {
     g_gameConfig.inLevel = false;
-    g_gameConfig.Core->State = NONE;
+    g_gameConfig.State = NONE;
 
     //GameCore_destroyGame(g_gameConfig.Core);
 
@@ -106,14 +106,14 @@ static void GameUIManager_closePages(GameUIManager* self)
 
 void GameUIManager_update(GameUIManager* self, UIInput* input)
 {
-    UIObject_setEnabled(self->m_timeTextLayout, g_gameConfig.Core->State == PLAYING && !g_gameConfig.isEditing);
-    UIObject_setEnabled(self->m_lostText, g_gameConfig.Core->State == GETTING_LARRIED || g_gameConfig.Core->State == WINNING);
+    UIObject_setEnabled(self->m_timeTextLayout, g_gameConfig.State == PLAYING && !g_gameConfig.isEditing);
+    UIObject_setEnabled(self->m_lostText, g_gameConfig.State == GETTING_LARRIED || g_gameConfig.State == WINNING);
 
     if (g_gameConfig.Core && g_gameConfig.inLevel)
     {
-        UILabel_setTextString(self->m_timeText, GameUIManager_formatTime(g_gameConfig.Core->Remaining));
+        UILabel_setTextString(self->m_timeText, GameUIManager_formatTime(g_gameConfig.Remaining));
 
-        UILabel_setColor(self->m_timeText, GameUIManager_getColorByTime(g_gameConfig.Core->Remaining));
+        UILabel_setColor(self->m_timeText, GameUIManager_getColorByTime(g_gameConfig.Remaining));
     }
 
     Scene* scene = self->m_scene;
@@ -208,6 +208,19 @@ SDL_Color GameUIManager_getColorByTime(float time)
     l_Color.a = 255;
 
     return l_Color;
+}
+
+char* GameUIManager_twoDigitsToString(int value)
+{
+    char* l_Res = "jh";
+
+    int unit = value - ((value / 10) * 10);
+    int ten = (value - unit) / 10;
+
+    l_Res[0] = '0' + (ten ? ten : unit);
+    l_Res[1] = ten ? ('0' + unit) : '\0';
+
+    return l_Res;
 }
 
 void GameUIManager_render(GameUIManager* self)

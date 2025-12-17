@@ -24,6 +24,10 @@ void Game_addAssets(AssetManager* assets)
     );
 
     AssetManager_addSpriteSheet(
+        assets, SPRITE_LOW_QUALITY_CAT, "atlas/low_quality_cat", "atlas/low_quality_cat_desc"
+    );
+
+    AssetManager_addSpriteSheet(
         assets, SPRITE_UI_SELECT_BOX, "atlas/ui_select_box", "atlas/ui_select_box_desc"
     );
 

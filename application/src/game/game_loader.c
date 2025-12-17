@@ -28,8 +28,6 @@ void GameLoader_loadGame(char* fileName, bool forPlay)
     g_gameConfig.Settings->TotalTime = time;
     g_gameConfig.Settings->GridSize = gridSize;
 
-    //GameCore_initNextGame(g_gameConfig.Core);
-
     int indexR = 0;
     int indexF = forPlay ? RABBIT_COUNT : MAX_RABBITS;
     int indexM = (forPlay ? RABBIT_COUNT : MAX_RABBITS) + (forPlay ? FOX_COUNT : MAX_FOXES);

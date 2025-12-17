@@ -15,27 +15,23 @@ GameCore* GameCore_create()
     GameCore* l_Core = malloc(sizeof(GameCore));
     assert(l_Core);
 
-    l_Core->Selected = NULL;
-    l_Core->State = NONE;
-    l_Core->Remaining = 10.f;
-
     return l_Core;
 }
 
 void GameCore_update(GameCore* gameCore, Scene* scene, int selectedX, int selectedY)
 {
 
-    switch (gameCore->State)
+    switch (g_gameConfig.State)
     {
     case NONE:
         if (!g_gameConfig.isEditing)
         {
             //GameCore_initNextGame(gameCore);
-            gameCore->State = PLAYING;
+            g_gameConfig.State = PLAYING;
         }
         else
         {
-            gameCore->State = EDITING;
+            g_gameConfig.State = EDITING;
         }
         break;
 
@@ -67,7 +63,7 @@ void GameCore_update(GameCore* gameCore, Scene* scene, int selectedX, int select
 
                     if ((l_Rabb->CellX == selectedX && l_Rabb->CellY == selectedY) || l_Other)
                     {
-                        gameCore->Selected = l_Rabb;
+                        g_gameConfig.Selected = l_Rabb;
                     }
                 }
             }
@@ -75,8 +71,8 @@ void GameCore_update(GameCore* gameCore, Scene* scene, int selectedX, int select
 
         if (validRabbCount == RABBIT_COUNT && !g_gameConfig.isEditing)
         {
-            gameCore->State = WINNING;
-            gameCore->CurrentAnimationTime = 6.f;
+            g_gameConfig.State = WINNING;
+            g_gameConfig.CurrentAnimationTime = 6.f;
             AudioManager_play(g_gameConfig.Audio, g_gameConfig.AmongUsAudio);
 
             UILabel_setTextString(scene->m_uiManager->m_lostText, "You won!");
@@ -89,12 +85,12 @@ void GameCore_update(GameCore* gameCore, Scene* scene, int selectedX, int select
 
             if (l_Obj == NO_OBJECT)
             {
-                if (gameCore->Selected)
+                if (g_gameConfig.Selected)
                 {
-                    if (gameCore->Selected->CellX != selectedX || gameCore->Selected->CellY != selectedY)
+                    if (g_gameConfig.Selected->CellX != selectedX || g_gameConfig.Selected->CellY != selectedY)
                     {
 
-                        Rabbit* l_Rabb = gameCore->Selected;
+                        Rabbit* l_Rabb = g_gameConfig.Selected;
 
                         Rabbit_move(l_Rabb, gameCore, selectedX, selectedY);
                     }
@@ -104,13 +100,13 @@ void GameCore_update(GameCore* gameCore, Scene* scene, int selectedX, int select
 
         if (g_gameConfig.isEditing == false)
         {
-            gameCore->Remaining -= Timer_getDelta(g_time);
+            g_gameConfig.Remaining -= Timer_getDelta(g_time);
 
-            if (gameCore->Remaining <= 0)
+            if (g_gameConfig.Remaining <= 0)
             {
                 AudioManager_play(g_gameConfig.Audio, g_gameConfig.LarryAudio);
-                gameCore->State = GETTING_LARRIED;
-                gameCore->CurrentAnimationTime = 6.f;
+                g_gameConfig.State = GETTING_LARRIED;
+                g_gameConfig.CurrentAnimationTime = 6.f;
 
                 UILabel_setTextString(scene->m_uiManager->m_lostText, "You lost");
                 UILabel_setColor(scene->m_uiManager->m_lostText, g_colors.red6);
@@ -119,11 +115,11 @@ void GameCore_update(GameCore* gameCore, Scene* scene, int selectedX, int select
         break;
     case WINNING:
     case GETTING_LARRIED:
-        gameCore->CurrentAnimationTime -= Timer_getDelta(g_time);
+        g_gameConfig.CurrentAnimationTime -= Timer_getDelta(g_time);
 
-        if (gameCore->CurrentAnimationTime <= 0)
+        if (g_gameConfig.CurrentAnimationTime <= 0)
         {
-            gameCore->State = NONE;
+            g_gameConfig.State = NONE;
             g_gameConfig.nextScene = GAME_SCENE_MAIN;
             g_gameConfig.inLevel = false;
             scene->m_uiManager->m_nextAction = GAME_UI_ACTION_OPEN_TITLE;
@@ -142,7 +138,7 @@ void GameCore_destroyGame(GameCore* gameCore)
         gameCore->Rabbits[x] = l_Zero;
     }
 
-    gameCore->State = NONE;
+    g_gameConfig.State = NONE;
 }
 
 void GameCore_initNextGame(GameCore* gameCore)
@@ -164,7 +160,7 @@ void GameCore_initNextGame(GameCore* gameCore)
     }
     else
     {
-        gameCore->Remaining = g_gameConfig.Settings->TotalTime = 10.f;
+        g_gameConfig.Remaining = g_gameConfig.Settings->TotalTime = 10.f;
 
         GameCore_destroyGame(g_gameConfig.Core);
 

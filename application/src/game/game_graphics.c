@@ -121,7 +121,7 @@ void GameGraphics_update(GameGraphics* self)
                 AABB* cellAABB = &(self->m_cells[i][j]);
                 if (AABB_containsPoint(cellAABB, mouseWorldPos))
                 {
-                    if (g_gameConfig.Core->State != PLAYING)
+                    if (g_gameConfig.State != PLAYING)
                     {
 
                         if (g_gameConfig.isEditing && input->mouse.leftPressed)
@@ -297,7 +297,7 @@ void GameGraphics_render(GameGraphics* self)
         }
         SpriteGroup_renderRotated(l_Rabb->RabbitSprite, l_Rabb == (self->Selected), &l_Rect, l_Anchor, l_Angle, 0.9f);
 
-        if ((l_Rabb == (self->Selected) || self->Selected ? l_Rabb->CellX == self->Selected->CellX && l_Rabb->CellY == self->Selected->CellY : false) && g_gameConfig.Core->State == PLAYING)
+        if ((l_Rabb == (self->Selected) || self->Selected ? l_Rabb->CellX == self->Selected->CellX && l_Rabb->CellY == self->Selected->CellY : false) && g_gameConfig.State == PLAYING)
         {
             SpriteGroup_setColorModFloat(l_Rabb->Type == FOX ? self->HoverSpriteFox : self->HoverSprite, 1.f, 209.f / 255.f, 145.f / 255.f);
 

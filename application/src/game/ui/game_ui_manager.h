@@ -56,3 +56,5 @@ void GameUIManager_update(GameUIManager* self, UIInput* input);
 char* GameUIManager_formatTime(float time);
 
 SDL_Color GameUIManager_getColorByTime(float time);
+
+char* GameUIManager_twoDigitsToString(int value);

@@ -10,6 +10,18 @@
 #include "common/common.h"
 #include "game/core/game_core.h"
 
+typedef enum EGameState
+{
+    NONE,
+    PLAYING,
+    EDITING,
+    WINNING,
+    GAMBLING,
+    OUPI_GOUPI,
+    MASTERMIND,
+    GETTING_LARRIED
+} EGameState;
+
 typedef struct GameConfig
 {
     GameScene nextScene;
@@ -25,6 +37,14 @@ typedef struct GameConfig
 
     SAudio* LarryAudio;
     SAudio* AmongUsAudio;
+
+    Rabbit* Selected;
+
+    EGameState State;
+
+    float Remaining;
+
+    float CurrentAnimationTime;
 } GameConfig;
 
 void GameConfig_init();

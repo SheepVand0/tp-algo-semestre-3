@@ -45,6 +45,7 @@ static void EditorUI_levelButtonClick(void* selectable)
         GameLoader_loadGame(l_Path, false);
 
         UIList_setSelectedItem(l_Ui->TimeList, (g_gameConfig.Settings->TotalTime - 10) / 25);
+        UIList_setSelectedItem(l_Ui->GridSizeList, (g_gameConfig.Settings->GridSize - 5) / 2);
     }
     else
     {
@@ -52,7 +53,7 @@ static void EditorUI_levelButtonClick(void* selectable)
 
         GameLoader_loadGame(l_Path, true);
 
-        g_gameConfig.Core->Remaining = g_gameConfig.Settings->TotalTime;
+        g_gameConfig.Remaining = g_gameConfig.Settings->TotalTime;
     }
 }
 
@@ -153,8 +154,8 @@ static void EditorUI_onAddButtonClicked(void* selectable)
         g_gameEditor.AddingObject = Mushroom_create(NULL, 0, 0);
         break;
     case EDITOR_ACTION_PLAY:
-        g_gameConfig.Core->State = g_gameConfig.Core->State == PLAYING ? NONE : PLAYING;
-        UIButton_setLabelString(l_UI->ActionsButtons[EDITOR_ACTION_PLAY], g_gameConfig.Core->State == PLAYING ? "Stop" : "Simulate");
+        g_gameConfig.State = g_gameConfig.State == PLAYING ? NONE : PLAYING;
+        UIButton_setLabelString(l_UI->ActionsButtons[EDITOR_ACTION_PLAY], g_gameConfig.State == PLAYING ? "Stop" : "Simulate");
         break;
     case EDITOR_ACTION_SAVE:
         char* l_Path = calloc(1024, sizeof(char));
@@ -372,7 +373,7 @@ EditorUI* EditorUI_create(Scene* scene, GameUIManager* titlePage)
     UIGridLayout_setAnchor(self->LevelEditLayout, Vec2_anchor_center);
     UIObject_setParent(self->LevelEditLayout, titlePage->m_canvas);
 
-    self->ButtonsLayout = UIGridLayout_create("add-buttons-layout", EDITOR_ACTION_COUNT + 1, 1);
+    self->ButtonsLayout = UIGridLayout_create("add-buttons-layout", EDITOR_ACTION_COUNT + 2, 1);
     UIGridLayout_setColumnSizes(self->ButtonsLayout, 100.f);
     UIGridLayout_setRowSizes(self->ButtonsLayout, 25.f);
     UIGridLayout_setRowSpacings(self->ButtonsLayout, 5.f);
@@ -394,9 +395,23 @@ EditorUI* EditorUI_create(Scene* scene, GameUIManager* titlePage)
 
     UIGridLayout_addObject(self->ButtonsLayout, self->TimeList, 0, 0, 1, 1);
 
+
+    self->GridSizeList = UIList_create("grid-size-list", AssetManager_getFont(assets, FONT_NORMAL), 10 , UI_LIST_CONFIG_CYCLE | UI_LIST_CONFIG_AUTO_NAVIGATION);
+    UIList_setLabelString(self->GridSizeList, "Grid size:");
+
+    for (int x = 0; x < 10; x++)
+    {
+        /*char l_Val[2] = "0";
+        l_Val[0] = 5 + (2 * x) + '0';*/
+        UIList_setItemString(self->GridSizeList, x, GameUIManager_twoDigitsToString(5 + (x * 2)));
+    }
+
+    UIFocusManager_addSelectable(self->EditFocusManager, self->GridSizeList);
+
+    UIGridLayout_addObject(self->ButtonsLayout, self->GridSizeList, 1, 0, 1, 1);
+
     self->ActionsButtons = calloc(EDITOR_ACTION_COUNT, sizeof(UIButton*));
     assert(self->ActionsButtons);
-
 
     const char* texts[EDITOR_ACTION_COUNT] = {
         "Add rabbit",
@@ -415,7 +430,7 @@ EditorUI* EditorUI_create(Scene* scene, GameUIManager* titlePage)
         UISelectable_setUserId(l_Button, x);
         UIButton_setOnClickCallback(l_Button, EditorUI_onAddButtonClicked);
 
-        UIGridLayout_addObject(self->ButtonsLayout, l_Button, x + 1, 0, 1, 1);
+        UIGridLayout_addObject(self->ButtonsLayout, l_Button, x + 2, 0, 1, 1);
 
         UIFocusManager_addSelectable(self->EditFocusManager, l_Button);
 
@@ -463,13 +478,14 @@ void EditorUI_update(EditorUI* self, UIInput* input)
     {
         UIFocusManager_update(self->EditFocusManager, input);
         g_gameConfig.Settings->TotalTime = 10 + (UIList_getSelectedItem(self->TimeList) * 25);
+        g_gameConfig.Settings->GridSize = 5 + (UIList_getSelectedItem(self->GridSizeList) * 2);
     }
 
     for (int x = 0; x < EDITOR_ACTION_COUNT; x++)
     {
         if (x != EDITOR_ACTION_PLAY && x != EDITOR_ACTION_SAVE && x != EDITOR_ACTION_LEAVE)
         {
-            UIObject_setEnabled(self->ActionsButtons[x], g_gameConfig.Core->State != PLAYING);
+            UIObject_setEnabled(self->ActionsButtons[x], g_gameConfig.State != PLAYING);
         }
     }
 
