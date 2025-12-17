@@ -10,6 +10,7 @@
 #include "game/ui/game_ui_manager.h"
 #include "SDL3/SDL_audio.h"
 #include "SDL3/SDL_mixer.h"
+#include "game/audio/audio_manager.h"
 
 typedef struct Scene Scene;
 
@@ -26,9 +27,20 @@ typedef struct GameTitlePage
 
     SpriteGroup* LowQualityCatSprite;
     float AnimationTime;
+
+    UIButton* SettingsButton;
+
+    int lastPos;
+    float SpriteScale;
+    float lastFixedTime;
+
+    SAudio* Footstep0;
+    SAudio* Footstep1;
+    SAudio* Eating;
 } GameTitlePage;
 
 GameTitlePage* GameTitlePage_create(Scene* scene, GameUIManager *manager);
 void GameTitlePage_destroy(GameTitlePage* self);
 void GameTitlePage_update(GameTitlePage* self, UIInput* input);
 
+void GameTitlePage_render(GameTitlePage* self);

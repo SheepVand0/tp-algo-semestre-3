@@ -156,8 +156,6 @@ void Scene_render(Scene* self)
     SDL_SetRenderDrawColor(g_renderer, bgColor.r, bgColor.g, bgColor.b, 255);
     SDL_RenderFillRect(g_renderer, NULL);
 
-    
-
     GameUIManager_render(self->m_uiManager);
 
     if (g_gameConfig.inLevel && g_gameConfig.State != NONE && g_gameConfig.State != GETTING_LARRIED && g_gameConfig.State != WINNING)

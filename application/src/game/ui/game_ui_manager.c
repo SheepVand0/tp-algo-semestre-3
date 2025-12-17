@@ -226,4 +226,9 @@ char* GameUIManager_twoDigitsToString(int value)
 void GameUIManager_render(GameUIManager* self)
 {
     UIObject_render(self->m_canvas);
+
+    if (self->m_titlePage)
+    {
+        GameTitlePage_render(self->m_titlePage);
+    }
 }

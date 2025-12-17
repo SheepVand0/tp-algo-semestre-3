@@ -42,6 +42,13 @@ GameTitlePage* GameTitlePage_create(Scene* scene, GameUIManager *manager)
     self->m_mainPanel = UIObject_create("main-panel");
     self->m_nextAction = GAME_UI_ACTION_NONE;
     self->m_focusManager = UIFocusManager_create();
+    self->AnimationTime = 0.f;
+    self->lastPos = -1;
+    self->SpriteScale = 1.f;
+    self->Eating = AudioManager_loadWav(g_gameConfig.Audio, "eating.wav", "eating");
+
+    self->Footstep0 = AudioManager_loadWav(g_gameConfig.Audio, "footstep_0.wav", "footstep0");
+    self->Footstep1 = AudioManager_loadWav(g_gameConfig.Audio, "footstep_1.wav", "footstep1");
 
     self->LowQualityCatSprite = SpriteSheet_getGroupByName(AssetManager_getSpriteSheet(assets, SPRITE_LOW_QUALITY_CAT), "cat");
     UIFocusManager_setCanvas(self->m_focusManager, canvas);
@@ -59,7 +66,7 @@ GameTitlePage* GameTitlePage_create(Scene* scene, GameUIManager *manager)
     UIGridLayout_setRowSpacings(layout, 5.f);
     UIGridLayout_setRowSpacing(layout, 0, 20.f);
 
-    font = AssetManager_getFont(assets, FONT_BIG_BOLD);
+    font = AssetManager_getFont(assets, FONT_NORMAL);
     UILabel* label = UILabel_create("title-label", font);
     UILabel_setTextString(label, "LARRY");
     UILabel_setAnchor(label, Vec2_anchor_center);
@@ -90,63 +97,9 @@ GameTitlePage* GameTitlePage_create(Scene* scene, GameUIManager *manager)
         {
             UIFocusManager_setFocused(self->m_focusManager, button);
         }
+
+        if (i == 1) self->SettingsButton = button;
     }
-
-    //if (!MIX_Init())
-    //{
-    //    printf("\nCannot init mixer\n");
-    //}
-    //else
-    //{
-    //    self->Mixer = MIX_CreateMixerDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, NULL);
-
-    //    if (!self->Mixer)
-    //    {
-    //        printf("\nERROR CREATING MIXER NO!!!\n");
-    //        printf("\n%s\n", SDL_GetError());
-    //    }
-
-        WIN32_FIND_DATA l_Fd;
-
-        char path[1032] = "*.*";
-
-        HANDLE handle = FindFirstFile(path, &l_Fd);
-
-        printf("\n%s\n", l_Fd.cFileName);
-
-    //    FindNextFile(handle, &l_Fd);
-    //    FindNextFile(handle, &l_Fd);
-    //    FindNextFile(handle, &l_Fd);
-    //    //FindFirstFile(path, &l_Fd);
-
-    //    printf("%s\n", l_Fd.cFileName);
-    //    
-    //    MIX_Audio* l_Larry = MIX_LoadAudio(self->Mixer, "../../../assets/music/larry_intro.wav", true);
-    //    if (!l_Larry)
-    //    {
-    //        printf("\nLarry disapeared\n");
-    //    }
-    //    else
-    //    {
-    //        if (!MIX_PlayAudio(self->Mixer, l_Larry))
-    //        {
-    //            printf("\nCannot play larry audio!!!!!!!!!\n");
-    //            printf("\n%s\n", SDL_GetError());
-    //        }
-    //    }
-    //}
-
-
-    /*SDL_AudioSpec l_WavSpec;
-    Uint8* wavBuffer = NULL;
-    Uint32 wavLength = 0;*/
-
-    //SDL_LoadWAV("larry_intro.wav", &l_WavSpec, &wavBuffer, &wavLength);
-
-    /*SDL_AudioDeviceID device = SDL_OpenAudioDevice(
-        0,
-        &l_WavSpec
-    );*/
 
     return self;
 }
@@ -161,16 +114,10 @@ void GameTitlePage_destroy(GameTitlePage* self)
     free(self);
 }
 
+
 void GameTitlePage_update(GameTitlePage* self, UIInput* input)
 {
     UIFocusManager_update(self->m_focusManager, input);
-
-    self->AnimationTime += Timer_getDelta(g_time);
-
-    if (self->AnimationTime)
-    {
-
-    }
 
     switch (self->m_nextAction)
     {
@@ -191,4 +138,62 @@ void GameTitlePage_update(GameTitlePage* self, UIInput* input)
         break;
     }
     self->m_nextAction = GAME_UI_ACTION_NONE;
+}
+
+#define ANIM_PRE_DURATION 5
+#define ANIM_DISTANCE_X 480
+#define ANIM_POS_Y = 370
+#define ANIM_DURATION_IN_SEC 8
+#define ANIM_EAT_SUPP_TIME 4
+
+void GameTitlePage_render(GameTitlePage* self)
+{
+    self->AnimationTime += Timer_getDelta(g_time);
+
+    if (self->AnimationTime >= ANIM_PRE_DURATION)
+    {
+        float fixedAnimTime = self->AnimationTime - ANIM_PRE_DURATION;
+        int pos = 0;
+
+        if (fixedAnimTime < ANIM_DURATION_IN_SEC)
+        {
+            pos = (fixedAnimTime) * (ANIM_DISTANCE_X / ANIM_DURATION_IN_SEC);
+            pos -= pos % 40;
+        }
+        else if (fixedAnimTime >= ANIM_DURATION_IN_SEC && fixedAnimTime <= ANIM_DURATION_IN_SEC + ANIM_EAT_SUPP_TIME)
+        {
+            pos = ANIM_DISTANCE_X;
+            if (fixedAnimTime >= ANIM_DURATION_IN_SEC + (ANIM_EAT_SUPP_TIME - 1) && self->lastFixedTime <= ANIM_DURATION_IN_SEC + (ANIM_EAT_SUPP_TIME - 1))
+            {
+                UIObject_setEnabled(self->SettingsButton, false);
+                AudioManager_play(g_gameConfig.Audio, self->Eating);
+            }
+        }
+        else
+        {
+            float animTime = fixedAnimTime - ANIM_DURATION_IN_SEC - ANIM_EAT_SUPP_TIME;
+            pos = ANIM_DISTANCE_X - ((animTime) * (ANIM_DISTANCE_X / ANIM_DURATION_IN_SEC));
+            pos -= pos % 40;
+
+            if (animTime >= ANIM_DURATION_IN_SEC) return;
+        }
+
+        if (pos != self->lastPos)
+        {
+            
+            self->SpriteScale *= -1;
+            AudioManager_play(g_gameConfig.Audio, self->SpriteScale == 1 ? self->Footstep0 : self->Footstep1);
+        }
+
+        SDL_FRect l_CatRect = { 0 };
+        l_CatRect.x = pos;
+        l_CatRect.y = 370;
+        l_CatRect.w = self->SpriteScale * 40.f;
+        l_CatRect.h = 42.f;
+
+        SpriteGroup_render(self->LowQualityCatSprite, 0, &l_CatRect, Vec2_anchor_center, 1.f);
+
+        self->lastPos = pos;
+        self->lastFixedTime = fixedAnimTime;
+    }
 }
