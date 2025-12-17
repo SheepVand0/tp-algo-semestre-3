@@ -188,6 +188,13 @@ void Scene_render(Scene* self)
     {
         SpriteGroup* l_Larry = NULL;
         
+        SDL_FRect l_Rec;
+
+        l_Rec.w = 1280;
+        l_Rec.h = 720;
+        l_Rec.x = l_Rec.w / 2.f;
+        l_Rec.y = l_Rec.h / 2;
+
         if (g_gameConfig.State == GETTING_LARRIED)
         {
             l_Larry = SpriteSheet_getGroupByName(AssetManager_getSpriteSheet(Scene_getAssetManager(self), SPRITE_LARRY), "larry");
@@ -197,13 +204,8 @@ void Scene_render(Scene* self)
         {
             l_Larry = SpriteSheet_getGroupByName(AssetManager_getSpriteSheet(Scene_getAssetManager(self), SPRITE_ELECTRICIAN), "electrician");
             SpriteGroup_setColorModFloat(l_Larry, 0.5f, 0.5f, 1.f);
+            l_Rec.w /= 1.5f;
         }
-        SDL_FRect l_Rec;
-
-        l_Rec.w = 1280;
-        l_Rec.h = 720;
-        l_Rec.x = l_Rec.w / 2.f;
-        l_Rec.y = l_Rec.h / 2;
         
         SpriteGroup_renderRotated(l_Larry, 0, &l_Rec, Vec2_set(0.5f, 0.5f), /*Timer_getElapsed(g_time) * 360*/ 0, 0);
 

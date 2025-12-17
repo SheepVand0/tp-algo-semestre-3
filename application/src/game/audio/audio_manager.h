@@ -29,3 +29,5 @@ SAudio* AudioManager_loadWav(AudioManager* manager, char* fileName, char* object
 SAudio* SAudio_create();
 
 bool AudioManager_play(AudioManager* manager, SAudio* audio);
+
+void AudioManager_stopAll(AudioManager* manager);

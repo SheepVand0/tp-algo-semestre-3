@@ -55,3 +55,8 @@ bool AudioManager_play(AudioManager* manager, SAudio* audio)
 {
     return MIX_PlayAudio(manager->Mixer, audio->TargetAudio);
 }
+
+void AudioManager_stopAll(AudioManager* manager)
+{
+    MIX_StopAllTracks(manager->Mixer, 0);
+}

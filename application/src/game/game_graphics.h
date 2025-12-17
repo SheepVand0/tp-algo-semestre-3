@@ -45,12 +45,21 @@ typedef struct GameGraphics
 
     SpriteGroup* HoverSprite;
     SpriteGroup* HoverSpriteFox;
-
     SpriteGroup* HoleSprite;
-
     SpriteGroup* MastermindSprite;
+    SpriteGroup* OupiGoupiSprite;
+    SpriteGroup* MinusFiveSprite;
+    SpriteGroup* ExplosionSprite;
 
     SAudio* CandyBoomAudio;
+    SAudio* HomeRunAudio;
+    SAudio* EarthquakeAudio;
+    SAudio* UndertaleBoomAudio;
+    SAudio* StoneSlideAudio;
+    SAudio* PunchesAudio[5];
+    SAudio* ExplosionAudio;
+
+    Vec2 LastWindowPosition;
 
     bool m_enabled;
 } GameGraphics;
@@ -65,3 +74,5 @@ INLINE void GameGraphics_setEnabled(GameGraphics* self, bool enabled)
     assert(self && "self must not be NULL");
     self->m_enabled = enabled;
 }
+
+float ModFloat(float v, float x);

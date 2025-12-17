@@ -1,7 +1,7 @@
 {
     "pixelArt": false,
     "rectangles": [
-        {"x":  0, "y": 0, "w": 712, "h": 614}
+        {"x":  0, "y": 0, "w": 225, "h": 225}
     ],
     "groups": [
         {"name": "electrician", "frames": [0]}

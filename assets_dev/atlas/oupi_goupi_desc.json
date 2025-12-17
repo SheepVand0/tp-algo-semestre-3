@@ -1,0 +1,9 @@
+{
+    "pixelArt": false,
+    "rectangles": [
+        {"x":  0, "y": 0, "w": 194, "h": 190}
+    ],
+    "groups": [
+        {"name": "oupigoupi", "frames": [0]}
+    ]
+}

@@ -43,6 +43,18 @@ void Game_addAssets(AssetManager* assets)
         assets, SPRITE_MASTERMIND, "atlas/mastermind", "atlas/mastermind_desc"
     );
 
+    AssetManager_addSpriteSheet(
+        assets, SPRITE_OUPI_GOUPI, "atlas/oupi_goupi", "atlas/oupi_goupi_desc"
+    );
+
+    AssetManager_addSpriteSheet(
+        assets, SPRITE_MINUS_FIVE, "atlas/minus_five", "atlas/minus_five_desc"
+    );
+
+    AssetManager_addSpriteSheet(
+        assets, SPRITE_EXPLOSION, "atlas/explosion_4", "atlas/explosion_4_desc"
+    );
+
     // -------------------------------------------------------------------------
     // Fonts
 

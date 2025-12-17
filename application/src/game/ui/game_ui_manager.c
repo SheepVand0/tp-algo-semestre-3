@@ -33,7 +33,7 @@ static void GameUIManager_startGambling(void* selectable)
 
     printf("Gambled\n");
 
-    g_gameConfig.GamblingResult = MASTERMIND;
+    g_gameConfig.GamblingResult = OUPI_GOUPI;
     g_gameConfig.GamblingAnimTime = 0.f;
     g_gameConfig.State = GAMBLING;
 
@@ -130,7 +130,7 @@ static void GameUIManager_closePages(GameUIManager* self)
 
 void GameUIManager_update(GameUIManager* self, UIInput* input)
 {
-    UIObject_setEnabled(self->m_timeTextLayout, g_gameConfig.State == PLAYING && !g_gameConfig.isEditing);
+    UIObject_setEnabled(self->m_timeTextLayout, g_gameConfig.State == PLAYING || (g_gameConfig.State == GAMBLING && g_gameConfig.GamblingResult == OUPI_GOUPI) && !g_gameConfig.isEditing);
     UIObject_setEnabled(self->m_lostText, g_gameConfig.State == GETTING_LARRIED || g_gameConfig.State == WINNING);
 
     if (g_gameConfig.Core && g_gameConfig.inLevel)
