@@ -1,10 +1,12 @@
 #pragma once 
 
 #include "hashmap.h"
+#include "../game/scene.h"
+#include "../game/game_config.h"
 
 
 /// @brief bah résoud le bordel quoi (jsp, j'espère fort)
-void* resoudre();
+void resoudre();
 
 /// @brief résoud aussi mais récursivement (WOW)
-void resoudre_Rec();
+GameHashmapEntry* resoudre_Rec(GameHashmap* map, GameHashmapEntry state);

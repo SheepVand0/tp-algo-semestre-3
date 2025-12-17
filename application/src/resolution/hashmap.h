@@ -1,7 +1,8 @@
 #pragma once
 
 #include "settings.h"
-#include "gridinfo.h"
+#include "../game/game_config.h"
+
 
 //typedef struct HashEntry HashEntry;
 //struct HashEntry
@@ -39,7 +40,7 @@ typedef struct GameHashmap
 /// 
 /// @param capacity la capacité de la table.
 /// @return La table de hachage créée.
-GameHashmap* HashMap_New(int capacity);
+GameHashmap* HashMap_New(size_t capacity);
 
 /// @brief Détruit une table de hachage.
 /// Les clés sont automatiquement libérées mais les données associées ne le sont pas.
@@ -71,7 +72,7 @@ int HashMap_GetSize(GameHashmap* self);
 /// @param value la valeur associée à la clé.
 /// @return Si la clé était déjà présente dans la table, renvoie la valeur précédente
 /// (pour que l'utilisateur puisse libérer la mémoire), sinon renvoie NULL.
-void HashMap_Insert(GameHashmap* map, GameHashmapEntry value);
+GameHashmap* HashMap_Insert(GameHashmap* map, GameHashmapEntry value);
 
 /// @brief Supprime une clé dans une table de hachage.
 /// Cette fonction est sans effet si la clé n'est pas présente.
@@ -85,3 +86,7 @@ void HashMap_Insert(GameHashmap* map, GameHashmapEntry value);
 
 /// @brief double la taille de la hashmap
 GameHashmap* HashMap_Resize(GameHashmap* map);
+
+/// @brief printgrid
+void printGrid(GameCore grid);
+
