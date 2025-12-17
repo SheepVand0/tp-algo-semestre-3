@@ -57,6 +57,8 @@ typedef struct GameConfig
     EGamblingResult GamblingResult;
     Vec2 CandyPos;
     Vec2 CandyAcc;
+
+    bool CompletedGambling[GAMBLING_COUNT];
 } GameConfig;
 
 void GameConfig_init();

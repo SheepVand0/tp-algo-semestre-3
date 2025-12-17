@@ -134,6 +134,11 @@ void GameCore_destroyGame(GameCore* gameCore)
         gameCore->Rabbits[x] = l_Zero;
     }
 
+    for (int x = 0; x < GAMBLING_COUNT; x++)
+    {
+        g_gameConfig.CompletedGambling[x] = false;
+    }
+
     g_gameConfig.State = NONE;
 }
 

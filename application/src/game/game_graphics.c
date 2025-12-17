@@ -331,6 +331,8 @@ void GameGraphics_render(GameGraphics* self)
         {
             SpriteGroup_setOpacityFloat(l_Rabb->RabbitSprite, 1);
         }
+        //l_Rect.x += l_Rect.w / 2;
+
         SpriteGroup_renderRotated(l_Rabb->RabbitSprite, l_Rabb == (self->Selected), &l_Rect, l_Anchor, l_Angle, 0.9f);
 
         if ((l_Rabb == (self->Selected) || self->Selected ? l_Rabb->CellX == self->Selected->CellX && l_Rabb->CellY == self->Selected->CellY : false) && g_gameConfig.State == PLAYING)

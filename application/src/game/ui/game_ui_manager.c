@@ -33,7 +33,11 @@ static void GameUIManager_startGambling(void* selectable)
 
     printf("Gambled\n");
 
-    g_gameConfig.GamblingResult = OUPI_GOUPI;
+    EGamblingResult l_Result = CANDY;
+
+    l_Result = (rand() % GAMBLING_COUNT + rand() % GAMBLING_COUNT + rand() % GAMBLING_COUNT) % GAMBLING_COUNT;
+
+    g_gameConfig.GamblingResult = l_Result;
     g_gameConfig.GamblingAnimTime = 0.f;
     g_gameConfig.State = GAMBLING;
 
@@ -96,7 +100,7 @@ GameUIManager* GameUIManager_create(Scene* scene)
     UILabel_setTextString(self->m_lostText, "YOU LOST");
     UILabel_setAnchor(self->m_lostText, Vec2_anchor_center);
     UILabel_setColor(self->m_lostText, g_colors.red7);
-    
+
     UIObject_setEnabled(self->m_lostText, false);
 
     UIGridLayout_addObject(self->m_timeTextLayout, self->m_timeText, 0, 2, 1, 1);
@@ -133,6 +137,10 @@ void GameUIManager_update(GameUIManager* self, UIInput* input)
     UIObject_setEnabled(self->m_timeTextLayout, g_gameConfig.State == PLAYING || (g_gameConfig.State == GAMBLING && g_gameConfig.GamblingResult == OUPI_GOUPI) && !g_gameConfig.isEditing);
     UIObject_setEnabled(self->m_lostText, g_gameConfig.State == GETTING_LARRIED || g_gameConfig.State == WINNING);
 
+    UIObject_setEnabled(self->GambleButton, g_gameConfig.isEditing == false);
+    UIObject_setEnabled(self->LeaveGameButton, g_gameConfig.isEditing == false);
+    UIObject_setEnabled(self->m_timeText, g_gameConfig.isEditing == false);
+
     if (g_gameConfig.Core && g_gameConfig.inLevel)
     {
         UILabel_setTextString(self->m_timeText, GameUIManager_formatTime(g_gameConfig.Remaining));
@@ -155,7 +163,9 @@ void GameUIManager_update(GameUIManager* self, UIInput* input)
         EditorUI_update(self->m_editorPage, input);
     }
 
-    UIFocusManager_update(self->FocusManager, input);
+
+    if (g_gameConfig.State != GAMBLING)
+        UIFocusManager_update(self->FocusManager, input);
 
     if (self->m_nextAction != GAME_UI_ACTION_NONE)
     {
@@ -206,7 +216,6 @@ char* GameUIManager_formatTime(float time)
 
     int unite = minutes - (minutes / 10 * 10);
 
-    int i = 0;
     l_Res[0] = '0' + minutes / 10;
     l_Res[1] = '0' + unite;
     l_Res[2] = ':';
