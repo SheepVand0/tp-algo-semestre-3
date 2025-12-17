@@ -183,6 +183,7 @@ void GameSettingsPage_update(GameSettingsPage* self, UIInput* input)
         int itemIndex = UIList_getSelectedItem(self->m_fullscreenList);
         SDL_SetWindowFullscreen(g_window, itemIndex == 1);
         g_gameConfig.showElapsedTime = (bool)UIList_getSelectedItem(self->m_elapsedList);
+        g_gameConfig.IsFullscreen = itemIndex;
         self->m_manager->m_nextAction = GAME_UI_ACTION_OPEN_TITLE;
         break;
     }

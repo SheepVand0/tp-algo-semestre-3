@@ -15,6 +15,11 @@ typedef struct Scene Scene;
 #define GAME_GRID_SIZE g_gameConfig.Settings->GridSize
 #define MAX_GAME_GRID_SIZE 40
 
+#define SCREEN_WIDTH g_gameConfig.IsFullscreen ? FHD_WIDTH : HD_WIDTH
+#define SCREEN_HEIGHT g_gameConfig.IsFullscreen ? FHD_HEIGHT : HD_HEIGHT
+
+#define FHD_MUL_TWO (g_gameConfig.IsFullscreen ? 2 : 1)
+
 #define GAME_GRAPHICS_RENDER(gameGraphics, rabbits, rabbcount) gameGraphics->RabbitsToRender = rabbits; \
 gameGraphics->RabbitCount = rabbcount; \
 gameGraphics->Selected = g_gameConfig.Selected; \
@@ -62,6 +67,7 @@ typedef struct GameGraphics
     Vec2 LastWindowPosition;
 
     bool m_enabled;
+    bool LeftPressed;
 } GameGraphics;
 
 GameGraphics* GameGraphics_create(Scene* scene);

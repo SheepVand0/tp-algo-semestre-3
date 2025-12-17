@@ -57,8 +57,11 @@ typedef struct GameConfig
     EGamblingResult GamblingResult;
     Vec2 CandyPos;
     Vec2 CandyAcc;
+    bool CandyWaitingForLeftClick;
 
     bool CompletedGambling[GAMBLING_COUNT];
+
+    bool IsFullscreen;
 } GameConfig;
 
 void GameConfig_init();

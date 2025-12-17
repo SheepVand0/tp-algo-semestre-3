@@ -133,6 +133,13 @@ void GameGraphics_update(GameGraphics* self)
         }
     }
 
+    self->LeftPressed = input->mouse.leftPressed;
+
+    if (self->LeftPressed && g_gameConfig.CandyWaitingForLeftClick)
+    {
+        g_gameConfig.CandyWaitingForLeftClick = false;
+    }
+
     if (input->mouse.leftPressed || g_gameEditor.AddingObject)
     {
         for (int i = 0; i < GAME_GRID_SIZE; i++)
@@ -144,7 +151,6 @@ void GameGraphics_update(GameGraphics* self)
                 {
                     if (g_gameConfig.State != PLAYING)
                     {
-
                         if (g_gameConfig.isEditing && input->mouse.leftPressed)
                         {
                             for (int x = MAX_RABBITS; x < MAX_RABBITS + FOX_COUNT; x++)
@@ -343,7 +349,7 @@ void GameGraphics_render(GameGraphics* self)
         }
     }
 
-    if (g_gameConfig.State == GAMBLING && g_gameConfig.GamblingResult == CANDY)
+    if (g_gameConfig.State == GAMBLING && g_gameConfig.GamblingResult == CANDY )
     {
         Vec2 l_LastCandyPos = g_gameConfig.CandyPos;
 
@@ -354,8 +360,11 @@ void GameGraphics_render(GameGraphics* self)
         l_Rec.w = 200.0;
         l_Rec.h = 200.f;
 
-        g_gameConfig.CandyAcc = Vec2_add(g_gameConfig.CandyAcc, Vec2_set(0, (9.81f * Timer_getDelta(g_time) * 2)));
-        g_gameConfig.CandyPos = Vec2_add(g_gameConfig.CandyPos, Vec2_scale(g_gameConfig.CandyAcc, 20*Timer_getDelta(g_time)));
+        if ((!g_gameConfig.CandyWaitingForLeftClick))
+        {
+            g_gameConfig.CandyAcc = Vec2_add(g_gameConfig.CandyAcc, Vec2_set(0, (9.81f * Timer_getDelta(g_time) * 2)));
+            g_gameConfig.CandyPos = Vec2_add(g_gameConfig.CandyPos, Vec2_scale(g_gameConfig.CandyAcc, 20 * Timer_getDelta(g_time)));
+        }
 
         if (g_gameConfig.CandyPos.y >= HD_HEIGHT && l_LastCandyPos.y < HD_HEIGHT)
         {

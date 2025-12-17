@@ -22,6 +22,7 @@ void GameConfig_init()
     g_gameConfig.LarryAudio = NULL;
     g_gameConfig.Settings = GameSettings_create();
     g_gameConfig.Audio = AudioManager_create();
+    g_gameConfig.IsFullscreen = false;
 
     g_gameConfig.LarryAudio = AudioManager_loadWav(g_gameConfig.Audio, "larry_end_screen.wav", "larry-end-screen");
     g_gameConfig.AmongUsAudio = AudioManager_loadWav(g_gameConfig.Audio, "among_us_win.wav", "among-us-win");

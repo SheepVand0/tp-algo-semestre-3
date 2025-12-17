@@ -35,11 +35,12 @@ static void GameUIManager_startGambling(void* selectable)
 
     EGamblingResult l_Result = CANDY;
 
-    l_Result = (rand() % GAMBLING_COUNT + rand() % GAMBLING_COUNT + rand() % GAMBLING_COUNT) % GAMBLING_COUNT;
+    l_Result = (rand() % GAMBLING_COUNT + rand() % GAMBLING_COUNT) % GAMBLING_COUNT;
 
     g_gameConfig.GamblingResult = l_Result;
     g_gameConfig.GamblingAnimTime = 0.f;
     g_gameConfig.State = GAMBLING;
+    g_gameConfig.CandyWaitingForLeftClick = true;
 
     g_gameConfig.CandyAcc = Vec2_zero;
     g_gameConfig.CandyPos = Vec2_set(HD_WIDTH / 2, 12);
@@ -164,7 +165,7 @@ void GameUIManager_update(GameUIManager* self, UIInput* input)
     }
 
 
-    if (g_gameConfig.State != GAMBLING)
+    if (g_gameConfig.State != GAMBLING && !g_gameConfig.isEditing)
         UIFocusManager_update(self->FocusManager, input);
 
     if (self->m_nextAction != GAME_UI_ACTION_NONE)
