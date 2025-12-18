@@ -6,3 +6,6 @@ build/
 
 .vs
 /enc_temp_folder
+/levels
+./levels/
+/levels/
