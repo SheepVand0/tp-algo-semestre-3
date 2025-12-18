@@ -106,6 +106,7 @@ GameTitlePage* GameTitlePage_create(Scene* scene, GameUIManager *manager)
         }
 
         if (i == 1) self->SettingsButton = button;
+        if (i == 0) self->PlayButton = button;
     }
 
     return self;
@@ -130,6 +131,7 @@ void GameTitlePage_update(GameTitlePage* self, UIInput* input)
     {
     case GAME_UI_ACTION_START:
         self->m_manager->m_nextAction = GAME_UI_ACTION_START;
+
         Rabbit* l_Generated = GameEditor_buildUsableArray(GenerateClean(2, 3)->Rabbits);
         for (int x = 0; x < MAX_RABBITS + MAX_FOXES + MAX_MUSHROOMS; x++)
         {
@@ -166,18 +168,18 @@ void GameTitlePage_render(GameTitlePage* self)
 
     if (self->AnimationTime >= ANIM_PRE_DURATION)
     {
-        float fixedAnimTime = self->AnimationTime - ANIM_PRE_DURATION;
-        int pos = 0;
+        float l_FixedAnimTime = self->AnimationTime - ANIM_PRE_DURATION;
+        int l_Pos = 0;
 
-        if (fixedAnimTime < ANIM_DURATION_IN_SEC)
+        if (l_FixedAnimTime < ANIM_DURATION_IN_SEC)
         {
-            pos = (fixedAnimTime) * (ANIM_DISTANCE_X / ANIM_DURATION_IN_SEC);
-            pos -= pos % 40;
+            l_Pos = (l_FixedAnimTime) * (ANIM_DISTANCE_X / ANIM_DURATION_IN_SEC);
+            l_Pos -= l_Pos % 40;
         }
-        else if (fixedAnimTime >= ANIM_DURATION_IN_SEC && fixedAnimTime <= ANIM_DURATION_IN_SEC + ANIM_EAT_SUPP_TIME)
+        else if (l_FixedAnimTime >= ANIM_DURATION_IN_SEC && l_FixedAnimTime <= ANIM_DURATION_IN_SEC + ANIM_EAT_SUPP_TIME)
         {
-            pos = ANIM_DISTANCE_X;
-            if (fixedAnimTime >= ANIM_DURATION_IN_SEC + (ANIM_EAT_SUPP_TIME - 1) && self->lastFixedTime <= ANIM_DURATION_IN_SEC + (ANIM_EAT_SUPP_TIME - 1))
+            l_Pos = ANIM_DISTANCE_X;
+            if (l_FixedAnimTime >= ANIM_DURATION_IN_SEC + (ANIM_EAT_SUPP_TIME - 1) && self->lastFixedTime <= ANIM_DURATION_IN_SEC + (ANIM_EAT_SUPP_TIME - 1))
             {
                 UIObject_setEnabled(self->SettingsButton, false);
                 UIButton_setOnClickCallback(self->SettingsButton, GameTitlePage_emptyCallback);
@@ -186,14 +188,14 @@ void GameTitlePage_render(GameTitlePage* self)
         }
         else
         {
-            float animTime = fixedAnimTime - ANIM_DURATION_IN_SEC - ANIM_EAT_SUPP_TIME;
-            pos = ANIM_DISTANCE_X - ((animTime) * (ANIM_DISTANCE_X / ANIM_DURATION_IN_SEC));
-            pos -= pos % 40;
+            float animTime = l_FixedAnimTime - ANIM_DURATION_IN_SEC - ANIM_EAT_SUPP_TIME;
+            l_Pos = ANIM_DISTANCE_X - ((animTime) * (ANIM_DISTANCE_X / ANIM_DURATION_IN_SEC));
+            l_Pos -= l_Pos % 40;
 
             if (animTime >= ANIM_DURATION_IN_SEC) return;
         }
 
-        if (pos != self->lastPos)
+        if (l_Pos != self->lastPos)
         {
             
             self->SpriteScale *= -1;
@@ -201,14 +203,14 @@ void GameTitlePage_render(GameTitlePage* self)
         }
 
         SDL_FRect l_CatRect = { 0 };
-        l_CatRect.x = pos;
+        l_CatRect.x = l_Pos;
         l_CatRect.y = 370;
         l_CatRect.w = self->SpriteScale * 40.f;
         l_CatRect.h = 42.f;
 
         SpriteGroup_render(self->LowQualityCatSprite, 0, &l_CatRect, Vec2_anchor_center, 1.f);
 
-        self->lastPos = pos;
-        self->lastFixedTime = fixedAnimTime;
+        self->lastPos = l_Pos;
+        self->lastFixedTime = l_FixedAnimTime;
     }
 }

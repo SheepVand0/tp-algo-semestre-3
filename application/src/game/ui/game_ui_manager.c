@@ -37,7 +37,7 @@ static void GameUIManager_startGambling(void* selectable)
 
     l_Result = (rand() % GAMBLING_COUNT + rand() % GAMBLING_COUNT) % GAMBLING_COUNT;
 
-    g_gameConfig.InputLockTime = 2.f;
+    g_gameConfig.InputLockTime = 0.5f;
 
     g_gameConfig.GamblingResult = l_Result;
     g_gameConfig.GamblingAnimTime = 0.f;

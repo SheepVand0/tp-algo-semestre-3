@@ -29,6 +29,7 @@ typedef struct GameTitlePage
     float AnimationTime;
 
     UIButton* SettingsButton;
+    UIButton* PlayButton;
 
     int lastPos;
     float SpriteScale;
