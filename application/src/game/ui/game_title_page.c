@@ -13,6 +13,8 @@
 #include "SDL3/SDL_mixer.h"
 #include "windows.h"
 #include <stdio.h>
+#include "generate.h"
+#include "game/game_editor.h"
 
 static void GameTitlePage_emptyCallback(void* selectable)
 {
@@ -127,8 +129,15 @@ void GameTitlePage_update(GameTitlePage* self, UIInput* input)
     switch (self->m_nextAction)
     {
     case GAME_UI_ACTION_START:
-        GameCore_initNextGame(g_gameConfig.Core);
         self->m_manager->m_nextAction = GAME_UI_ACTION_START;
+        Rabbit* l_Generated = GameEditor_buildUsableArray(GenerateClean(2, 3)->Rabbits);
+        for (int x = 0; x < MAX_RABBITS + MAX_FOXES + MAX_MUSHROOMS; x++)
+        {
+            g_gameConfig.Core->Rabbits[x] = l_Generated[x];
+        }
+        
+        g_gameConfig.Remaining = 50.f;
+        g_gameConfig.Settings->GridSize = 5;
         break;
     case GAME_UI_ACTION_OPEN_SETTINGS:
         self->m_manager->m_nextAction = GAME_UI_ACTION_OPEN_SETTINGS;

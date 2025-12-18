@@ -58,10 +58,13 @@ typedef struct GameConfig
     Vec2 CandyPos;
     Vec2 CandyVel;
     bool CandyWaitingForLeftClick;
+    bool CandyHasTakenOver;
 
     bool CompletedGambling[GAMBLING_COUNT];
 
     bool IsFullscreen;
+
+    float InputLockTime;
 } GameConfig;
 
 void GameConfig_init();

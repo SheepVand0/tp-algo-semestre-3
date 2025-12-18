@@ -33,9 +33,11 @@ static void GameUIManager_startGambling(void* selectable)
 
     printf("Gambled\n");
 
-    EGamblingResult l_Result = CANDY;
+    EGamblingResult l_Result = OUPI_GOUPI;
 
     l_Result = (rand() % GAMBLING_COUNT + rand() % GAMBLING_COUNT) % GAMBLING_COUNT;
+
+    g_gameConfig.InputLockTime = 2.f;
 
     g_gameConfig.GamblingResult = l_Result;
     g_gameConfig.GamblingAnimTime = 0.f;
@@ -185,6 +187,7 @@ void GameUIManager_update(GameUIManager* self, UIInput* input)
             break;
 
         case GAME_UI_ACTION_START:
+            //GameCore_initNextGame(g_gameConfig.Core);
             GameUIManager_closePages(self);
             g_gameConfig.inLevel = true;
             g_gameConfig.isEditing = false;

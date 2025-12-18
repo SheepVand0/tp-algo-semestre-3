@@ -26,6 +26,7 @@ typedef struct MouseInput
     bool moved;
     int wheel;
     Vec2 position;
+    bool leftDown;
 } MouseInput;
 
 /// @brief Structure représentant le gestionnaire des entrées utilisateur.

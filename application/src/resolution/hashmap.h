@@ -94,3 +94,5 @@ bool alreadyIn(GameHashmap* map, GameHashmapEntry grid);
 void printGrid(GameCore grid);
 
 GameHashmapEntry* rechercheInv(GameHashmap* map, GameHashmapEntry* grid);  //prend un grid.prev et recherche dans les .curr
+
+uint64_t Hashmap_hash(GameCore grid, uint64_t capacity);

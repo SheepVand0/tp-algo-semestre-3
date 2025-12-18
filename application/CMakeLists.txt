@@ -53,6 +53,8 @@ target_sources(${NAME} PRIVATE
     "src/game/game_editor.c"
     "src/game/game_loader.h" 
     "src/game/game_loader.c"
+    "src/generate.h" 
+    "src/generate.c"
 )
 
 find_library(MATH_LIBRARY m)

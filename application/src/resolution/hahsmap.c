@@ -205,7 +205,7 @@ bool alreadyIn(GameHashmap* map, GameHashmapEntry grid)
 
     while ((int)map->m_idMap[idx] >= 0)
     {
-        if (Compare(map->m_entries[map->m_idMap[idx]].currState, grid.currState))
+        if (GameCore_equals(&map->m_entries[map->m_idMap[idx]].currState, &grid.currState))
         {
             return true;
         }
@@ -226,6 +226,11 @@ GameHashmapEntry* rechercheInv(GameHashmap* map, GameHashmapEntry* grid)  //pren
         idx = (idx + 1) % (int)map->m_capacity;
     }
     return NULL;
+}
+
+uint64_t Hashmap_hash(GameCore grid, uint64_t capacity)
+{
+    return hash(grid, capacity);
 }
 
 

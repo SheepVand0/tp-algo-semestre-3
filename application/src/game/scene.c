@@ -93,7 +93,11 @@ void Scene_update(Scene* self)
 {
     assert(self && "The Scene must be created");
     Game_updateSizes();
-    Input_update(self->m_input);
+    if (g_gameConfig.InputLockTime <= 0)
+        Input_update(self->m_input);
+
+    if (g_gameConfig.InputLockTime >= 0)
+        g_gameConfig.InputLockTime -= Timer_getDelta(g_time);
 
     Camera_updateViewport(self->m_camera, g_renderer);
     AssetManager_updateFontSizes(self->m_assets);
@@ -194,6 +198,8 @@ void Scene_render(Scene* self)
         l_Rec.h = 720;
         l_Rec.x = l_Rec.w / 2.f;
         l_Rec.y = l_Rec.h / 2;
+
+        
 
         if (g_gameConfig.State == GETTING_LARRIED)
         {

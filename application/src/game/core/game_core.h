@@ -91,11 +91,15 @@ Vec2 Fox_getSecondCell(Rabbit* rabbit);
 
 Vec2 Fox_getDirection(Rabbit* rabbit);
 
+Vec2 Fox_getDirectionByOriginal(ERabbitDirection dir);
+
 void Rabbit_getAnchorAngAngleFromDirection(ERabbitDirection direction, Vec2* anchor, float* angle);
 
 Rabbit* Mushroom_create(GameCore* scene, int cellX, int cellY); 
 
 bool Rabbit_canBePlacedByLoc(GameCore* scene, int cellX, int cellY);
+
+bool Fox_canBePlacedByLoc(GameCore* scene, int cellX, int cellY, ERabbitDirection direction);
 
 bool Rabbit_canBePlaced(GameCore* scene, Rabbit* rabb);
 
@@ -109,3 +113,19 @@ void GameCore_deletePiece(GameCore* gameCore, Rabbit* rabb);
 bool GameCore_isAimingRabbit(GameCore* gameCore, int cellX, int cellY, Rabbit** res);
 
 bool GameCore_isWinning(GameCore* gameCore);
+
+int GameCore_getObjectCount(GameCore* core, EObjectType type);
+
+Rabbit GameCore_createMushroomSimple(int cellX, int cellY);
+
+Rabbit GameCore_createRabbitSimple(int cellX, int cellY);
+
+Rabbit GameCore_createFoxSimple(int cellX, int cellY, ERabbitDirection direction);
+
+bool GameCore_isHole(int cellX, int cellY);
+
+bool GameCore_equals(GameCore* a, GameCore* b);
+
+bool GameCore_hasPulledOutAMove(GameCore* curr, GameCore* prev);
+
+bool Rabbit_equals(Rabbit* a, Rabbit* b);

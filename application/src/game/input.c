@@ -259,6 +259,7 @@ void Input_processMouseButtonDown(Input* self, int button)
     {
     case SDL_BUTTON_LEFT:
         self->mouse.leftPressed = true;
+        self->mouse.leftDown = true;
         break;
     case SDL_BUTTON_MIDDLE:
         break;
@@ -274,6 +275,7 @@ void Input_processMouseButtonUp(Input* self, int button)
     switch (button)
     {
     case SDL_BUTTON_LEFT:
+        self->mouse.leftDown = false;
         break;
     case SDL_BUTTON_MIDDLE:
         break;
