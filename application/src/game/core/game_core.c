@@ -399,7 +399,7 @@ bool Rabbit_move(Rabbit* rabbit, GameCore* gameCore, int targetX, int targetY)
         indexX -= directionX;
         indexY -= directionY;
 
-        if (indexX <= 0 || indexY <= 0 || indexX > GAME_GRID_SIZE || indexY > GAME_GRID_SIZE)
+        if (indexX < 0 || indexY < 0 || indexX > GAME_GRID_SIZE || indexY > GAME_GRID_SIZE)
             return false;
 
         EObjectType l_Type = GameCore_getObjTypeAtLocation(gameCore, indexX, indexY);
