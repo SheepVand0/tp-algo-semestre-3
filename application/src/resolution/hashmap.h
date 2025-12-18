@@ -87,6 +87,10 @@ GameHashmap* HashMap_Insert(GameHashmap* map, GameHashmapEntry value);
 /// @brief double la taille de la hashmap
 GameHashmap* HashMap_Resize(GameHashmap* map);
 
+/// renvoie true si déjà dedans 
+bool alreadyIn(GameHashmap* map, GameHashmapEntry grid);
+
 /// @brief printgrid
 void printGrid(GameCore grid);
 
+GameHashmapEntry* rechercheInv(GameHashmap* map, GameHashmapEntry* grid);  //prend un grid.prev et recherche dans les .curr

@@ -54,6 +54,8 @@ static void EditorUI_levelButtonClick(void* selectable)
         GameLoader_loadGame(l_Path, true);
 
         g_gameConfig.Remaining = g_gameConfig.Settings->TotalTime;
+
+        resoudre();
     }
 }
 

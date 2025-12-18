@@ -1,6 +1,7 @@
 #pragma once
 
 #include "settings.h"
+#include "../../resolution/resoudre.h"
 
 typedef struct Scene Scene;
 typedef struct GameTitlePage GameTitlePage;

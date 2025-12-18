@@ -12,8 +12,8 @@
 #include "../audio/audio_manager.h"
 
 #define MAX_RABBITS 5
-#define MAX_FOXES 50
-#define MAX_MUSHROOMS 50
+#define MAX_FOXES 10
+#define MAX_MUSHROOMS 10
 
 #define RABBIT_COUNT g_gameConfig.Settings->RabbitCount
 #define FOX_COUNT g_gameConfig.Settings->FoxCount

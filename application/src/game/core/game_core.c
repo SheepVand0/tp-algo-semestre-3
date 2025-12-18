@@ -262,10 +262,15 @@ int signOf(int x)
 
 bool Rabbit_canMove(Rabbit* rabbit, GameCore* gameCore, int targetX, int targetY)
 {
+
+    if (rabbit->CellX == 0 && rabbit->CellY == 3 && targetX == 0 && targetY == 0)
+    {
+        printGrid();
+        printf("heheh\n");
+    }
+
     int indexX = rabbit->CellX;
     int indexY = rabbit->CellY;
-
-    //printf("%d %d %d %d\n", indexX, indexY, targetX, targetY);
 
     if (indexX != targetX && indexY != targetY) return false;
 
@@ -286,6 +291,8 @@ bool Rabbit_canMove(Rabbit* rabbit, GameCore* gameCore, int targetX, int targetY
     if (rabbit->Type == FOX)
     {
         if (indexX == l_Second.x && indexY == l_Second.y) return false;
+
+        if (l_Second.x < 0 || l_Second.y < 0 || l_Second.x >= GAME_GRID_SIZE || l_Second.y >= GAME_GRID_SIZE) return false;
 
         if (directionX == -l_Dir.x && directionY == -l_Dir.y)
         {
@@ -311,6 +318,12 @@ bool Rabbit_canMove(Rabbit* rabbit, GameCore* gameCore, int targetX, int targetY
 
         indexX -= directionX;
         indexY -= directionY;
+
+        if (indexX < 0 || indexY < 0 || indexX > GAME_GRID_SIZE || indexY > GAME_GRID_SIZE)
+            return false;
+
+        /*if (indexX + l_Dir.x < 0 || indexY + l_Dir.y < 0 || indexX + l_Dir.x > GAME_GRID_SIZE || indexY + l_Dir.y > GAME_GRID_SIZE)
+            return false;*/
 
         EObjectType l_Type = GameCore_getObjTypeAtLocation(gameCore, indexX, indexY);
 
@@ -401,6 +414,9 @@ bool Rabbit_move(Rabbit* rabbit, GameCore* gameCore, int targetX, int targetY)
 
         if (indexX < 0 || indexY < 0 || indexX > GAME_GRID_SIZE || indexY > GAME_GRID_SIZE)
             return false;
+
+       /* if (indexX + l_Dir.x < 0 || indexY + l_Dir.y < 0 || indexX + l_Dir.x > GAME_GRID_SIZE || indexY + l_Dir.y > GAME_GRID_SIZE)
+            return false;*/
 
         EObjectType l_Type = GameCore_getObjTypeAtLocation(gameCore, indexX, indexY);
 
@@ -674,21 +690,14 @@ bool GameCore_isAimingRabbit(GameCore* gameCore, int cellX, int cellY, Rabbit** 
 
 bool GameCore_isWinning(GameCore* gameCore)
 {
-    int validRabbCount = 0;
-    for (int x = 0; x < MAX_RABBITS + MAX_FOXES + MAX_MUSHROOMS; x++)
-    {
-        Rabbit* l_Rabb = RABBIT(x);
-        if (l_Rabb)
-        {
-            if (l_Rabb->Type == RABBIT)
-            {
-                int i = l_Rabb->CellX;
-                int j = l_Rabb->CellY;
 
-                validRabbCount += (i == GAME_GRID_SIZE / 2 && j == GAME_GRID_SIZE / 2 || i == 0 && j == 0 || j == 0 && i == GAME_GRID_SIZE - 1 || i == 0 && j == GAME_GRID_SIZE - 1 || (i == GAME_GRID_SIZE - 1 && j == GAME_GRID_SIZE - 1));
-            }
+    for (int i = 0; i < g_gameConfig.Settings->RabbitCount; i++)
+    {
+        int indice = gameCore->Rabbits[i].CellX + 5 * gameCore->Rabbits[i].CellY;
+        if (indice != 0 && indice != 4 && indice != 12 && indice != 20 && indice != 24)
+        {
+            return false;
         }
     }
-
-    return validRabbCount == RABBIT_COUNT;
+    return true;
 }
