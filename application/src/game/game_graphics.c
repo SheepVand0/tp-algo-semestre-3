@@ -135,9 +135,13 @@ void GameGraphics_update(GameGraphics* self)
 
     self->LeftPressed = input->mouse.leftPressed;
 
-    if (self->LeftPressed && g_gameConfig.CandyWaitingForLeftClick)
+    if (self->LeftPressed && g_gameConfig.State == GAMBLING && g_gameConfig.GamblingResult == CANDY)
     {
         g_gameConfig.CandyWaitingForLeftClick = false;
+        Vec2 l_LastPos = g_gameConfig.CandyPos;
+
+        g_gameConfig.CandyPos = Vec2_set(input->mouse.position.x, input->mouse.position.y);
+        g_gameConfig.CandyVel = Vec2_sub(g_gameConfig.CandyPos, l_LastPos);
     }
 
     if (input->mouse.leftPressed || g_gameEditor.AddingObject)
@@ -349,7 +353,7 @@ void GameGraphics_render(GameGraphics* self)
         }
     }
 
-    if (g_gameConfig.State == GAMBLING && g_gameConfig.GamblingResult == CANDY )
+    if (g_gameConfig.State == GAMBLING && g_gameConfig.GamblingResult == CANDY)
     {
         Vec2 l_LastCandyPos = g_gameConfig.CandyPos;
 
@@ -360,15 +364,20 @@ void GameGraphics_render(GameGraphics* self)
         l_Rec.w = 200.0;
         l_Rec.h = 200.f;
 
-        if ((!g_gameConfig.CandyWaitingForLeftClick))
+        if (!g_gameConfig.CandyWaitingForLeftClick && !self->LeftPressed)
         {
-            g_gameConfig.CandyAcc = Vec2_add(g_gameConfig.CandyAcc, Vec2_set(0, (9.81f * Timer_getDelta(g_time) * 2)));
-            g_gameConfig.CandyPos = Vec2_add(g_gameConfig.CandyPos, Vec2_scale(g_gameConfig.CandyAcc, 20 * Timer_getDelta(g_time)));
+            g_gameConfig.CandyVel = Vec2_add(g_gameConfig.CandyVel, Vec2_set(0, (9.81f * Timer_getDelta(g_time) * 2)));
+            g_gameConfig.CandyPos = Vec2_add(g_gameConfig.CandyPos, Vec2_scale(g_gameConfig.CandyVel, 20 * Timer_getDelta(g_time)));
         }
 
         if (g_gameConfig.CandyPos.y >= HD_HEIGHT && l_LastCandyPos.y < HD_HEIGHT)
         {
             AudioManager_play(g_gameConfig.Audio, self->CandyBoomAudio);
+        }
+
+        if (g_gameConfig.CandyPos.x >= HD_WIDTH&&true)
+        {
+
         }
 
         if (g_gameConfig.CandyPos.y >= HD_HEIGHT)
@@ -379,7 +388,7 @@ void GameGraphics_render(GameGraphics* self)
             SDL_GetWindowPosition(g_window, &wx, &wy);
 
             //printf("%d %d /=> %f %f\n", wx, wy, wx + ceil(g_gameConfig.CandyAcc.x * 20 * Timer_getDelta(g_time)), wy + ceil(g_gameConfig.CandyAcc.y * 20 * Timer_getDelta(g_time)));
-            SDL_SetWindowPosition(g_window, wx + ceil(g_gameConfig.CandyAcc.x * 20 * Timer_getDelta(g_time)), wy + ceil(g_gameConfig.CandyAcc.y * 20 * Timer_getDelta(g_time)));
+            SDL_SetWindowPosition(g_window, wx + ceil(g_gameConfig.CandyVel.x * 20 * Timer_getDelta(g_time)), wy + ceil(g_gameConfig.CandyVel.y * 20 * Timer_getDelta(g_time)));
 
             if (wy >= 5000)
             {

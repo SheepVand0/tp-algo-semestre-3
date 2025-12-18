@@ -42,7 +42,7 @@ static void GameUIManager_startGambling(void* selectable)
     g_gameConfig.State = GAMBLING;
     g_gameConfig.CandyWaitingForLeftClick = true;
 
-    g_gameConfig.CandyAcc = Vec2_zero;
+    g_gameConfig.CandyVel = Vec2_zero;
     g_gameConfig.CandyPos = Vec2_set(HD_WIDTH / 2, 12);
 }
 

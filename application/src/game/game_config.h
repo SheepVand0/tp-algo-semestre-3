@@ -56,7 +56,7 @@ typedef struct GameConfig
 
     EGamblingResult GamblingResult;
     Vec2 CandyPos;
-    Vec2 CandyAcc;
+    Vec2 CandyVel;
     bool CandyWaitingForLeftClick;
 
     bool CompletedGambling[GAMBLING_COUNT];
