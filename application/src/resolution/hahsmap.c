@@ -9,22 +9,19 @@ static uint64_t hash(GameCore grid, uint64_t capacity)
 
     for (int i = 0; i < g_gameConfig.Settings->RabbitCount; i++)
     {
-        hash ^= (uint64_t)(grid.Rabbits[i].CellX);
-        hash = hash * 0xbf58476d1ce4e5b9ULL + 0x9e3779b97f4a7c15ULL;
-        hash ^= (uint64_t)(grid.Rabbits[i].CellY);
+        hash ^= (uint64_t)(grid.Rabbits[i].CellX + 5* grid.Rabbits[i].CellY);
         hash = hash * 0xbf58476d1ce4e5b9ULL + 0x9e3779b97f4a7c15ULL;
     }
 
     for (int i = g_gameConfig.Settings->RabbitCount; i < g_gameConfig.Settings->RabbitCount + g_gameConfig.Settings->FoxCount; i++)
     {
-        hash ^= (uint64_t)(grid.Rabbits[i].CellX);
-        hash = hash * 0xbf58476d1ce4e5b9ULL + 0x9e3779b97f4a7c15ULL;
-        hash ^= (uint64_t)(grid.Rabbits[i].CellY);
+        hash ^= (uint64_t)(grid.Rabbits[i].CellX + 5 * grid.Rabbits[i].CellY);
         hash = hash * 0xbf58476d1ce4e5b9ULL + 0x9e3779b97f4a7c15ULL;
     }
 
     return hash % capacity;
 }
+
 
 GameHashmap* HashMap_New(size_t capacity)
 {
@@ -208,7 +205,10 @@ bool alreadyIn(GameHashmap* map, GameHashmapEntry grid)
 
     while ((int)map->m_idMap[idx] >= 0)
     {
-        if (Compare(map->m_entries[map->m_idMap[idx]].currState, grid.currState)) return true;
+        if (Compare(map->m_entries[map->m_idMap[idx]].currState, grid.currState))
+        {
+            return true;
+        }
         idx = (idx + 1) % (int)map->m_capacity;
     }
 

@@ -263,12 +263,6 @@ int signOf(int x)
 bool Rabbit_canMove(Rabbit* rabbit, GameCore* gameCore, int targetX, int targetY)
 {
 
-    if (rabbit->CellX == 0 && rabbit->CellY == 3 && targetX == 0 && targetY == 0)
-    {
-        printGrid();
-        printf("heheh\n");
-    }
-
     int indexX = rabbit->CellX;
     int indexY = rabbit->CellY;
 
@@ -276,9 +270,9 @@ bool Rabbit_canMove(Rabbit* rabbit, GameCore* gameCore, int targetX, int targetY
 
     if (indexX == targetX && indexY == targetY) return false;
 
-    if (indexX == targetX && targetY == indexY) return false;
+    //if (indexX == targetX && targetY == indexY) return false;
 
-    if (targetX < 0 || targetX > GAME_GRID_SIZE || targetY < 0 || targetY > GAME_GRID_SIZE) return false;
+    if (targetX < 0 || targetX >= GAME_GRID_SIZE || targetY < 0 || targetY >= GAME_GRID_SIZE) return false;
 
     int directionX = signOf(rabbit->CellX - targetX);
     int directionY = signOf(rabbit->CellY - targetY);
@@ -319,7 +313,7 @@ bool Rabbit_canMove(Rabbit* rabbit, GameCore* gameCore, int targetX, int targetY
         indexX -= directionX;
         indexY -= directionY;
 
-        if (indexX < 0 || indexY < 0 || indexX > GAME_GRID_SIZE || indexY > GAME_GRID_SIZE)
+        if (indexX < 0 || indexY < 0 || indexX >= GAME_GRID_SIZE || indexY >= GAME_GRID_SIZE)
             return false;
 
         /*if (indexX + l_Dir.x < 0 || indexY + l_Dir.y < 0 || indexX + l_Dir.x > GAME_GRID_SIZE || indexY + l_Dir.y > GAME_GRID_SIZE)
@@ -373,7 +367,7 @@ bool Rabbit_move(Rabbit* rabbit, GameCore* gameCore, int targetX, int targetY)
 
     if (indexX == targetX && targetY == indexY) return false;
 
-    if (targetX < 0 || targetX > GAME_GRID_SIZE || targetY < 0 || targetY > GAME_GRID_SIZE) return false;
+    if (targetX < 0 || targetX >= GAME_GRID_SIZE || targetY < 0 || targetY >= GAME_GRID_SIZE) return false;
 
     int directionX = signOf(rabbit->CellX - targetX);
     int directionY = signOf(rabbit->CellY - targetY);
@@ -412,7 +406,7 @@ bool Rabbit_move(Rabbit* rabbit, GameCore* gameCore, int targetX, int targetY)
         indexX -= directionX;
         indexY -= directionY;
 
-        if (indexX < 0 || indexY < 0 || indexX > GAME_GRID_SIZE || indexY > GAME_GRID_SIZE)
+        if (indexX < 0 || indexY < 0 || indexX >= GAME_GRID_SIZE || indexY >= GAME_GRID_SIZE)
             return false;
 
        /* if (indexX + l_Dir.x < 0 || indexY + l_Dir.y < 0 || indexX + l_Dir.x > GAME_GRID_SIZE || indexY + l_Dir.y > GAME_GRID_SIZE)
