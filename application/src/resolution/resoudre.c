@@ -8,18 +8,18 @@ int climbBack(GameHashmap* map, GameHashmapEntry* solution)
 
     EObjectType l_ObjType = NO_OBJECT;
     int l_ObjectIndex = 0;
-    GameCore_hasPulledOutAMoveWithReference(&solution->currState, &solution->prevState, &l_ObjType, &l_ObjectIndex);
-    if (l_ObjType != NO_OBJECT)
-    {
-        g_gameConfig.solveObjectIndex = l_ObjectIndex;
-        g_gameConfig.solveNextSol[0] = solution->prevState.Rabbits[l_ObjectIndex];
-        g_gameConfig.solveNextSol[1] = solution->currState.Rabbits[l_ObjectIndex];
-    }
-    solution = rechercheInv(map, solution);
     if (solution)
     {
-        
+        GameCore_hasPulledOutAMoveWithReference(&solution->currState, &solution->prevState, &l_ObjType, &l_ObjectIndex);
+        if (l_ObjType != NO_OBJECT)
+        {
+            g_gameConfig.solveObjectIndex = l_ObjectIndex;
+            g_gameConfig.solveNextSol[0] = solution->prevState.Rabbits[l_ObjectIndex];
+            g_gameConfig.solveNextSol[1] = solution->currState.Rabbits[l_ObjectIndex];
+        }
     }
+    solution = Hashmap_searchBackwards(map, solution);
+    
     //printf("\n");
     return 1 + climbBack(map, solution);
 }
@@ -71,7 +71,7 @@ int solve(GameCore* target)
                     Rabbit_move(&tmpGrid.currState.Rabbits[i], &tmpGrid.currState, k, grid.currState.Rabbits[i].CellY);*/
 
 
-                    if (!alreadyIn(map, tmpGrid))
+                    if (!Hashmap_Contains(map, tmpGrid))
                     {
                         //printGrid(tmpGrid.currState);
                         //printf("A\n");
@@ -104,7 +104,7 @@ int solve(GameCore* target)
                     //printf("BABABABBABA\n");
                     //printGrid(tmpGrid.currState);
 
-                    if (!alreadyIn(map, tmpGrid))
+                    if (!Hashmap_Contains(map, tmpGrid))
                     {
                         //printGrid(tmpGrid.currState);
                         //printf("B\n");
@@ -142,7 +142,7 @@ int solve(GameCore* target)
                     if (Rabbit_move(&tmpGrid.currState.Rabbits[i], &tmpGrid.currState, k, tmpGrid.currState.Rabbits[i].CellY))
                     {
                        
-                        if (!alreadyIn(map, tmpGrid))
+                        if (!Hashmap_Contains(map, tmpGrid))
                         {
                             // inserer le plateau avec le lapin bougé
                             map = HashMap_Insert(map, tmpGrid);
@@ -162,7 +162,7 @@ int solve(GameCore* target)
                     if (Rabbit_move(&tmpGrid.currState.Rabbits[i], &tmpGrid.currState, tmpGrid.currState.Rabbits[i].CellX, k))
                     {
                         
-                        if (!alreadyIn(map, tmpGrid))
+                        if (!Hashmap_Contains(map, tmpGrid))
                         {
                             // inserer le plateau avec le lapin bougé
                             map = HashMap_Insert(map, tmpGrid);

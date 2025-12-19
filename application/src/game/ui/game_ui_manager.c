@@ -40,7 +40,7 @@ static void GameUIManager_startGambling(void* selectable)
 
     printf("Gambled\n");
 
-    EGamblingResult l_Result = CANDY;
+    EGamblingResult l_Result = MASTERMIND;
 
     l_Result = (SDL_rand(GAMBLING_COUNT));
 

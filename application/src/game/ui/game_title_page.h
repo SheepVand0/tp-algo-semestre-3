@@ -29,6 +29,12 @@ typedef struct GameTitlePage
     UIButton* m_settingsButton;
     UIButton* m_playButton;
 
+    UIList* m_rabbitList;
+    UIList* m_foxList;
+    UIList* m_mushroomList;
+    UIList* m_moveCountList;
+    UILabel* m_generatorWarning;
+
     int m_lastPos;
     float m_spriteScale;
     float m_lastFixedTime;

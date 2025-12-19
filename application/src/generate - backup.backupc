@@ -165,7 +165,7 @@ GameCore* GenerateClean(int rabbCount, int maxFoxes, int maxMushrooms, int moveC
         //printf("\nITER: %d\n", l_Iter);
         //printf("\nSIZE: %dn", HashMap_GetSize(l_Hasmap));
         //int l_Moves = Generator_countMoves(l_Hasmap, &l_Entry);
-
+        
 
         int l_Moves = moveCount;
         /*if (l_Moves > moveCount)
@@ -189,7 +189,6 @@ GameCore* GenerateClean(int rabbCount, int maxFoxes, int maxMushrooms, int moveC
                 continue;
             };
 */
-
             if (l_MoveCountRes >= Float_clamp(moveCount - 3, 2, 100000) && l_MoveCountRes <= moveCount + 5)
             {
                 bool l_AllRabbitOnExit = true;
@@ -209,7 +208,7 @@ GameCore* GenerateClean(int rabbCount, int maxFoxes, int maxMushrooms, int moveC
                     Generator_copyGame(l_ResultMap, &l_Entry.currState);
                     printf("GENERATION DONE !!!");
 
-                    if (!Hashmap_Contains(l_ResultHashmap, l_Entry))
+                    if (!alreadyIn(l_ResultHashmap, l_Entry))
                     {
                         l_ResultHashmap = HashMap_InsertWithMushrooms(l_ResultHashmap, l_Entry);
                     }
@@ -219,7 +218,7 @@ GameCore* GenerateClean(int rabbCount, int maxFoxes, int maxMushrooms, int moveC
                 }
             }
 
-
+            
         }
         int l_FoxCount = GameCore_getObjectCount(&l_Entry.currState, FOX);
         int l_MushroomCount = GameCore_getObjectCount(&l_Entry.currState, MUSHROOM);
@@ -249,7 +248,7 @@ GameCore* GenerateClean(int rabbCount, int maxFoxes, int maxMushrooms, int moveC
 
                         if (Rabbit_move(&l_aNext.currState.Rabbits[x], &l_aNext.currState, l_Rabb->CellX + px, l_Rabb->CellY + py))
                         {
-                            if (!Hashmap_Contains(l_Hasmap, l_aNext))
+                            if (!alreadyIn(l_Hasmap, l_aNext))
                             {
                                 //l_HasPlaced = true;
                                 l_Hasmap = HashMap_InsertWithMushrooms(l_Hasmap, l_aNext);
@@ -272,7 +271,7 @@ GameCore* GenerateClean(int rabbCount, int maxFoxes, int maxMushrooms, int moveC
 
                                     Rabbit_move(&(&l_bNext.currState)->Rabbits[b], &l_bNext.currState, l_Rabb->CellX + px, l_Rabb->CellY + py);
 
-                                    if (!Hashmap_Contains(l_Hasmap, l_bNext))
+                                    if (!alreadyIn(l_Hasmap, l_bNext))
                                     {
                                         l_Hasmap = HashMap_InsertWithMushrooms(l_Hasmap, l_bNext);
                                     }
@@ -292,7 +291,7 @@ GameCore* GenerateClean(int rabbCount, int maxFoxes, int maxMushrooms, int moveC
 
                                     l_dNext.currState.Rabbits[MAX_RABBITS + l_FoxCount] = GameCore_createFoxSimple(l_Rabb->CellX + (px - sign(px)), l_Rabb->CellY + (py - sign(py)), dir);
 
-                                    if (!Hashmap_Contains(l_Hasmap, l_dNext))
+                                    if (!alreadyIn(l_Hasmap, l_dNext))
                                     {
                                         //l_HasPlaced = true;
                                         l_Hasmap = HashMap_InsertWithMushrooms(l_Hasmap, l_dNext);
@@ -301,46 +300,36 @@ GameCore* GenerateClean(int rabbCount, int maxFoxes, int maxMushrooms, int moveC
                             }
                         }
                     }
-                }
-            }
-        }
 
-        if (maxMushrooms)
-            if (l_MushroomCount < maxMushrooms)
-            {
-                for (int x = 0; x < 5; x++)
-                {
-                    for (int y = 0; y < 5; y++)
+                    if (l_MushroomCount < maxMushrooms)
                     {
-
-                        if (Rabbit_canBePlacedByLoc(&l_Entry.currState, x, y, NULL) && GameCore_isCellNextSmth)
+                        if (Rabbit_canBePlacedByLoc(&l_Entry.currState, px, py, NULL) && GameCore_isCellNextSmth)
                         {
                             GameHashmapEntry l_cNext;
                             Generator_copyGame(&l_cNext.prevState, &l_Entry.currState);
                             Generator_copyGame(&l_cNext.currState, &l_Entry.currState);
-                            (&l_cNext.currState)->Rabbits[MAX_RABBITS + MAX_FOXES + l_MushroomCount] = GameCore_createMushroomSimple(l_Entry.currState.Rabbits[x].CellX, l_Entry.currState.Rabbits[x].CellY);
-                            if (!Hashmap_Contains(l_Hasmap, l_cNext))
+                            (&l_cNext.currState)->Rabbits[MAX_RABBITS + MAX_FOXES + l_MushroomCount] = GameCore_createMushroomSimple(l_Rabb->CellX + (px - sign(px)), l_Rabb->CellY + (py - sign(py)));
+                            if (!alreadyIn(l_Hasmap, l_cNext))
                             {
                                 //l_HasPlaced = true;
                                 l_Hasmap = HashMap_InsertWithMushrooms(l_Hasmap, l_cNext);
                             }
                         }
                     }
-                }
 
+                }
             }
+        }
 
         l_Iter++;
 
         if (l_Iter >= HashMap_GetSize(l_Hasmap))
         {
-            //SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Generation error", "Cannot generate a map with the current parametes, or you're just unlucky", g_window);
+            //SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Generation error", "Cannot generate a map with the current parametes", g_window);
             free(l_ResultMap);
             free(l_Poses);
             HashMap_destroy(l_Hasmap);
             HashMap_destroy(l_ResultHashmap);
-            //exit(-1);
-            printf("======================================");
             return GenerateClean(rabbCount, maxFoxes, maxMushrooms, moveCount);
         }
     }

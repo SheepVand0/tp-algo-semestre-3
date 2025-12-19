@@ -237,7 +237,7 @@ static bool Compare(GameCore grid1, GameCore grid2)
 }
 
 
-bool alreadyIn(GameHashmap* map, GameHashmapEntry grid)
+bool Hashmap_Contains(GameHashmap* map, GameHashmapEntry grid)
 {
     uint64_t idx = Hashmap_hash(grid.currState,map->m_capacity);
 
@@ -253,7 +253,7 @@ bool alreadyIn(GameHashmap* map, GameHashmapEntry grid)
     return false;
 }
 
-GameHashmapEntry* rechercheInv(GameHashmap* map, GameHashmapEntry* grid)  //prend un grid.prev et recherche dans les .curr
+GameHashmapEntry* Hashmap_searchBackwards(GameHashmap* map, GameHashmapEntry* grid)  //prend un grid.prev et recherche dans les .curr
 {
     if (!map) return NULL;
     if (!grid) return NULL;
@@ -264,7 +264,7 @@ GameHashmapEntry* rechercheInv(GameHashmap* map, GameHashmapEntry* grid)  //pren
     while ((int)map->m_idMap[idx] >= 0)
     {
         if (GameCore_equals(&map->m_entries[map->m_idMap[idx]].currState, &grid->prevState)) return &map->m_entries[map->m_idMap[idx]];
-        idx = (idx + 1) % map->m_capacity;
+        idx = (idx + 1) % (int)map->m_capacity;
     }
     return NULL;
 }
@@ -296,12 +296,12 @@ uint64_t Hashmap_hash(GameCore grid, uint64_t capacity)
         hash = hash * 0xbf58476d1ce4e5b9ULL + 0x9e3779b97f4a7c15ULL;
     }
 
-    return hash % (int)capacity;
+    return hash % capacity;
 }
 
 
 
-void printGrid(GameCore grid)
+void Hashmap_printGrid(GameCore grid)
 {
     char tab[25];
     for (int i = 0; i < 25; i++)

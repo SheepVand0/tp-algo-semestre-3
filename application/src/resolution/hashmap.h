@@ -90,11 +90,11 @@ GameHashmap* HashMap_InsertWithMushrooms(GameHashmap* map, GameHashmapEntry valu
 GameHashmap* HashMap_Resize(GameHashmap* map);
 
 /// renvoie true si déjà dedans 
-bool alreadyIn(GameHashmap* map, GameHashmapEntry grid);
+bool Hashmap_Contains(GameHashmap* map, GameHashmapEntry grid);
 
 /// @brief printgrid
-void printGrid(GameCore grid);
+void Hashmap_printGrid(GameCore grid);
 
-GameHashmapEntry* rechercheInv(GameHashmap* map, GameHashmapEntry* grid);  //prend un grid.prev et recherche dans les .curr
+GameHashmapEntry* Hashmap_searchBackwards(GameHashmap* map, GameHashmapEntry* grid);  //prend un grid.prev et recherche dans les .curr
 
 uint64_t Hashmap_hash(GameCore grid, uint64_t capacity);

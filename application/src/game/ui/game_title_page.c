@@ -67,7 +67,7 @@ GameTitlePage* GameTitlePage_create(Scene* scene, GameUIManager *manager)
     rect.offsetMax = Vec2_set(+75.f, 0.0f);
     UIObject_setRect(self->m_mainPanel, rect);
     
-    UIGridLayout* layout = UIGridLayout_create("main-layout", 5, 1);
+    UIGridLayout* layout = UIGridLayout_create("main-layout", 10, 1);
     UIObject_setParent(layout, self->m_mainPanel);
     UIGridLayout_setRowSizes(layout, 25.0f);
     UIGridLayout_setRowSpacings(layout, 5.f);
@@ -109,6 +109,50 @@ GameTitlePage* GameTitlePage_create(Scene* scene, GameUIManager *manager)
         if (i == 0) self->m_playButton = button;
     }
 
+    self->m_rabbitList = UIList_create("rabbit-list", AssetManager_getFont(assets, FONT_NORMAL), 5, UI_LIST_CONFIG_CYCLE | UI_LIST_CONFIG_AUTO_NAVIGATION);
+    UIList_setLabelString(self->m_rabbitList, "Rabbits:");
+    for (int x = 0; x < 5; x++)
+    {
+        UIList_setItemString(self->m_rabbitList, x, GameUIManager_twoDigitsToString(x));
+    }
+
+    UIGridLayout_addObject(layout, self->m_rabbitList, 6, 0, 1, 1);
+
+    UIFocusManager_addSelectable(self->m_focusManager, self->m_rabbitList);
+
+    self->m_foxList = UIList_create("fox-list", AssetManager_getFont(assets, FONT_NORMAL), 3, UI_LIST_CONFIG_CYCLE | UI_LIST_CONFIG_AUTO_NAVIGATION);
+    UIList_setLabelString(self->m_foxList, "Foxes:");
+    for (int x = 0; x < 3; x++)
+    {
+        UIList_setItemString(self->m_foxList, x, GameUIManager_twoDigitsToString(x));
+    }
+
+    UIGridLayout_addObject(layout, self->m_foxList, 7, 0, 1, 1);
+
+    UIFocusManager_addSelectable(self->m_focusManager, self->m_foxList);
+
+    self->m_mushroomList = UIList_create("rabbit-list", AssetManager_getFont(assets, FONT_NORMAL), 4, UI_LIST_CONFIG_CYCLE | UI_LIST_CONFIG_AUTO_NAVIGATION);
+    UIList_setLabelString(self->m_mushroomList, "Mushrooms:");
+    for (int x = 0; x < 4; x++)
+    {
+        UIList_setItemString(self->m_mushroomList, x, GameUIManager_twoDigitsToString(x));
+    }
+
+    UIGridLayout_addObject(layout, self->m_mushroomList, 8, 0, 1, 1);
+
+    UIFocusManager_addSelectable(self->m_focusManager, self->m_mushroomList);
+
+    self->m_moveCountList = UIList_create("move-count-list", AssetManager_getFont(assets, FONT_NORMAL), 12, UI_LIST_CONFIG_CYCLE | UI_LIST_CONFIG_AUTO_NAVIGATION);
+    UIList_setLabelString(self->m_moveCountList, "Moves idea:");
+    for (int x = 0; x < 12; x++)
+    {
+        UIList_setItemString(self->m_moveCountList, x, GameUIManager_twoDigitsToString(x));
+    }
+
+    UIGridLayout_addObject(layout, self->m_moveCountList, 9, 0, 1, 1);
+
+    UIFocusManager_addSelectable(self->m_focusManager, self->m_moveCountList);
+
     return self;
 }
 
@@ -132,7 +176,7 @@ void GameTitlePage_update(GameTitlePage* self, UIInput* input)
     case GAME_UI_ACTION_START:
         self->m_manager->m_nextAction = GAME_UI_ACTION_START;
 
-        Rabbit* l_Generated = GameEditor_buildUsableArray(GenerateClean(2, 2, 0, 7)->Rabbits);
+        Rabbit* l_Generated = GameEditor_buildUsableArray(GenerateClean(UIList_getSelectedItem(self->m_rabbitList), UIList_getSelectedItem(self->m_foxList), UIList_getSelectedItem(self->m_mushroomList), UIList_getSelectedItem(self->m_moveCountList))->Rabbits);
         for (int x = 0; x < MAX_RABBITS + MAX_FOXES + MAX_MUSHROOMS; x++)
         {
             g_gameConfig.core->Rabbits[x] = l_Generated[x];
@@ -158,7 +202,7 @@ void GameTitlePage_update(GameTitlePage* self, UIInput* input)
 
 #define ANIM_PRE_DURATION 10
 #define ANIM_DISTANCE_X 480
-#define ANIM_POS_Y 370
+#define ANIM_POS_Y 220
 #define ANIM_DURATION_IN_SEC 8
 #define ANIM_EAT_SUPP_TIME 4
 
@@ -204,7 +248,7 @@ void GameTitlePage_render(GameTitlePage* self)
 
         SDL_FRect l_CatRect = { 0 };
         l_CatRect.x = l_Pos;
-        l_CatRect.y = 370;
+        l_CatRect.y = 230;
         l_CatRect.w = self->m_spriteScale * 40.f;
         l_CatRect.h = 42.f;
 
