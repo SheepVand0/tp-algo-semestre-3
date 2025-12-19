@@ -22,17 +22,17 @@ GameCore* GameCore_create()
 void GameCore_update(GameCore* gameCore, Scene* scene, int selectedX, int selectedY)
 {
 
-    switch (g_gameConfig.State)
+    switch (g_gameConfig.state)
     {
     case NONE:
         if (!g_gameConfig.isEditing)
         {
             //GameCore_initNextGame(gameCore);
-            g_gameConfig.State = PLAYING;
+            g_gameConfig.state = PLAYING;
         }
         else
         {
-            g_gameConfig.State = EDITING;
+            g_gameConfig.state = EDITING;
         }
         break;
 
@@ -55,7 +55,7 @@ void GameCore_update(GameCore* gameCore, Scene* scene, int selectedX, int select
 
                     if ((l_Rabb->CellX == selectedX && l_Rabb->CellY == selectedY) || l_Other)
                     {
-                        g_gameConfig.Selected = l_Rabb;
+                        g_gameConfig.selected = l_Rabb;
                     }
                 }
             }
@@ -63,9 +63,9 @@ void GameCore_update(GameCore* gameCore, Scene* scene, int selectedX, int select
 
         if (GameCore_isWinning(gameCore) && !g_gameConfig.isEditing)
         {
-            g_gameConfig.State = WINNING;
-            g_gameConfig.CurrentAnimationTime = 6.f;
-            AudioManager_play(g_gameConfig.Audio, g_gameConfig.AmongUsAudio);
+            g_gameConfig.state = WINNING;
+            g_gameConfig.currentAnimationTime = 6.f;
+            AudioManager_play(g_gameConfig.audio, g_gameConfig.amongUsAudio);
 
             UILabel_setTextString(scene->m_uiManager->m_lostText, "You won!");
             UILabel_setColor(scene->m_uiManager->m_lostText, g_colors.green6);
@@ -77,18 +77,19 @@ void GameCore_update(GameCore* gameCore, Scene* scene, int selectedX, int select
 
             if (l_Obj == NO_OBJECT)
             {
-                if (g_gameConfig.Selected)
+                if (g_gameConfig.selected)
                 {
-                    if (g_gameConfig.Selected->CellX != selectedX || g_gameConfig.Selected->CellY != selectedY)
+                    if (g_gameConfig.selected->CellX != selectedX || g_gameConfig.selected->CellY != selectedY)
                     {
 
-                        Rabbit* l_Rabb = g_gameConfig.Selected;
+                        Rabbit* l_Rabb = g_gameConfig.selected;
 
                         GameCore l_Prev;
-                        Generator_copyGame(&l_Prev, g_gameConfig.Core);
+                        Generator_copyGame(&l_Prev, g_gameConfig.core);
                         Rabbit_move(l_Rabb, gameCore, selectedX, selectedY);
 
-                        printf("Somethin has pulled a move ?: %d", GameCore_hasPulledOutAMove(g_gameConfig.Core, &l_Prev));
+                        g_gameConfig.userHasPulledAMove = true;
+                        //printf("Somethin has pulled a move ?: %d", GameCore_hasPulledOutAMove(g_gameConfig.Core, &l_Prev));
                     }
                 }
             }
@@ -96,13 +97,13 @@ void GameCore_update(GameCore* gameCore, Scene* scene, int selectedX, int select
 
         if (g_gameConfig.isEditing == false)
         {
-            g_gameConfig.Remaining -= Timer_getDelta(g_time);
+            g_gameConfig.remaining -= Timer_getDelta(g_time);
 
-            if (g_gameConfig.Remaining <= 0)
+            if (g_gameConfig.remaining <= 0)
             {
-                AudioManager_play(g_gameConfig.Audio, g_gameConfig.LarryAudio);
-                g_gameConfig.State = GETTING_LARRIED;
-                g_gameConfig.CurrentAnimationTime = 6.f;
+                AudioManager_play(g_gameConfig.audio, g_gameConfig.larryAudio);
+                g_gameConfig.state = GETTING_LARRIED;
+                g_gameConfig.currentAnimationTime = 6.f;
 
                 UILabel_setTextString(scene->m_uiManager->m_lostText, "You lost");
                 UILabel_setColor(scene->m_uiManager->m_lostText, g_colors.red6);
@@ -111,11 +112,11 @@ void GameCore_update(GameCore* gameCore, Scene* scene, int selectedX, int select
         break;
     case WINNING:
     case GETTING_LARRIED:
-        g_gameConfig.CurrentAnimationTime -= Timer_getDelta(g_time);
+        g_gameConfig.currentAnimationTime -= Timer_getDelta(g_time);
 
-        if (g_gameConfig.CurrentAnimationTime <= 0)
+        if (g_gameConfig.currentAnimationTime <= 0)
         {
-            g_gameConfig.State = NONE;
+            g_gameConfig.state = NONE;
             g_gameConfig.nextScene = GAME_SCENE_MAIN;
             g_gameConfig.inLevel = false;
             scene->m_uiManager->m_nextAction = GAME_UI_ACTION_OPEN_TITLE;
@@ -141,10 +142,10 @@ void GameCore_destroyGame(GameCore* gameCore)
 
     for (int x = 0; x < GAMBLING_COUNT; x++)
     {
-        g_gameConfig.CompletedGambling[x] = false;
+        g_gameConfig.completedGambling[x] = false;
     }
 
-    g_gameConfig.State = NONE;
+    g_gameConfig.state = NONE;
 }
 
 void GameCore_initNextGame(GameCore* gameCore)
@@ -166,16 +167,16 @@ void GameCore_initNextGame(GameCore* gameCore)
     }
     else
     {
-        g_gameConfig.Remaining = g_gameConfig.Settings->TotalTime = 10.f;
+        g_gameConfig.remaining = g_gameConfig.settings->TotalTime = 10.f;
 
-        GameCore_destroyGame(g_gameConfig.Core);
+        GameCore_destroyGame(g_gameConfig.core);
 
         /*g_gameConfig.Settings->RabbitCount = 10;
         g_gameConfig.Settings->RabbitCount = 1;
         g_gameConfig.Settings->RabbitCount = 4;*/
 
         printf("generating\n");
-        g_gameConfig.Core = Generate(2, 0, 0, 0);
+        g_gameConfig.core = Generate(2, 0, 0, 0);
 
     }
 }
@@ -183,6 +184,7 @@ void GameCore_initNextGame(GameCore* gameCore)
 
 EObjectType GameCore_getObjTypeAtLocation(GameCore* gameCore, int cellx, int y)
 {
+    if (cellx < 0 || cellx > GAME_GRID_SIZE || y < 0 || y > GAME_GRID_SIZE) return NO_OBJECT;
 
     for (int x = 0; x < MAX_RABBITS + MAX_FOXES + MAX_MUSHROOMS; x++)
     {
@@ -214,12 +216,12 @@ Rabbit* GameCore_getRabbit(GameCore* gameCore, int index)
 
 Rabbit* GameCore_getFox(GameCore* gameCore, int index)
 {
-    return &(gameCore->Rabbits[index + g_gameConfig.Settings->RabbitCount]);
+    return &(gameCore->Rabbits[index + g_gameConfig.settings->RabbitCount]);
 }
 
 Rabbit* GameCore_getMushroom(GameCore* gameCore, int index)
 {
-    return &(gameCore->Rabbits[index + g_gameConfig.Settings->RabbitCount + g_gameConfig.Settings->FoxCount]);
+    return &(gameCore->Rabbits[index + g_gameConfig.settings->RabbitCount + g_gameConfig.settings->FoxCount]);
 }
 
 Rabbit* Rabbit_create(GameCore* gameCore, int cellX, int cellY)
@@ -231,7 +233,7 @@ Rabbit* Rabbit_create(GameCore* gameCore, int cellX, int cellY)
     l_Rabbit->CellY = cellY;
     l_Rabbit->Direction = RABBIT_NORTH;
 
-    AssetManager* assets = g_gameConfig.Assets;
+    AssetManager* assets = g_gameConfig.assets;
     SpriteSheet* spriteSheet = AssetManager_getSpriteSheet(assets, SPRITE_GAME);
     AssertNew(spriteSheet);
     l_Rabbit->RabbitSprite = SpriteSheet_getGroupByName(spriteSheet, "rabbit");
@@ -479,7 +481,7 @@ Rabbit* Fox_create(GameCore* gameCore, int cellX0, int cellY0, ERabbitDirection 
     l_Fox->CellY = cellY0;
     l_Fox->Direction = direction;
 
-    AssetManager* assets = g_gameConfig.Assets;
+    AssetManager* assets = g_gameConfig.assets;
     SpriteSheet* spriteSheet = AssetManager_getSpriteSheet(assets, SPRITE_GAME);
     AssertNew(spriteSheet);
     l_Fox->RabbitSprite = SpriteSheet_getGroupByName(spriteSheet, "fox");
@@ -578,7 +580,7 @@ Rabbit* Mushroom_create(GameCore* gameCore, int cellX, int cellY)
     l_Mush->CellY = cellY;
     l_Mush->Direction = RABBIT_NORTH;
 
-    AssetManager* assets = g_gameConfig.Assets;
+    AssetManager* assets = g_gameConfig.assets;
     SpriteSheet* spriteSheet = AssetManager_getSpriteSheet(assets, SPRITE_GAME);
     AssertNew(spriteSheet);
     l_Mush->RabbitSprite = SpriteSheet_getGroupByName(spriteSheet, "mushroom");
@@ -661,6 +663,18 @@ bool Fox_canBePlacedByLoc(GameCore* gameCore, int cellX, int cellY, ERabbitDirec
         {
             Vec2 l_OtherCell = Fox_getSecondCell(l_Rabb);
             l_Other = (l_OtherCell.x == cellX && l_OtherCell.y == cellY) || (l_OtherCell.x == otherCellX && l_OtherCell.y == otherCellY);
+
+            if (l_Rabb->Direction == direction || l_Rabb->Direction == (direction - 2 % 4))
+            {
+                if (l_Rabb->Direction % 2 == RABBIT_NORTH)
+                {
+                    if (l_Rabb->CellX == cellX) return false;
+                }
+                else
+                {
+                    if (l_Rabb->CellY == cellY) return false;
+                }
+            }
         }
 
         if ((l_Rabb->CellX == cellX && l_Rabb->CellY == cellY) || l_Other)
@@ -771,7 +785,7 @@ bool GameCore_isAimingRabbit(GameCore* gameCore, int cellX, int cellY, Rabbit** 
 bool GameCore_isWinning(GameCore* gameCore)
 {
 
-    for (int i = 0; i < g_gameConfig.Settings->RabbitCount; i++)
+    for (int i = 0; i < g_gameConfig.settings->RabbitCount; i++)
     {
         int indice = gameCore->Rabbits[i].CellX + 5 * gameCore->Rabbits[i].CellY;
         if (indice != 0 && indice != 4 && indice != 12 && indice != 20 && indice != 24)
@@ -804,7 +818,7 @@ Rabbit GameCore_createMushroomSimple(int cellX, int cellY)
     l_Mush.CellY = cellY;
     l_Mush.Direction = RABBIT_NORTH;
 
-    AssetManager* assets = g_gameConfig.Assets;
+    AssetManager* assets = g_gameConfig.assets;
     SpriteSheet* spriteSheet = AssetManager_getSpriteSheet(assets, SPRITE_GAME);
     AssertNew(spriteSheet);
     l_Mush.RabbitSprite = SpriteSheet_getGroupByName(spriteSheet, "mushroom");
@@ -825,7 +839,7 @@ Rabbit GameCore_createRabbitSimple(int cellX, int cellY)
     l_Rabbit.CellY = cellY;
     l_Rabbit.Direction = RABBIT_NORTH;
 
-    AssetManager* assets = g_gameConfig.Assets;
+    AssetManager* assets = g_gameConfig.assets;
     SpriteSheet* spriteSheet = AssetManager_getSpriteSheet(assets, SPRITE_GAME);
     AssertNew(spriteSheet);
     l_Rabbit.RabbitSprite = SpriteSheet_getGroupByName(spriteSheet, "rabbit");
@@ -845,7 +859,7 @@ Rabbit GameCore_createFoxSimple(int cellX, int cellY, ERabbitDirection direction
     l_Fox.CellY = cellY;
     l_Fox.Direction = direction;
 
-    AssetManager* assets = g_gameConfig.Assets;
+    AssetManager* assets = g_gameConfig.assets;
     SpriteSheet* spriteSheet = AssetManager_getSpriteSheet(assets, SPRITE_GAME);
     AssertNew(spriteSheet);
     l_Fox.RabbitSprite = SpriteSheet_getGroupByName(spriteSheet, "fox");
@@ -870,8 +884,12 @@ bool GameCore_isHole(int cellX, int cellY)
 
 bool GameCore_equals(GameCore* a, GameCore* b)
 {
+    if (!a || !b) return a == 0 && b == 0;
+
     for (int x = 0; x < MAX_RABBITS + MAX_FOXES + MAX_MUSHROOMS; x++)
     {
+        if (a->Rabbits[x].Type == NONE && b->Rabbits[x].Type == NONE) continue;
+
         if (a->Rabbits[x].Type != b->Rabbits[x].Type) return false;
         if (a->Rabbits[x].CellX != b->Rabbits[x].CellX) return false;
         if (a->Rabbits[x].CellY != b->Rabbits[x].CellY) return false;
@@ -904,10 +922,42 @@ bool GameCore_hasPulledOutAMove(GameCore* curr, GameCore* prev)
     { 
         if (prev->Rabbits[x].Type != FOX) continue;
 
+        if (curr->Rabbits[x].CellX != prev->Rabbits[x].CellX || curr->Rabbits[x].CellY != prev->Rabbits[x].CellY)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool GameCore_hasPulledOutAMoveWithReference(GameCore* curr, GameCore* prev, EObjectType* type, int* ref)
+{
+    // Using prev to ignore just created objects
+    int l_RabbitCount = GameCore_getObjectCount(prev, RABBIT);
+
+    for (int x = 0; x < l_RabbitCount; x++)
+    {
+        if (curr->Rabbits[x].CellX != prev->Rabbits[x].CellX || curr->Rabbits[x].CellY != prev->Rabbits[x].CellY)
+        {
+            *type = RABBIT;
+            *ref = x;
+            return true;
+        }
+    }
+
+    int l_FoxCount = GameCore_getObjectCount(prev, FOX);
+
+    for (int x = 0; x < MAX_RABBITS + MAX_FOXES; x++)
+    {
+        if (prev->Rabbits[x].Type != FOX) continue;
+
         if (prev->Rabbits[x].Type != curr->Rabbits[x].Type) continue;
 
         if (curr->Rabbits[x].CellX != prev->Rabbits[x].CellX || curr->Rabbits[x].CellY != prev->Rabbits[x].CellY)
         {
+            *type = FOX;
+            *ref = x;
             return true;
         }
     }
@@ -925,4 +975,50 @@ bool Rabbit_equals(Rabbit* a, Rabbit* b)
     if (a->Movable != b->Movable) return false;
 
     return true;
+}
+
+bool GameCore_isCellNextSmth(GameCore* core, int cellX, int cellY)
+{
+    for (int x = 0; x < 3; x++)
+    {
+        for (int y = 0; y < 3; y++)
+        {
+            if (x == 1 && y == 1) continue;
+
+            EObjectType l_Type = GameCore_getObjTypeAtLocation(core, cellX + x, cellY + y);
+            if (l_Type != NO_OBJECT) return true;
+        }
+    }
+
+    return false;
+}
+
+bool GameCore_canCallTaxi(GameCore* core, int baseIndex, int cellX, int cellY, int* objIndex)
+{
+    for (int x = baseIndex; x < MAX_RABBITS + MAX_FOXES; x++)
+    {
+        Rabbit l_Rabb = core->Rabbits[x];
+
+        if (l_Rabb.Type == RABBIT)
+        {
+            if (Rabbit_canMove(&l_Rabb, core, cellX, cellY))
+            {
+                *objIndex = x;
+                return true;
+            }
+        }
+
+        if (l_Rabb.Type == FOX)
+        {
+            if (Rabbit_canMove(&l_Rabb, core, cellX, cellY))
+            {
+                *objIndex = x;
+                return true;
+            }
+        }
+
+    }
+
+    *objIndex = -1;
+    return false;
 }

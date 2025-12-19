@@ -25,6 +25,7 @@ typedef enum EGamblingResult
     CANDY,
     OUPI_GOUPI,
     MASTERMIND,
+    FISC_GUY,
     GAMBLING_COUNT
 } EGamblingResult;
 
@@ -36,35 +37,44 @@ typedef struct GameConfig
     bool inLevel;
     bool isEditing;
 
-    float GamblingAnimTime;
+    float gamblingAnimTime;
 
-    GameCore* Core;
-    GameSettings* Settings;
-    AssetManager* Assets;
-    AudioManager* Audio;
+    GameCore* core;
+    GameSettings* settings;
+    AssetManager* assets;
+    AudioManager* audio;
 
-    SAudio* LarryAudio;
-    SAudio* AmongUsAudio;
+    SAudio* larryAudio;
+    SAudio* amongUsAudio;
+    SAudio* footstep0;
+    SAudio* footstep1;
 
-    Rabbit* Selected;
+    Rabbit* selected;
 
-    EGameState State;
+    EGameState state;
 
-    float Remaining;
+    float remaining;
 
-    float CurrentAnimationTime;
+    float currentAnimationTime;
 
-    EGamblingResult GamblingResult;
-    Vec2 CandyPos;
-    Vec2 CandyVel;
-    bool CandyWaitingForLeftClick;
-    bool CandyHasTakenOver;
+    EGamblingResult gamblingResult;
+    Vec2 candyPos;
+    Vec2 candyVel;
+    bool candyWaitingForLeftClick;
+    bool candyHasTakenOver;
 
-    bool CompletedGambling[GAMBLING_COUNT];
+    bool completedGambling[GAMBLING_COUNT];
 
-    bool IsFullscreen;
+    bool isFullscreen;
 
-    float InputLockTime;
+    float inputLockTime;
+
+    int solveObjectIndex;
+    Rabbit solveNextSol[2];
+    Vec2 fiscTargetPos;
+    Vec2 fiscNextMovePos;
+
+    bool userHasPulledAMove;
 } GameConfig;
 
 void GameConfig_init();

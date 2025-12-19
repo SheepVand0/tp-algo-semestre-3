@@ -2,14 +2,15 @@
 
 #include "hashmap.h"
 #include "../game/scene.h"
-#include "../game/game_config.h"
+//#include "../game/game_config.h"
 
 
 /// @brief bah résoud le bordel quoi (jsp, j'espère fort)
-void resoudre();
+int solve(GameCore* target);
 
 /// @brief résoud aussi mais récursivement (WOW)
-GameHashmapEntry* resoudre_Rec(GameHashmap* map, GameHashmapEntry state);
+//GameHashmapEntry* solve_recursive(GameHashmap* map, GameHashmapEntry state);
 
 
-int remonter(GameHashmap* map, GameHashmapEntry* solution);
+int climbBack(GameHashmap* map, GameHashmapEntry* solution);
+

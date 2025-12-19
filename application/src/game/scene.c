@@ -10,8 +10,8 @@
 #include "game_editor.h"
 #include "game/game_settings.h"
 
-#define RABBIT_ARRAY g_gameConfig.Core->Rabbits
-#define RABBIT(x) &g_gameConfig.Core->Rabbits[x]
+#define RABBIT_ARRAY g_gameConfig.core->Rabbits
+#define RABBIT(x) &g_gameConfig.core->Rabbits[x]
 
 #define GAMBLING_PRE_ANIM_DURATION 5.f
 
@@ -35,8 +35,8 @@ Scene* Scene_create()
     self->m_uiManager = GameUIManager_create(self);
     self->m_gameGraphics = GameGraphics_create(self);
 
-    g_gameConfig.Core = GameCore_create();
-    g_gameConfig.Assets = self->m_assets;
+    g_gameConfig.core = GameCore_create();
+    g_gameConfig.assets = self->m_assets;
     //self->Obstacles = NULL;
 
     g_gameConfig.nextScene = GAME_SCENE_QUIT;
@@ -93,11 +93,11 @@ void Scene_update(Scene* self)
 {
     assert(self && "The Scene must be created");
     Game_updateSizes();
-    if (g_gameConfig.InputLockTime <= 0)
+    if (g_gameConfig.inputLockTime <= 0)
         Input_update(self->m_input);
 
-    if (g_gameConfig.InputLockTime >= 0)
-        g_gameConfig.InputLockTime -= Timer_getDelta(g_time);
+    if (g_gameConfig.inputLockTime >= 0)
+        g_gameConfig.inputLockTime -= Timer_getDelta(g_time);
 
     Camera_updateViewport(self->m_camera, g_renderer);
     AssetManager_updateFontSizes(self->m_assets);
@@ -108,7 +108,7 @@ void Scene_update(Scene* self)
     {
         GameGraphics_update(self->m_gameGraphics);
 
-        GameCore_update(g_gameConfig.Core, self, self->m_gameGraphics->m_selectedColIndex, self->m_gameGraphics->m_selectedRowIndex);
+        GameCore_update(g_gameConfig.core, self, self->m_gameGraphics->m_selectedColIndex, self->m_gameGraphics->m_selectedRowIndex);
     }
 
     if (self->m_input->debug.gizmosPressed)
@@ -165,12 +165,12 @@ void Scene_render(Scene* self)
 
     GameUIManager_render(self->m_uiManager);
 
-    if (g_gameConfig.inLevel && g_gameConfig.State != NONE && g_gameConfig.State != GETTING_LARRIED && g_gameConfig.State != WINNING)
+    if (g_gameConfig.inLevel && g_gameConfig.state != NONE && g_gameConfig.state != GETTING_LARRIED && g_gameConfig.state != WINNING)
     {
-        GameCore* gameCore = g_gameConfig.Core;
+        GameCore* gameCore = g_gameConfig.core;
 
         GAME_GRAPHICS_RENDER(self->m_gameGraphics,
-            g_gameConfig.isEditing ? GameEditor_buildUsableArray(g_gameConfig.Core->Rabbits) : g_gameConfig.Core->Rabbits,
+            g_gameConfig.isEditing ? GameEditor_buildUsableArray(g_gameConfig.core->Rabbits) : g_gameConfig.core->Rabbits,
             RABBIT_COUNT + FOX_COUNT + MUSHROOM_COUNT);
         GameGraphics_render(self->m_gameGraphics);
     }
@@ -188,7 +188,7 @@ void Scene_render(Scene* self)
         SDL_RenderFillRect(g_renderer, NULL);
     }
 
-    if (g_gameConfig.State == GETTING_LARRIED || g_gameConfig.State == WINNING)
+    if (g_gameConfig.state == GETTING_LARRIED || g_gameConfig.state == WINNING)
     {
         SpriteGroup* l_Larry = NULL;
         
@@ -201,7 +201,7 @@ void Scene_render(Scene* self)
 
         
 
-        if (g_gameConfig.State == GETTING_LARRIED)
+        if (g_gameConfig.state == GETTING_LARRIED)
         {
             l_Larry = SpriteSheet_getGroupByName(AssetManager_getSpriteSheet(Scene_getAssetManager(self), SPRITE_LARRY), "larry");
             SpriteGroup_setColorModFloat(l_Larry, 1.f, 0.5f, 0.5f);
@@ -217,7 +217,7 @@ void Scene_render(Scene* self)
 
         GameUIManager_render(self->m_uiManager);
 
-        SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255 - Float_clamp((sin(g_gameConfig.CurrentAnimationTime / 6.f * M_PI) * (255.f)), 0, 255));
+        SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 255 - Float_clamp((sin(g_gameConfig.currentAnimationTime / 6.f * M_PI) * (255.f)), 0, 255));
         SDL_RenderFillRect(g_renderer, NULL);
     }
 }

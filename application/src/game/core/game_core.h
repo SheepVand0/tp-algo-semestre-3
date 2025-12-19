@@ -15,9 +15,9 @@
 #define MAX_FOXES 10
 #define MAX_MUSHROOMS 10
 
-#define RABBIT_COUNT g_gameConfig.Settings->RabbitCount
-#define FOX_COUNT g_gameConfig.Settings->FoxCount
-#define MUSHROOM_COUNT g_gameConfig.Settings->MushroomCount
+#define RABBIT_COUNT g_gameConfig.settings->RabbitCount
+#define FOX_COUNT g_gameConfig.settings->FoxCount
+#define MUSHROOM_COUNT g_gameConfig.settings->MushroomCount
 
 typedef struct Scene Scene;
 
@@ -97,7 +97,7 @@ void Rabbit_getAnchorAngAngleFromDirection(ERabbitDirection direction, Vec2* anc
 
 Rabbit* Mushroom_create(GameCore* scene, int cellX, int cellY); 
 
-bool Rabbit_canBePlacedByLoc(GameCore* scene, int cellX, int cellY);
+bool Rabbit_canBePlacedByLoc(GameCore* scene, int cellX, int cellY, void* optional);
 
 bool Fox_canBePlacedByLoc(GameCore* scene, int cellX, int cellY, ERabbitDirection direction);
 
@@ -128,4 +128,18 @@ bool GameCore_equals(GameCore* a, GameCore* b);
 
 bool GameCore_hasPulledOutAMove(GameCore* curr, GameCore* prev);
 
+/// <summary>
+/// Returns object type and oject index
+/// </summary>
+/// <param name="curr"></param>
+/// <param name="prev"></param>
+/// <param name="type"></param>
+/// <param name="ref"></param>
+/// <returns></returns>
+bool GameCore_hasPulledOutAMoveWithReference(GameCore* curr, GameCore* prev, EObjectType* type, int* ref);
+
 bool Rabbit_equals(Rabbit* a, Rabbit* b);
+
+bool GameCore_isCellNextSmth(GameCore* core, int cellX, int cellY);
+
+bool GameCore_canCallTaxi(GameCore* core, int baseIndex, int cellX, int cellY, int* objIndex);

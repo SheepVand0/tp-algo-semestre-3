@@ -1,30 +1,43 @@
 #include "resoudre.h"
 
-int remonter(GameHashmap* map, GameHashmapEntry* solution)
+int climbBack(GameHashmap* map, GameHashmapEntry* solution)
 {
     if (!solution) return -1; // -1 car le state de base n compte pas comme un déplacement
 
-    printGrid(solution->currState);
+    //printGrid(solution->currState);
+
+    EObjectType l_ObjType = NO_OBJECT;
+    int l_ObjectIndex = 0;
+    GameCore_hasPulledOutAMoveWithReference(&solution->currState, &solution->prevState, &l_ObjType, &l_ObjectIndex);
+    if (l_ObjType != NO_OBJECT)
+    {
+        g_gameConfig.solveObjectIndex = l_ObjectIndex;
+        g_gameConfig.solveNextSol[0] = solution->prevState.Rabbits[l_ObjectIndex];
+        g_gameConfig.solveNextSol[1] = solution->currState.Rabbits[l_ObjectIndex];
+    }
     solution = rechercheInv(map, solution);
-    printf("\n");
-    return 1 + remonter(map, solution);
+    if (solution)
+    {
+        
+    }
+    //printf("\n");
+    return 1 + climbBack(map, solution);
 }
 
-void resoudre()   
+int solve(GameCore* target)
 {
-    size_t capacite = 200000;
+    size_t capacite = 4000;
 
     GameHashmap* map = HashMap_New(capacite);
 
-
     GameHashmapEntry baseState = { 0 };
-    baseState.currState = *g_gameConfig.Core;
+    baseState.currState = *target;
 
     map = HashMap_Insert(map, baseState);
 
-    printf("\nState de base :\n");
-    printGrid(map->m_entries[0].currState);
-    printf("\n");
+    //printf("\nState de base :\n");
+    //printGrid(map->m_entries[0].currState);
+    //printf("\n");
 
 
     int iter = 0;
@@ -69,7 +82,7 @@ void resoudre()
 
                         if (GameCore_isWinning(&tmpGrid.currState))
                         {
-                            printf("RESOLUUUUUUUUUU\n");
+                            //printf("RESOLUUUUUUUUUU\n");
                             //printGrid(tmpGrid.currState);
                             printf("\n");
                             solution = &map->m_entries[map->m_size - 1];
@@ -101,7 +114,7 @@ void resoudre()
 
                         if (GameCore_isWinning(&tmpGrid.currState))
                         {
-                            printf("RESOLUUUUUUUUUU\n");
+                            //printf("RESOLUUUUUUUUUU\n");
                             //printGrid(tmpGrid.currState);
                             solution = &map->m_entries[map->m_size - 1];
                             victory = true;
@@ -111,12 +124,14 @@ void resoudre()
             }
         }
         //// pour chaque renard
-        for (int i = RABBIT_COUNT; i < g_gameConfig.Settings->RabbitCount + g_gameConfig.Settings->FoxCount; i++)
+        for (int i = RABBIT_COUNT; i < MAX_RABBITS + g_gameConfig.settings->FoxCount; i++)
         {
+            if (g_gameConfig.core->Rabbits[i].Type != FOX) continue;
+
             //if (grid.currState.Rabbits[i].Type == NONE) continue;
 
             // pour chacune des 5 cases axe X
-            if (g_gameConfig.Core->Rabbits[i].Direction == RABBIT_EAST || g_gameConfig.Core->Rabbits[i].Direction == RABBIT_WEST)
+            if (g_gameConfig.core->Rabbits[i].Direction == RABBIT_EAST || g_gameConfig.core->Rabbits[i].Direction == RABBIT_WEST)
             {
                 for (int k = 0; k < 5; k++)
                 {
@@ -166,12 +181,15 @@ void resoudre()
     }
 
 
-    printf("iter : %d\n", iter);
-    printf("Parcours :\n ");
+    /*printf("iter : %d\n", iter);
+    printf("Parcours :\n ");*/
     int reponse = 0;
-    reponse = remonter(map, solution);
-    printf("Resolu en : %d\n", reponse);
+    reponse = climbBack(map, solution);
+    //printf("Resolu en : %d\n", reponse);
 
+    
+
+    return reponse;
     /*printf("Resolu en   %d   coups (gg) \n\n",iter);
     printf("size de la hashmap-> %d\n ", (int)map->m_size);
     for (int i = 0; i < (int)map->m_size; i++)
@@ -183,8 +201,6 @@ void resoudre()
         printGrid(map->m_entries[i].prevState);
         printf("\n");
     }*/
-
-    return;
 }
 
 
@@ -245,31 +261,6 @@ GameCore* generate()
 
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

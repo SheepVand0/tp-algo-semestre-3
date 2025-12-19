@@ -25,12 +25,12 @@ GameGraphics* GameGraphics_create(Scene* scene)
     self->m_gridAABB.lower = Vec2_add(Vec2_set(-4.f, -4.f), Vec2_set(8.0f, 4.5f));
     self->m_gridAABB.upper = Vec2_add(Vec2_set(+4.f, +4.f), Vec2_set(8.0f, 4.5f));
     self->m_enabled = false;
-    self->CandyBoomAudio = AudioManager_loadWav(g_gameConfig.Audio, "bang_effect.wav", "bang-effect");
-    self->HomeRunAudio = AudioManager_loadWav(g_gameConfig.Audio, "home_run.wav", "home-run");
-    self->EarthquakeAudio = AudioManager_loadWav(g_gameConfig.Audio, "earthquake.wav", "earthquake");
-    self->UndertaleBoomAudio = AudioManager_loadWav(g_gameConfig.Audio, "undertale_boom_sound.wav", "undertale-boom-sound");
-    self->ExplosionAudio = AudioManager_loadWav(g_gameConfig.Audio, "explosion.wav", "explosion");
-    self->StoneSlideAudio = AudioManager_loadWav(g_gameConfig.Audio, "stone_slide.wav", "explosion");
+    self->m_candyBoomAudio = AudioManager_loadWav(g_gameConfig.audio, "bang_effect.wav", "bang-effect");
+    self->m_homeRunAudio = AudioManager_loadWav(g_gameConfig.audio, "home_run.wav", "home-run");
+    self->m_earthquakeAudio = AudioManager_loadWav(g_gameConfig.audio, "earthquake.wav", "earthquake");
+    self->m_undertaleBoomAudio = AudioManager_loadWav(g_gameConfig.audio, "undertale_boom_sound.wav", "undertale-boom-sound");
+    self->m_explosionAudio = AudioManager_loadWav(g_gameConfig.audio, "explosion.wav", "explosion");
+    self->m_stoneSlideAudio = AudioManager_loadWav(g_gameConfig.audio, "stone_slide.wav", "explosion");
 
     for (int x = 0; x < 5; x++)
     {
@@ -38,27 +38,31 @@ GameGraphics* GameGraphics_create(Scene* scene)
 
         sprintf(l_Punch, "punch%d.wav", x);
 
-        self->PunchesAudio[x] = AudioManager_loadWav(g_gameConfig.Audio, l_Punch, l_Punch);
+        self->m_punchesAudio[x] = AudioManager_loadWav(g_gameConfig.audio, l_Punch, l_Punch);
     }
 
     AssetManager* assets = Scene_getAssetManager(scene);
     SpriteSheet* spriteSheet = AssetManager_getSpriteSheet(assets, SPRITE_UI_BASE);
     AssertNew(spriteSheet);
-    self->HoverSprite = SpriteSheet_getGroupByName(spriteSheet, "border");
-    AssertNew(self->HoverSprite);
+    self->m_hoverSprite = SpriteSheet_getGroupByName(spriteSheet, "border");
+    AssertNew(self->m_hoverSprite);
 
     spriteSheet = AssetManager_getSpriteSheet(assets, SPRITE_GAME);
-    self->HoleSprite = SpriteSheet_getGroupByName(spriteSheet, "rabbit-hole");
+    self->m_holeSprite = SpriteSheet_getGroupByName(spriteSheet, "rabbit-hole");
 
     spriteSheet = AssetManager_getSpriteSheet(assets, SPRITE_UI_SELECT_BOX);
     AssertNew(spriteSheet);
-    self->HoverSpriteFox = SpriteSheet_getGroupByName(spriteSheet, "select_box");
-    AssertNew(self->HoverSpriteFox);
+    self->m_hoverSpriteFox = SpriteSheet_getGroupByName(spriteSheet, "select_box");
+    AssertNew(self->m_hoverSpriteFox);
 
-    self->MastermindSprite = SpriteSheet_getGroupByName(AssetManager_getSpriteSheet(assets, SPRITE_MASTERMIND), "mastermind");
-    self->OupiGoupiSprite = SpriteSheet_getGroupByName(AssetManager_getSpriteSheet(assets, SPRITE_OUPI_GOUPI), "oupigoupi");
-    self->MinusFiveSprite = SpriteSheet_getGroupByName(AssetManager_getSpriteSheet(assets, SPRITE_MINUS_FIVE), "number");
-    self->ExplosionSprite = SpriteSheet_getGroupByName(AssetManager_getSpriteSheet(assets, SPRITE_EXPLOSION), "explosion");
+    self->m_mastermindSprite = SpriteSheet_getGroupByName(AssetManager_getSpriteSheet(assets, SPRITE_MASTERMIND), "mastermind");
+    self->m_oupiGoupiSprite = SpriteSheet_getGroupByName(AssetManager_getSpriteSheet(assets, SPRITE_OUPI_GOUPI), "oupigoupi");
+    self->m_minusFiveSprite = SpriteSheet_getGroupByName(AssetManager_getSpriteSheet(assets, SPRITE_MINUS_FIVE), "number");
+    self->m_explosionSprite = SpriteSheet_getGroupByName(AssetManager_getSpriteSheet(assets, SPRITE_EXPLOSION), "explosion");
+    self->m_lowQualityCatSprite = SpriteSheet_getGroupByName(AssetManager_getSpriteSheet(assets, SPRITE_LOW_QUALITY_CAT), "cat");
+
+    self->m_fiscGuyScale = 1.f;
+    self->m_lastFiscPos = -1;
 
     return self;
 }
@@ -121,11 +125,11 @@ void GameGraphics_update(GameGraphics* self)
                 if (AABB_containsPoint(cellAABB, mouseWorldPos))
                 {
                     Rabbit* l_Aimed = NULL;
-                    if (GameCore_isAimingRabbit(g_gameConfig.Core, j, i, &l_Aimed))
+                    if (GameCore_isAimingRabbit(g_gameConfig.core, j, i, &l_Aimed))
                     {
                         if (l_Aimed)
                         {
-                            GameCore_deletePiece(g_gameConfig.Core, l_Aimed);
+                            GameCore_deletePiece(g_gameConfig.core, l_Aimed);
                         }
                     }
                 }
@@ -133,18 +137,18 @@ void GameGraphics_update(GameGraphics* self)
         }
     }
 
-    self->LeftPressed = input->mouse.leftDown;
+    self->m_leftPressed = input->mouse.leftDown;
 
-    if (self->LeftPressed && g_gameConfig.State == GAMBLING && g_gameConfig.GamblingResult == CANDY && !g_gameConfig.CandyHasTakenOver)
+    if (self->m_leftPressed && g_gameConfig.state == GAMBLING && g_gameConfig.gamblingResult == CANDY && !g_gameConfig.candyHasTakenOver)
     {
-        g_gameConfig.CandyWaitingForLeftClick = false;
-        Vec2 l_LastPos = g_gameConfig.CandyPos;
+        g_gameConfig.candyWaitingForLeftClick = false;
+        Vec2 l_LastPos = g_gameConfig.candyPos;
 
-        g_gameConfig.CandyPos = Vec2_set(input->mouse.position.x, input->mouse.position.y);
-        g_gameConfig.CandyVel = Vec2_scale(Vec2_sub(g_gameConfig.CandyPos, l_LastPos), 1);
+        g_gameConfig.candyPos = Vec2_set(input->mouse.position.x, input->mouse.position.y);
+        g_gameConfig.candyVel = Vec2_scale(Vec2_sub(g_gameConfig.candyPos, l_LastPos), 1);
     }
 
-    g_gameConfig.CandyHasTakenOver = !self->LeftPressed && !g_gameConfig.CandyWaitingForLeftClick;
+    g_gameConfig.candyHasTakenOver = !self->m_leftPressed && !g_gameConfig.candyWaitingForLeftClick;
 
 
     if (input->mouse.leftPressed || g_gameEditor.AddingObject)
@@ -156,13 +160,13 @@ void GameGraphics_update(GameGraphics* self)
                 AABB* cellAABB = &(self->m_cells[i][j]);
                 if (AABB_containsPoint(cellAABB, mouseWorldPos))
                 {
-                    if (g_gameConfig.State != PLAYING)
+                    if (g_gameConfig.state != PLAYING)
                     {
                         if (g_gameConfig.isEditing && input->mouse.leftPressed)
                         {
                             for (int x = MAX_RABBITS; x < MAX_RABBITS + FOX_COUNT; x++)
                             {
-                                Rabbit* l_Fox = &(g_gameConfig.Core->Rabbits[x]);
+                                Rabbit* l_Fox = &(g_gameConfig.core->Rabbits[x]);
 
                                 if (l_Fox->CellX == j && l_Fox->CellY == i)
                                 {
@@ -177,7 +181,7 @@ void GameGraphics_update(GameGraphics* self)
                                         {
                                             l_Fox->Direction += 1;
                                         }
-                                    } while (!Rabbit_canBePlaced(g_gameConfig.Core, l_Fox));
+                                    } while (!Rabbit_canBePlaced(g_gameConfig.core, l_Fox));
                                 }
                             }
                         }
@@ -189,7 +193,7 @@ void GameGraphics_update(GameGraphics* self)
 
                             if (input->mouse.leftPressed)
                             {
-                                if (!Rabbit_canBePlaced(g_gameConfig.Core, g_gameEditor.AddingObject))
+                                if (!Rabbit_canBePlaced(g_gameConfig.core, g_gameEditor.AddingObject))
                                 {
                                     printf("\nCannot add here\n");
                                     break;
@@ -237,7 +241,7 @@ void GameGraphics_update(GameGraphics* self)
                                     break;
                                 }
 
-                                g_gameConfig.Core->Rabbits[indexToAdd] = *g_gameEditor.AddingObject;
+                                g_gameConfig.core->Rabbits[indexToAdd] = *g_gameEditor.AddingObject;
                                 g_gameEditor.AddingObject = NULL;
                             }
                         }
@@ -265,6 +269,11 @@ void GameGraphics_update(GameGraphics* self)
 #define OUPI_GOUPI_EXPLOSION_DURATION 1.f
 #define OUPI_GOUPI_EXPLOSION_POST_DURATION 1.f
 
+#define FISC_ENTRANCE 15.f
+#define FISC_PRE_MOVE_DUR 4.f
+#define FISC_POST_MOVE_DUR 4.f
+#define FISC_EXIT 15.f
+
 void GameGraphics_render(GameGraphics* self)
 {
     assert(self && "self must not be NULL");
@@ -284,6 +293,15 @@ void GameGraphics_render(GameGraphics* self)
             rect.w = (cellAABB->upper.x - cellAABB->lower.x) * scale;
             rect.h = (cellAABB->upper.y - cellAABB->lower.y) * scale;
 
+            if (g_gameConfig.state == GAMBLING && g_gameConfig.gamblingResult == FISC_GUY)
+            {
+                if (g_gameConfig.solveNextSol[0].CellX == j && g_gameConfig.solveNextSol[0].CellY == i)
+                    g_gameConfig.fiscTargetPos = Vec2_set(rect.x, rect.y + (rect.h / 2));
+
+                if (g_gameConfig.solveNextSol[1].CellX == j && g_gameConfig.solveNextSol[1].CellY == i)
+                    g_gameConfig.fiscNextMovePos = Vec2_set(rect.x, rect.y + (rect.h / 2));
+            }
+
             bool isSelected = false;
 
             SDL_Color color = isSelected ? g_colors.orange9 : g_colors.gray8;
@@ -293,23 +311,23 @@ void GameGraphics_render(GameGraphics* self)
 
             if (i == GAME_GRID_SIZE / 2 && j == GAME_GRID_SIZE / 2 || i == 0 && j == 0 || j == 0 && i == GAME_GRID_SIZE - 1 || i == 0 && j == GAME_GRID_SIZE - 1 || (i == GAME_GRID_SIZE - 1 && j == GAME_GRID_SIZE - 1))
             {
-                SpriteGroup_render(self->HoleSprite, 0, &rect, Vec2_anchor_north_west, 1.0f);
+                SpriteGroup_render(self->m_holeSprite, 0, &rect, Vec2_anchor_north_west, 1.0f);
             }
         }
     }
 
     bool l_Cond = g_gameConfig.isEditing && g_gameEditor.AddingObject;
 
-    for (int x = 0; x < self->RabbitCount + l_Cond; x++)
+    for (int x = 0; x < self->m_rabbitCount + l_Cond; x++)
     {
         Rabbit* l_Rabb;
-        if (x == self->RabbitCount)
+        if (x == self->m_rabbitCount)
         {
             l_Rabb = g_gameEditor.AddingObject;
         }
         else
         {
-            l_Rabb = &self->RabbitsToRender[x];
+            l_Rabb = &self->m_rabbitsToRender[x];
         }
 
         if (!l_Rabb) continue;
@@ -345,7 +363,7 @@ void GameGraphics_render(GameGraphics* self)
         }
 
         SpriteGroup_setColorModFloat(l_Rabb->RabbitSprite, 1, 1, 1);
-        if (x == self->RabbitCount)
+        if (x == self->m_rabbitCount)
         {
             SpriteGroup_setOpacityFloat(l_Rabb->RabbitSprite, .5f);
         }
@@ -355,61 +373,61 @@ void GameGraphics_render(GameGraphics* self)
         }
         //l_Rect.x += l_Rect.w / 2;
 
-        SpriteGroup_renderRotated(l_Rabb->RabbitSprite, l_Rabb == (self->Selected), &l_Rect, l_Anchor, l_Angle, 0.9f);
+        SpriteGroup_renderRotated(l_Rabb->RabbitSprite, l_Rabb == (self->m_selected), &l_Rect, l_Anchor, l_Angle, 0.9f);
 
-        if ((l_Rabb == (self->Selected) || self->Selected ? l_Rabb->CellX == self->Selected->CellX && l_Rabb->CellY == self->Selected->CellY : false) && g_gameConfig.State == PLAYING)
+        if ((l_Rabb == (self->m_selected) || self->m_selected ? l_Rabb->CellX == self->m_selected->CellX && l_Rabb->CellY == self->m_selected->CellY : false) && g_gameConfig.state == PLAYING)
         {
-            SpriteGroup_setColorModFloat(l_Rabb->Type == FOX ? self->HoverSpriteFox : self->HoverSprite, 1.f, 209.f / 255.f, 145.f / 255.f);
+            SpriteGroup_setColorModFloat(l_Rabb->Type == FOX ? self->m_hoverSpriteFox : self->m_hoverSprite, 1.f, 209.f / 255.f, 145.f / 255.f);
 
-            SpriteGroup_renderRotated(l_Rabb->Type == FOX ? self->HoverSpriteFox : self->HoverSprite, 0, &l_Rect, l_Anchor, l_Angle, 1.f);
+            SpriteGroup_renderRotated(l_Rabb->Type == FOX ? self->m_hoverSpriteFox : self->m_hoverSprite, 0, &l_Rect, l_Anchor, l_Angle, 1.f);
         }
     }
 
-    if (g_gameConfig.State == GAMBLING && g_gameConfig.GamblingResult == CANDY)
+    if (g_gameConfig.state == GAMBLING && g_gameConfig.gamblingResult == CANDY)
     {
-        Vec2 l_LastCandyPos = g_gameConfig.CandyPos;
+        Vec2 l_LastCandyPos = g_gameConfig.candyPos;
 
         SpriteGroup* l_Candy = SpriteSheet_getGroupByName(AssetManager_getSpriteSheet(scene->m_assets, SPRITE_CANDY), "candy");
         SDL_FRect l_Rec;
-        l_Rec.x = g_gameConfig.CandyPos.x;
-        l_Rec.y = g_gameConfig.CandyPos.y;
+        l_Rec.x = g_gameConfig.candyPos.x;
+        l_Rec.y = g_gameConfig.candyPos.y;
         l_Rec.w = 200.f;
         l_Rec.h = 200.f;
 
-        if (g_gameConfig.CandyHasTakenOver)
+        if (g_gameConfig.candyHasTakenOver)
         {
-            g_gameConfig.CandyVel = Vec2_add(g_gameConfig.CandyVel, Vec2_set(0, (9.81f * Timer_getDelta(g_time) * 2)));
-            g_gameConfig.CandyPos = Vec2_add(g_gameConfig.CandyPos, Vec2_scale(g_gameConfig.CandyVel, 20 * Timer_getDelta(g_time)));
+            g_gameConfig.candyVel = Vec2_add(g_gameConfig.candyVel, Vec2_set(0, (9.81f * Timer_getDelta(g_time) * 2)));
+            g_gameConfig.candyPos = Vec2_add(g_gameConfig.candyPos, Vec2_scale(g_gameConfig.candyVel, 20 * Timer_getDelta(g_time)));
         }
 
         float checkPos = (HD_HEIGHT - (l_Rec.h / 2));
         float checkPosX = (HD_WIDTH) - (l_Rec.w / 2);
 
 
-        if (g_gameConfig.CandyPos.y >= checkPos && l_LastCandyPos.y < checkPos)
+        if (g_gameConfig.candyPos.y >= checkPos && l_LastCandyPos.y < checkPos)
         {
-            AudioManager_play(g_gameConfig.Audio, self->CandyBoomAudio);
+            AudioManager_play(g_gameConfig.audio, self->m_candyBoomAudio);
         }
 
-        if (g_gameConfig.CandyPos.x >= checkPosX && l_LastCandyPos.x < checkPosX || (g_gameConfig.CandyPos.x <= 0 && l_LastCandyPos.x > 0))
+        if (g_gameConfig.candyPos.x >= checkPosX && l_LastCandyPos.x < checkPosX || (g_gameConfig.candyPos.x <= 0 && l_LastCandyPos.x > 0))
         {
-            AudioManager_play(g_gameConfig.Audio, self->CandyBoomAudio);
+            AudioManager_play(g_gameConfig.audio, self->m_candyBoomAudio);
         }
 
-        if ((g_gameConfig.CandyPos.y >= checkPos || g_gameConfig.CandyPos.y <= 0 || (g_gameConfig.CandyPos.x <= 0 || g_gameConfig.CandyPos.x >= checkPosX)) && g_gameConfig.CandyHasTakenOver)
+        if ((g_gameConfig.candyPos.y >= checkPos || g_gameConfig.candyPos.y <= 0 || (g_gameConfig.candyPos.x <= 0 || g_gameConfig.candyPos.x >= checkPosX)) && g_gameConfig.candyHasTakenOver)
         {
-            g_gameConfig.CandyPos.y = Float_clamp(g_gameConfig.CandyPos.y, 0, checkPos);
-            g_gameConfig.CandyPos.x = Float_clamp(g_gameConfig.CandyPos.x, 0, checkPosX);
+            g_gameConfig.candyPos.y = Float_clamp(g_gameConfig.candyPos.y, 0, checkPos);
+            g_gameConfig.candyPos.x = Float_clamp(g_gameConfig.candyPos.x, 0, checkPosX);
             int wx;
             int wy;
             SDL_GetWindowPosition(g_window, &wx, &wy);
 
             float posX = 0;
-            if (g_gameConfig.CandyPos.x <= 0 || g_gameConfig.CandyPos.x >= checkPosX)
-                posX = ceil(g_gameConfig.CandyVel.x * 15 * Timer_getDelta(g_time));
+            if (g_gameConfig.candyPos.x <= 0 || g_gameConfig.candyPos.x >= checkPosX)
+                posX = ceil(g_gameConfig.candyVel.x * 15 * Timer_getDelta(g_time));
             float posY = 0;
-            if (g_gameConfig.CandyPos.y >= checkPos || g_gameConfig.CandyPos.y <= 0)
-                posY = ceil(g_gameConfig.CandyVel.y * 15 * Timer_getDelta(g_time));
+            if (g_gameConfig.candyPos.y >= checkPos || g_gameConfig.candyPos.y <= 0)
+                posY = ceil(g_gameConfig.candyVel.y * 15 * Timer_getDelta(g_time));
 
             //printf("%d %d /=> %f %f\n", wx, wy, wx + ceil(g_gameConfig.CandyAcc.x * 20 * Timer_getDelta(g_time)), wy + ceil(g_gameConfig.CandyAcc.y * 20 * Timer_getDelta(g_time)));
             SDL_SetWindowPosition(g_window, wx + posX, wy + posY);
@@ -424,31 +442,31 @@ void GameGraphics_render(GameGraphics* self)
         SpriteGroup_render(l_Candy, 0, &l_Rec, Vec2_anchor_center, 5.f);
     }
 
-    if (g_gameConfig.State == GAMBLING && g_gameConfig.GamblingResult == MASTERMIND)
+    if (g_gameConfig.state == GAMBLING && g_gameConfig.gamblingResult == MASTERMIND)
     {
-        float l_LastTime = g_gameConfig.GamblingAnimTime;
+        float l_LastTime = g_gameConfig.gamblingAnimTime;
 
-        g_gameConfig.GamblingAnimTime += Timer_getDelta(g_time);
+        g_gameConfig.gamblingAnimTime += Timer_getDelta(g_time);
 
 
-        if (g_gameConfig.GamblingAnimTime < MASTERMIND_ANIM_FADE_DUR)
+        if (g_gameConfig.gamblingAnimTime < MASTERMIND_ANIM_FADE_DUR)
         {
-            SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, Float_clamp((g_gameConfig.GamblingAnimTime / (MASTERMIND_ANIM_FADE_DUR - 1)) * 150, 0, 150));
+            SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, Float_clamp((g_gameConfig.gamblingAnimTime / (MASTERMIND_ANIM_FADE_DUR - 1)) * 150, 0, 150));
             SDL_RenderFillRect(g_renderer, NULL);
         }
-        else if (g_gameConfig.GamblingAnimTime >= MASTERMIND_ANIM_FADE_DUR && g_gameConfig.GamblingAnimTime < MASTERMIND_ANIM_FADE_DUR + MASTERMIND_ANIM_EFFECT_DUR)
+        else if (g_gameConfig.gamblingAnimTime >= MASTERMIND_ANIM_FADE_DUR && g_gameConfig.gamblingAnimTime < MASTERMIND_ANIM_FADE_DUR + MASTERMIND_ANIM_EFFECT_DUR)
         {
             if (l_LastTime < MASTERMIND_ANIM_FADE_DUR)
             {
-                AudioManager_play(g_gameConfig.Audio, self->HomeRunAudio);
+                AudioManager_play(g_gameConfig.audio, self->m_homeRunAudio);
             }
 
-            SpriteGroup* l_Master = self->MastermindSprite;
+            SpriteGroup* l_Master = self->m_mastermindSprite;
 
             SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 150);
             SDL_RenderFillRect(g_renderer, NULL);
 
-            float l_FixedTime = g_gameConfig.GamblingAnimTime - MASTERMIND_ANIM_FADE_DUR;
+            float l_FixedTime = g_gameConfig.gamblingAnimTime - MASTERMIND_ANIM_FADE_DUR;
 
             SDL_FRect l_Rec;
             l_Rec.x = HD_WIDTH / 2;
@@ -465,9 +483,9 @@ void GameGraphics_render(GameGraphics* self)
             SpriteGroup_setOpacityFloat(l_Master, 0.99f - (l_FixedTime / (MASTERMIND_ANIM_EFFECT_DUR / 6)));
             SpriteGroup_render(l_Master, 0, &l_Rec, Vec2_anchor_center, 1.f);
         }
-        else if (g_gameConfig.GamblingAnimTime >= MASTERMIND_ANIM_FADE_DUR + MASTERMIND_ANIM_EFFECT_DUR && g_gameConfig.GamblingAnimTime < MASTERMIND_ANIM_FADE_DUR + MASTERMIND_ANIM_EFFECT_DUR + MASTERMIND_OUT_FADE_DUR)
+        else if (g_gameConfig.gamblingAnimTime >= MASTERMIND_ANIM_FADE_DUR + MASTERMIND_ANIM_EFFECT_DUR && g_gameConfig.gamblingAnimTime < MASTERMIND_ANIM_FADE_DUR + MASTERMIND_ANIM_EFFECT_DUR + MASTERMIND_OUT_FADE_DUR)
         {
-            float l_FixedTime = g_gameConfig.GamblingAnimTime - MASTERMIND_ANIM_FADE_DUR - MASTERMIND_ANIM_EFFECT_DUR;
+            float l_FixedTime = g_gameConfig.gamblingAnimTime - MASTERMIND_ANIM_FADE_DUR - MASTERMIND_ANIM_EFFECT_DUR;
 
             SDL_SetRenderDrawColor(g_renderer, 0, 0, 0, 150 - (l_FixedTime / MASTERMIND_OUT_FADE_DUR) * 150);
             SDL_RenderFillRect(g_renderer, NULL);
@@ -478,49 +496,49 @@ void GameGraphics_render(GameGraphics* self)
             l_Rec.w = 200;
             l_Rec.h = 200;
 
-            SpriteGroup* l_Master = self->MastermindSprite;
+            SpriteGroup* l_Master = self->m_mastermindSprite;
 
             SpriteGroup_setOpacityFloat(l_Master, 1 - (l_FixedTime / MASTERMIND_OUT_FADE_DUR));
             SpriteGroup_render(l_Master, 0, &l_Rec, Vec2_anchor_center, 1.f);
         }
-        else if (g_gameConfig.GamblingAnimTime >= MASTERMIND_ANIM_FADE_DUR + MASTERMIND_ANIM_EFFECT_DUR + MASTERMIND_OUT_FADE_DUR && g_gameConfig.GamblingAnimTime < MASTERMIND_ANIM_FADE_DUR + MASTERMIND_ANIM_EFFECT_DUR + MASTERMIND_OUT_FADE_DUR + MASTERMIND_APPLY_DELAY)
+        else if (g_gameConfig.gamblingAnimTime >= MASTERMIND_ANIM_FADE_DUR + MASTERMIND_ANIM_EFFECT_DUR + MASTERMIND_OUT_FADE_DUR && g_gameConfig.gamblingAnimTime < MASTERMIND_ANIM_FADE_DUR + MASTERMIND_ANIM_EFFECT_DUR + MASTERMIND_OUT_FADE_DUR + MASTERMIND_APPLY_DELAY)
         {
             if (l_LastTime < MASTERMIND_ANIM_FADE_DUR + MASTERMIND_ANIM_EFFECT_DUR + MASTERMIND_OUT_FADE_DUR)
             {
                 int wx;
                 int wy;
                 SDL_GetWindowPosition(g_window, &wx, &wy);
-                self->LastWindowPosition = Vec2_set(wx, wy);
-                AudioManager_play(g_gameConfig.Audio, self->EarthquakeAudio);
+                self->m_lastWindowPosition = Vec2_set(wx, wy);
+                AudioManager_play(g_gameConfig.audio, self->m_earthquakeAudio);
             }
 
-            SDL_SetWindowPosition(g_window, self->LastWindowPosition.x + (rand() % 10) - 5, self->LastWindowPosition.y + (rand() % 10) - 5);
+            SDL_SetWindowPosition(g_window, self->m_lastWindowPosition.x + (rand() % 10) - 5, self->m_lastWindowPosition.y + (rand() % 10) - 5);
         }
-        else if (g_gameConfig.GamblingAnimTime >= MASTERMIND_ANIM_FADE_DUR + MASTERMIND_ANIM_EFFECT_DUR + MASTERMIND_OUT_FADE_DUR + MASTERMIND_APPLY_DELAY)
+        else if (g_gameConfig.gamblingAnimTime >= MASTERMIND_ANIM_FADE_DUR + MASTERMIND_ANIM_EFFECT_DUR + MASTERMIND_OUT_FADE_DUR + MASTERMIND_APPLY_DELAY)
         {
             if (l_LastTime < MASTERMIND_ANIM_FADE_DUR + MASTERMIND_ANIM_EFFECT_DUR + MASTERMIND_OUT_FADE_DUR + MASTERMIND_APPLY_DELAY)
             {
-                SDL_SetWindowPosition(g_window, self->LastWindowPosition.x, self->LastWindowPosition.y);
-                AudioManager_stopAll(g_gameConfig.Audio);
-                AudioManager_play(g_gameConfig.Audio, self->UndertaleBoomAudio);
+                SDL_SetWindowPosition(g_window, self->m_lastWindowPosition.x, self->m_lastWindowPosition.y);
+                AudioManager_stopAll(g_gameConfig.audio);
+                AudioManager_play(g_gameConfig.audio, self->m_undertaleBoomAudio);
             }
 
-            float l_Remaining = g_gameConfig.Remaining;
+            float l_Remaining = g_gameConfig.remaining;
 
             GameLoader_loadGame(MASTERMIND_LEVEL, true);
 
-            g_gameConfig.Remaining = l_Remaining;
-            g_gameConfig.State = PLAYING;
+            g_gameConfig.remaining = l_Remaining;
+            g_gameConfig.state = PLAYING;
         }
 
     }
 
-    if (g_gameConfig.State == GAMBLING && g_gameConfig.GamblingResult == OUPI_GOUPI)
+    if (g_gameConfig.state == GAMBLING && g_gameConfig.gamblingResult == OUPI_GOUPI)
     {
-        float l_LastTime = g_gameConfig.GamblingAnimTime;
+        float l_LastTime = g_gameConfig.gamblingAnimTime;
 
-        g_gameConfig.GamblingAnimTime += Timer_getDelta(g_time);
-        float time = g_gameConfig.GamblingAnimTime;
+        g_gameConfig.gamblingAnimTime += Timer_getDelta(g_time);
+        float time = g_gameConfig.gamblingAnimTime;
 
         SDL_FRect l_Rec;
         l_Rec.x = 0;
@@ -530,22 +548,22 @@ void GameGraphics_render(GameGraphics* self)
 
         //600
 
-        if (g_gameConfig.GamblingAnimTime < OUPI_GOUPI_ENTRANCE_DURATION)
+        if (g_gameConfig.gamblingAnimTime < OUPI_GOUPI_ENTRANCE_DURATION)
         {
             if (l_LastTime == 0)
             {
                 // Play drag sound
-                AudioManager_play(g_gameConfig.Audio, self->StoneSlideAudio);
+                AudioManager_play(g_gameConfig.audio, self->m_stoneSlideAudio);
             }
 
-            l_Rec.x = 600 * (g_gameConfig.GamblingAnimTime / OUPI_GOUPI_ENTRANCE_DURATION);
+            l_Rec.x = 600 * (g_gameConfig.gamblingAnimTime / OUPI_GOUPI_ENTRANCE_DURATION);
         }
         else if (time < OUPI_GOUPI_ENTRANCE_DURATION + OUPI_GOUPI_PRE_PUNCH_DURATION)
         {
             if (l_LastTime < OUPI_GOUPI_ENTRANCE_DURATION)
             {
                 // Stop drag sound
-                AudioManager_stopAll(g_gameConfig.Audio);
+                AudioManager_stopAll(g_gameConfig.audio);
             }
 
             l_Rec.x = 600;
@@ -561,11 +579,11 @@ void GameGraphics_render(GameGraphics* self)
             if (l_TimeModded != l_LastTimeModded)
             {
                 // Play punch sound
-                AudioManager_play(g_gameConfig.Audio, self->PunchesAudio[rand() % 5]);
-                g_gameConfig.Remaining -= 5;
+                AudioManager_play(g_gameConfig.audio, self->m_punchesAudio[rand() % 5]);
+                g_gameConfig.remaining -= 5;
             }
 
-            SpriteGroup* l_minusFive = self->MinusFiveSprite;
+            SpriteGroup* l_minusFive = self->m_minusFiveSprite;
 
             SpriteGroup_setColorModFloat(l_minusFive, 1, 0.2f, 0.2f);
             SpriteGroup_setOpacityFloat(l_minusFive, 1 - (l_Mod / OUPI_GOUPI_PUNCH_LENGTH));
@@ -588,7 +606,7 @@ void GameGraphics_render(GameGraphics* self)
             if (l_LastTime < OUPI_GOUPI_ENTRANCE_DURATION + OUPI_GOUPI_PRE_PUNCH_DURATION + OUPI_GOUPI_PUNCH_DURATION + OUPI_GOUPI_EXPLOSION_PRE_DURATION)
             {
                 // Play explosion sound
-                AudioManager_play(g_gameConfig.Audio, self->ExplosionAudio);
+                AudioManager_play(g_gameConfig.audio, self->m_explosionAudio);
             }
 
             float fixedTime = time - (OUPI_GOUPI_ENTRANCE_DURATION + OUPI_GOUPI_PRE_PUNCH_DURATION + OUPI_GOUPI_PUNCH_DURATION + OUPI_GOUPI_EXPLOSION_PRE_DURATION);
@@ -599,19 +617,95 @@ void GameGraphics_render(GameGraphics* self)
             l_Rec.x = 600;
             l_Rec.w *= 2.f;
             l_Rec.h *= 2.f;
-            SpriteGroup_render(self->ExplosionSprite, index, &l_Rec, Vec2_anchor_center, 1.f);
+            SpriteGroup_render(self->m_explosionSprite, index, &l_Rec, Vec2_anchor_center, 1.f);
         }
         else if (time < OUPI_GOUPI_ENTRANCE_DURATION + OUPI_GOUPI_PRE_PUNCH_DURATION + OUPI_GOUPI_PUNCH_DURATION + OUPI_GOUPI_EXPLOSION_PRE_DURATION + OUPI_GOUPI_EXPLOSION_DURATION + OUPI_GOUPI_EXPLOSION_POST_DURATION)
         {
-            g_gameConfig.State = PLAYING;
+            g_gameConfig.state = PLAYING;
         }
 
-        if (g_gameConfig.GamblingAnimTime < OUPI_GOUPI_ENTRANCE_DURATION + OUPI_GOUPI_PRE_PUNCH_DURATION + OUPI_GOUPI_PUNCH_DURATION + OUPI_GOUPI_EXPLOSION_PRE_DURATION)
+        if (g_gameConfig.gamblingAnimTime < OUPI_GOUPI_ENTRANCE_DURATION + OUPI_GOUPI_PRE_PUNCH_DURATION + OUPI_GOUPI_PUNCH_DURATION + OUPI_GOUPI_EXPLOSION_PRE_DURATION)
         {
-            SpriteGroup* l_Spr = self->OupiGoupiSprite;
+            SpriteGroup* l_Spr = self->m_oupiGoupiSprite;
 
             SpriteGroup_render(l_Spr, 0, &l_Rec, Vec2_anchor_center, 1.f);
         }
+    }
+
+    if (g_gameConfig.state == GAMBLING && g_gameConfig.gamblingResult == FISC_GUY)
+    {
+        float l_LastTime = g_gameConfig.gamblingAnimTime;
+
+        g_gameConfig.gamblingAnimTime += Timer_getDelta(g_time);
+        float l_FixedAnimTime = g_gameConfig.gamblingAnimTime;
+        int l_Pos = 0;
+        int l_LastPos = self->m_lastFiscPos;
+
+        float l_TargetPosY = g_gameConfig.fiscTargetPos.y;
+
+        float l_Div = g_gameConfig.fiscTargetPos.x / 600;
+        float l_Div2 = g_gameConfig.fiscNextMovePos.x / 600;
+
+        float l_Entrance = l_Div * FISC_ENTRANCE;
+
+        if (l_FixedAnimTime < l_Entrance)
+        {
+            l_Pos = (l_FixedAnimTime) * (g_gameConfig.fiscTargetPos.x / l_Entrance);
+            l_Pos -= l_Pos % 40;
+
+            if (l_LastPos != l_Pos)
+            {
+                self->m_fiscGuyScale *= -1;
+                AudioManager_play(g_gameConfig.audio, self->m_fiscGuyScale == -1 ? g_gameConfig.footstep0 : g_gameConfig.footstep1);
+            }
+            l_LastPos = l_Pos;
+        }
+        else if (l_FixedAnimTime < l_Entrance + FISC_PRE_MOVE_DUR)
+        {
+            l_Pos = g_gameConfig.fiscTargetPos.x;
+            l_LastPos = l_Pos;
+        } else if (l_FixedAnimTime < l_Entrance + FISC_PRE_MOVE_DUR + FISC_POST_MOVE_DUR)
+        {
+            if (l_Pos != l_LastPos)
+            {
+                g_gameConfig.core->Rabbits[g_gameConfig.solveObjectIndex] = g_gameConfig.solveNextSol[1];
+            }
+
+            l_Pos = g_gameConfig.fiscNextMovePos.x;
+            l_TargetPosY = g_gameConfig.fiscNextMovePos.y;
+            l_LastPos = l_Pos;
+        }
+        else if (l_FixedAnimTime < l_Entrance + FISC_PRE_MOVE_DUR + FISC_POST_MOVE_DUR + (FISC_EXIT * l_Div2))
+        {
+
+            float l_AnimTime = l_FixedAnimTime - l_Entrance - FISC_PRE_MOVE_DUR - FISC_POST_MOVE_DUR;
+            l_Pos = g_gameConfig.fiscNextMovePos.x - ((l_AnimTime) * (g_gameConfig.fiscNextMovePos.x / (FISC_EXIT * l_Div2)));
+            l_Pos -= l_Pos % 40;
+
+            if (l_LastPos != l_Pos)
+            {
+                self->m_fiscGuyScale *= -1;
+                AudioManager_play(g_gameConfig.audio, self->m_fiscGuyScale == -1 ? g_gameConfig.footstep0 : g_gameConfig.footstep1);
+            }
+            l_TargetPosY = g_gameConfig.fiscNextMovePos.y;
+            l_LastPos = l_Pos;
+        }
+        else if (l_FixedAnimTime >= l_Entrance + FISC_PRE_MOVE_DUR + FISC_POST_MOVE_DUR + (FISC_EXIT * l_Div2))
+        {
+            g_gameConfig.state = PLAYING;
+            g_gameConfig.gamblingResult = NONE;
+            self->m_lastFiscPos = -1;
+        }
+
+        self->m_lastFiscPos = l_LastPos;
+
+        SDL_FRect l_CatRect = { 0 };
+        l_CatRect.x = l_Pos;
+        l_CatRect.y = l_TargetPosY;
+        l_CatRect.w = self->m_fiscGuyScale * 40.f;
+        l_CatRect.h = 42.f;
+
+        SpriteGroup_render(self->m_lowQualityCatSprite, 0, &l_CatRect, Vec2_anchor_center, 1.f);
     }
 }
 

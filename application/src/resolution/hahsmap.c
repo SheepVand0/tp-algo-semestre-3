@@ -7,15 +7,25 @@ static uint64_t hash(GameCore grid, uint64_t capacity)
 {
     uint64_t hash = 0;
 
-    for (int i = 0; i < g_gameConfig.Settings->RabbitCount; i++)
+    for (int i = 0; i < g_gameConfig.settings->RabbitCount; i++)
     {
         hash ^= (uint64_t)(grid.Rabbits[i].CellX + 5* grid.Rabbits[i].CellY);
         hash = hash * 0xbf58476d1ce4e5b9ULL + 0x9e3779b97f4a7c15ULL;
     }
 
-    for (int i = g_gameConfig.Settings->RabbitCount; i < g_gameConfig.Settings->RabbitCount + g_gameConfig.Settings->FoxCount; i++)
+    for (int i = g_gameConfig.settings->RabbitCount; i < MAX_RABBITS + g_gameConfig.settings->FoxCount; i++)
     {
+        if (grid.Rabbits[i].Type != FOX) continue;
+
         hash ^= (uint64_t)(grid.Rabbits[i].CellX + 5 * grid.Rabbits[i].CellY);
+        hash = hash * 0xbf58476d1ce4e5b9ULL + 0x9e3779b97f4a7c15ULL;
+    }
+
+    for (int x = g_gameConfig.settings->RabbitCount + g_gameConfig.settings->FoxCount; x < MAX_RABBITS + MAX_FOXES + g_gameConfig.settings->MushroomCount; x++)
+    {
+        if (grid.Rabbits[x].Type != MUSHROOM) continue;
+
+        hash ^= (uint64_t)(grid.Rabbits[x].CellX + 5 * grid.Rabbits[x].CellY);
         hash = hash * 0xbf58476d1ce4e5b9ULL + 0x9e3779b97f4a7c15ULL;
     }
 
@@ -23,7 +33,7 @@ static uint64_t hash(GameCore grid, uint64_t capacity)
 }
 
 
-GameHashmap* HashMap_New(size_t capacity)
+GameHashmap* HashMap_New(uint64_t capacity)
 {
     GameHashmap* map = (GameHashmap*)calloc(1, sizeof(GameHashmap));
     AssertNew(map);
@@ -92,7 +102,7 @@ GameHashmap* HashMap_Insert(GameHashmap* map, GameHashmapEntry value)
         map = HashMap_Resize(map);
     }
 
-    int idx = (int)hash(value.currState, map->m_capacity);
+    int idx = (int)Hashmap_hash(value.currState, map->m_capacity);
 
     // TODO vérifier qu elle est pas déjà là cette saloperie
 
@@ -103,6 +113,30 @@ GameHashmap* HashMap_Insert(GameHashmap* map, GameHashmapEntry value)
         idx = (idx + 1) % map->m_capacity;
     }
 
+    map->m_idMap[idx] = map->m_size;
+
+    map->m_size++;
+
+    return map;
+}
+
+GameHashmap* HashMap_InsertWithMushrooms(GameHashmap* map, GameHashmapEntry value)
+{
+    assert(map);
+
+    if (map->m_size * 2 > map->m_capacity)
+    {
+        map = HashMap_Resize(map);
+    }
+
+    int idx = (int)Hashmap_hash(value.currState, map->m_capacity);
+
+    map->m_entries[map->m_size] = value;
+
+    while ((int)map->m_idMap[idx] >= 0)
+    {
+        idx = (idx + 1) % map->m_capacity;
+    }
     map->m_idMap[idx] = map->m_size;
 
     map->m_size++;
@@ -164,7 +198,7 @@ GameHashmap* HashMap_Resize(GameHashmap* map)
 
     HashMap_destroy(map);
 
-    printf("Resized\n");
+    //printf("Resized\n");
 
     return NewMap;
 }
@@ -173,10 +207,12 @@ GameHashmap* HashMap_Resize(GameHashmap* map)
 static bool Compare(GameCore grid1, GameCore grid2);
 static bool Compare(GameCore grid1, GameCore grid2)
 {
-    for (int i = 0; i < (g_gameConfig.Settings->RabbitCount); i++)
+    for (int i = 0; i < (g_gameConfig.settings->RabbitCount); i++)
     {
+        if (grid1.Rabbits[i].Type != RABBIT) continue;
+
         bool tmp = false;
-        for (int j = 0; j < g_gameConfig.Settings->RabbitCount; j++)
+        for (int j = 0; j < g_gameConfig.settings->RabbitCount; j++)
         {
             if (grid1.Rabbits[i].CellX == grid2.Rabbits[j].CellX &&
                 grid1.Rabbits[i].CellY == grid2.Rabbits[j].CellY) tmp = true;
@@ -184,11 +220,13 @@ static bool Compare(GameCore grid1, GameCore grid2)
         if (!tmp) return false;
     }
 
-    for (int i = g_gameConfig.Settings->RabbitCount; i < g_gameConfig.Settings->RabbitCount + g_gameConfig.Settings->FoxCount; i++)
+    for (int i = g_gameConfig.settings->RabbitCount; i < MAX_RABBITS + MAX_FOXES; i++)
     {
         bool tmp = false;
-        for (int j = g_gameConfig.Settings->RabbitCount; j < g_gameConfig.Settings->RabbitCount + g_gameConfig.Settings->FoxCount; j++)
+        for (int j = g_gameConfig.settings->RabbitCount; j < g_gameConfig.settings->RabbitCount + g_gameConfig.settings->FoxCount; j++)
         {
+            if (grid1.Rabbits[i].Type != FOX) continue;
+
             if (grid1.Rabbits[i].CellX == grid2.Rabbits[j].CellX &&
                 grid1.Rabbits[i].CellY == grid2.Rabbits[j].CellY) tmp = true;
         }
@@ -201,7 +239,7 @@ static bool Compare(GameCore grid1, GameCore grid2)
 
 bool alreadyIn(GameHashmap* map, GameHashmapEntry grid)
 {
-    uint64_t idx = hash(grid.currState,map->m_capacity);
+    uint64_t idx = Hashmap_hash(grid.currState,map->m_capacity);
 
     while ((int)map->m_idMap[idx] >= 0)
     {
@@ -217,20 +255,48 @@ bool alreadyIn(GameHashmap* map, GameHashmapEntry grid)
 
 GameHashmapEntry* rechercheInv(GameHashmap* map, GameHashmapEntry* grid)  //prend un grid.prev et recherche dans les .curr
 {
-    uint64_t idx = hash(grid->prevState, map->m_capacity);
+    if (!map) return NULL;
+    if (!grid) return NULL;
+
+    uint64_t idx = Hashmap_hash(grid->prevState, map->m_capacity);
 
 
     while ((int)map->m_idMap[idx] >= 0)
     {
-        if (Compare(map->m_entries[map->m_idMap[idx]].currState, grid->prevState)) return &map->m_entries[map->m_idMap[idx]];
-        idx = (idx + 1) % (int)map->m_capacity;
+        if (GameCore_equals(&map->m_entries[map->m_idMap[idx]].currState, &grid->prevState)) return &map->m_entries[map->m_idMap[idx]];
+        idx = (idx + 1) % map->m_capacity;
     }
     return NULL;
 }
 
 uint64_t Hashmap_hash(GameCore grid, uint64_t capacity)
 {
-    return hash(grid, capacity);
+    uint64_t hash = 0;
+
+    for (int i = 0; i < g_gameConfig.settings->RabbitCount; i++)
+    {
+        hash ^= (uint64_t)(grid.Rabbits[i].CellX + 5 * grid.Rabbits[i].CellY);
+        hash = hash * 0xbf58476d1ce4e5b9ULL + 0x9e3779b97f4a7c15ULL;
+    }
+
+    for (int i = g_gameConfig.settings->RabbitCount; i < MAX_RABBITS + g_gameConfig.settings->FoxCount; i++)
+    {
+
+        if (grid.Rabbits[i].Type != FOX) continue;
+
+        hash ^= (uint64_t)(grid.Rabbits[i].CellX + 5 * grid.Rabbits[i].CellY);
+        hash = hash * 0xbf58476d1ce4e5b9ULL + 0x9e3779b97f4a7c15ULL;
+    }
+
+    for (int x = g_gameConfig.settings->RabbitCount + g_gameConfig.settings->FoxCount; x < MAX_RABBITS + MAX_FOXES + g_gameConfig.settings->MushroomCount; x++)
+    {
+        if (grid.Rabbits[x].Type != MUSHROOM) continue;
+
+        hash ^= (uint64_t)(grid.Rabbits[x].CellX + 5 * grid.Rabbits[x].CellY);
+        hash = hash * 0xbf58476d1ce4e5b9ULL + 0x9e3779b97f4a7c15ULL;
+    }
+
+    return hash % (int)capacity;
 }
 
 
@@ -249,13 +315,13 @@ void printGrid(GameCore grid)
     tab[20] = 'O';
     tab[24] = 'O';
 
-    for (int i = 0; i < (g_gameConfig.Settings->RabbitCount); i++)
+    for (int i = 0; i < (g_gameConfig.settings->RabbitCount); i++)
     {
         int x = grid.Rabbits[i].CellX;
         int y = grid.Rabbits[i].CellY;
         tab[x + 5 * y] = 'L';
     }
-    for (int i = g_gameConfig.Settings->RabbitCount; i < (g_gameConfig.Settings->FoxCount + g_gameConfig.Settings->RabbitCount); i++)
+    for (int i = g_gameConfig.settings->RabbitCount; i < (g_gameConfig.settings->FoxCount + g_gameConfig.settings->RabbitCount); i++)
     {
         int x = grid.Rabbits[i].CellX;
         int y = grid.Rabbits[i].CellY;
@@ -281,8 +347,8 @@ void printGrid(GameCore grid)
         y = Float_clamp(y, 0, 4);
         tab[x + 5 * y] = 'F';
     }
-    for (int i = g_gameConfig.Settings->RabbitCount + g_gameConfig.Settings->FoxCount;
-        i < (g_gameConfig.Settings->MushroomCount + RABBIT_COUNT + g_gameConfig.Settings->FoxCount); i++)
+    for (int i = g_gameConfig.settings->RabbitCount + g_gameConfig.settings->FoxCount;
+        i < (g_gameConfig.settings->MushroomCount + RABBIT_COUNT + g_gameConfig.settings->FoxCount); i++)
     {
         int x = grid.Rabbits[i].CellX;
         int y = grid.Rabbits[i].CellY;

@@ -41,8 +41,8 @@ target_sources(${NAME} PRIVATE
     "src/game/game_settings.c"
     "src/resolution/hashmap.h"
     "src/resolution/hahsmap.c" 
-    "src/resolution/gridinfo.h" 
-    "src/resolution/gridinfo.c"
+     
+    
     "src/resolution/resoudre.c" 
     "src/resolution/resoudre.h" 
     "src/game/audio/audio_manager.h"

@@ -23,21 +23,19 @@ typedef struct GameTitlePage
     GameUIAction m_nextAction;
     UIObject* m_mainPanel;
 
-    MIX_Mixer* Mixer;
+    SpriteGroup* m_lowQualityCatSprite;
+    float m_animationTime;
 
-    SpriteGroup* LowQualityCatSprite;
-    float AnimationTime;
+    UIButton* m_settingsButton;
+    UIButton* m_playButton;
 
-    UIButton* SettingsButton;
-    UIButton* PlayButton;
+    int m_lastPos;
+    float m_spriteScale;
+    float m_lastFixedTime;
 
-    int lastPos;
-    float SpriteScale;
-    float lastFixedTime;
-
-    SAudio* Footstep0;
-    SAudio* Footstep1;
-    SAudio* Eating;
+    SAudio* m_footstep0;
+    SAudio* m_footstep1;
+    SAudio* m_eating;
 } GameTitlePage;
 
 GameTitlePage* GameTitlePage_create(Scene* scene, GameUIManager *manager);

@@ -25,7 +25,7 @@ GameCore* Generate(int rabbCount, int foxCount, int mushroomCount, int moveCount
 /// <param name="rabbCount"></param>
 /// <param name="moveCount"></param>
 /// <returns></returns>
-GameCore* GenerateClean(int rabbCount, int moveCount);
+GameCore* GenerateClean(int rabbCount, int maxFoxes, int maxMushrooms, int moveCount);
 
 void Generator_printCurrent(GameCore core);
 
@@ -46,3 +46,5 @@ GameHashmapEntry* Generator_searchEntryAdressInHashmap(GameHashmap* map, GameHas
 /// <param name="pattern"></param>
 /// <returns></returns>
 int Generator_countMoves(GameHashmap* hashmap, GameHashmapEntry* pattern);
+
+int sign(int obj);

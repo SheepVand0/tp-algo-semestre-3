@@ -49,15 +49,15 @@ GameTitlePage* GameTitlePage_create(Scene* scene, GameUIManager *manager)
     self->m_mainPanel = UIObject_create("main-panel");
     self->m_nextAction = GAME_UI_ACTION_NONE;
     self->m_focusManager = UIFocusManager_create();
-    self->AnimationTime = 0.f;
-    self->lastPos = -1;
-    self->SpriteScale = 1.f;
-    self->Eating = AudioManager_loadWav(g_gameConfig.Audio, "eating.wav", "eating");
+    self->m_animationTime = 0.f;
+    self->m_lastPos = -1;
+    self->m_spriteScale = 1.f;
+    self->m_eating = AudioManager_loadWav(g_gameConfig.audio, "eating.wav", "eating");
 
-    self->Footstep0 = AudioManager_loadWav(g_gameConfig.Audio, "footstep_0.wav", "footstep0");
-    self->Footstep1 = AudioManager_loadWav(g_gameConfig.Audio, "footstep_1.wav", "footstep1");
+    self->m_footstep0 = AudioManager_loadWav(g_gameConfig.audio, "footstep_0.wav", "footstep0");
+    self->m_footstep1 = AudioManager_loadWav(g_gameConfig.audio, "footstep_1.wav", "footstep1");
 
-    self->LowQualityCatSprite = SpriteSheet_getGroupByName(AssetManager_getSpriteSheet(assets, SPRITE_LOW_QUALITY_CAT), "cat");
+    self->m_lowQualityCatSprite = SpriteSheet_getGroupByName(AssetManager_getSpriteSheet(assets, SPRITE_LOW_QUALITY_CAT), "cat");
     UIFocusManager_setCanvas(self->m_focusManager, canvas);
 
     UIObject_setParent(self->m_mainPanel, canvas);
@@ -105,8 +105,8 @@ GameTitlePage* GameTitlePage_create(Scene* scene, GameUIManager *manager)
             UIFocusManager_setFocused(self->m_focusManager, button);
         }
 
-        if (i == 1) self->SettingsButton = button;
-        if (i == 0) self->PlayButton = button;
+        if (i == 1) self->m_settingsButton = button;
+        if (i == 0) self->m_playButton = button;
     }
 
     return self;
@@ -132,14 +132,14 @@ void GameTitlePage_update(GameTitlePage* self, UIInput* input)
     case GAME_UI_ACTION_START:
         self->m_manager->m_nextAction = GAME_UI_ACTION_START;
 
-        Rabbit* l_Generated = GameEditor_buildUsableArray(GenerateClean(2, 3)->Rabbits);
+        Rabbit* l_Generated = GameEditor_buildUsableArray(GenerateClean(2, 2, 0, 7)->Rabbits);
         for (int x = 0; x < MAX_RABBITS + MAX_FOXES + MAX_MUSHROOMS; x++)
         {
-            g_gameConfig.Core->Rabbits[x] = l_Generated[x];
+            g_gameConfig.core->Rabbits[x] = l_Generated[x];
         }
         
-        g_gameConfig.Remaining = 50.f;
-        g_gameConfig.Settings->GridSize = 5;
+        g_gameConfig.remaining = 50.f;
+        g_gameConfig.settings->GridSize = 5;
         break;
     case GAME_UI_ACTION_OPEN_SETTINGS:
         self->m_manager->m_nextAction = GAME_UI_ACTION_OPEN_SETTINGS;
@@ -156,19 +156,19 @@ void GameTitlePage_update(GameTitlePage* self, UIInput* input)
     self->m_nextAction = GAME_UI_ACTION_NONE;
 }
 
-#define ANIM_PRE_DURATION 5
+#define ANIM_PRE_DURATION 10
 #define ANIM_DISTANCE_X 480
-#define ANIM_POS_Y = 370
+#define ANIM_POS_Y 370
 #define ANIM_DURATION_IN_SEC 8
 #define ANIM_EAT_SUPP_TIME 4
 
 void GameTitlePage_render(GameTitlePage* self)
 {
-    self->AnimationTime += Timer_getDelta(g_time);
+    self->m_animationTime += Timer_getDelta(g_time);
 
-    if (self->AnimationTime >= ANIM_PRE_DURATION)
+    if (self->m_animationTime >= ANIM_PRE_DURATION)
     {
-        float l_FixedAnimTime = self->AnimationTime - ANIM_PRE_DURATION;
+        float l_FixedAnimTime = self->m_animationTime - ANIM_PRE_DURATION;
         int l_Pos = 0;
 
         if (l_FixedAnimTime < ANIM_DURATION_IN_SEC)
@@ -179,11 +179,11 @@ void GameTitlePage_render(GameTitlePage* self)
         else if (l_FixedAnimTime >= ANIM_DURATION_IN_SEC && l_FixedAnimTime <= ANIM_DURATION_IN_SEC + ANIM_EAT_SUPP_TIME)
         {
             l_Pos = ANIM_DISTANCE_X;
-            if (l_FixedAnimTime >= ANIM_DURATION_IN_SEC + (ANIM_EAT_SUPP_TIME - 1) && self->lastFixedTime <= ANIM_DURATION_IN_SEC + (ANIM_EAT_SUPP_TIME - 1))
+            if (l_FixedAnimTime >= ANIM_DURATION_IN_SEC + (ANIM_EAT_SUPP_TIME - 1) && self->m_lastFixedTime <= ANIM_DURATION_IN_SEC + (ANIM_EAT_SUPP_TIME - 1))
             {
-                UIObject_setEnabled(self->SettingsButton, false);
-                UIButton_setOnClickCallback(self->SettingsButton, GameTitlePage_emptyCallback);
-                AudioManager_play(g_gameConfig.Audio, self->Eating);
+                UIObject_setEnabled(self->m_settingsButton, false);
+                UIButton_setOnClickCallback(self->m_settingsButton, GameTitlePage_emptyCallback);
+                AudioManager_play(g_gameConfig.audio, self->m_eating);
             }
         }
         else
@@ -195,22 +195,22 @@ void GameTitlePage_render(GameTitlePage* self)
             if (animTime >= ANIM_DURATION_IN_SEC) return;
         }
 
-        if (l_Pos != self->lastPos)
+        if (l_Pos != self->m_lastPos)
         {
             
-            self->SpriteScale *= -1;
-            AudioManager_play(g_gameConfig.Audio, self->SpriteScale == 1 ? self->Footstep0 : self->Footstep1);
+            self->m_spriteScale *= -1;
+            AudioManager_play(g_gameConfig.audio, self->m_spriteScale == 1 ? self->m_footstep0 : self->m_footstep1);
         }
 
         SDL_FRect l_CatRect = { 0 };
         l_CatRect.x = l_Pos;
         l_CatRect.y = 370;
-        l_CatRect.w = self->SpriteScale * 40.f;
+        l_CatRect.w = self->m_spriteScale * 40.f;
         l_CatRect.h = 42.f;
 
-        SpriteGroup_render(self->LowQualityCatSprite, 0, &l_CatRect, Vec2_anchor_center, 1.f);
+        SpriteGroup_render(self->m_lowQualityCatSprite, 0, &l_CatRect, Vec2_anchor_center, 1.f);
 
-        self->lastPos = l_Pos;
-        self->lastFixedTime = l_FixedAnimTime;
+        self->m_lastPos = l_Pos;
+        self->m_lastFixedTime = l_FixedAnimTime;
     }
 }

@@ -29,9 +29,9 @@ typedef struct GameHashmapEntry
 typedef struct GameHashmap
 {
     GameHashmapEntry* m_entries;
-    size_t* m_idMap;
-    size_t m_capacity;
-    size_t m_size;
+    uint64_t* m_idMap;
+    uint64_t m_capacity;
+    uint64_t m_size;
 } GameHashmap;
 
 
@@ -40,7 +40,7 @@ typedef struct GameHashmap
 /// 
 /// @param capacity la capacité de la table.
 /// @return La table de hachage créée.
-GameHashmap* HashMap_New(size_t capacity);
+GameHashmap* HashMap_New(uint64_t capacity);
 
 /// @brief Détruit une table de hachage.
 /// Les clés sont automatiquement libérées mais les données associées ne le sont pas.
@@ -73,6 +73,8 @@ int HashMap_GetSize(GameHashmap* self);
 /// @return Si la clé était déjà présente dans la table, renvoie la valeur précédente
 /// (pour que l'utilisateur puisse libérer la mémoire), sinon renvoie NULL.
 GameHashmap* HashMap_Insert(GameHashmap* map, GameHashmapEntry value);
+
+GameHashmap* HashMap_InsertWithMushrooms(GameHashmap* map, GameHashmapEntry value);
 
 /// @brief Supprime une clé dans une table de hachage.
 /// Cette fonction est sans effet si la clé n'est pas présente.

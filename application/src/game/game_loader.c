@@ -12,7 +12,7 @@ void GameLoader_loadGame(char* fileName, bool forPlay)
     FILE* l_File = fopen(fileName, "r+");
     assert(l_File);
 
-    GameCore_destroyGame(g_gameConfig.Core);
+    GameCore_destroyGame(g_gameConfig.core);
 
     int gridSize;
     int foxCount;
@@ -22,11 +22,11 @@ void GameLoader_loadGame(char* fileName, bool forPlay)
 
     int res = fscanf(l_File, "%d %d %d %d %f", &gridSize, &rabbitCount, &foxCount, &mushCount, &time);
 
-    g_gameConfig.Settings->RabbitCount = rabbitCount;
-    g_gameConfig.Settings->FoxCount = foxCount;
-    g_gameConfig.Settings->MushroomCount = mushCount;
-    g_gameConfig.Settings->TotalTime = time;
-    g_gameConfig.Settings->GridSize = gridSize;
+    g_gameConfig.settings->RabbitCount = rabbitCount;
+    g_gameConfig.settings->FoxCount = foxCount;
+    g_gameConfig.settings->MushroomCount = mushCount;
+    g_gameConfig.settings->TotalTime = time;
+    g_gameConfig.settings->GridSize = gridSize;
 
     int indexR = 0;
     int indexF = forPlay ? RABBIT_COUNT : MAX_RABBITS;
@@ -44,19 +44,19 @@ void GameLoader_loadGame(char* fileName, bool forPlay)
 
             if (obj == RABBIT)
             {
-                g_gameConfig.Core->Rabbits[indexR] = *Rabbit_create(g_gameConfig.Core, x, y);
+                g_gameConfig.core->Rabbits[indexR] = *Rabbit_create(g_gameConfig.core, x, y);
 
                 //printf("%d\n", g_gameConfig.Core->Rabbits[indexR].CellX);
                 indexR += 1;
             }
             else if (obj == FOX)
             {
-                g_gameConfig.Core->Rabbits[indexF] = *Fox_create(g_gameConfig.Core, x, y, att);
+                g_gameConfig.core->Rabbits[indexF] = *Fox_create(g_gameConfig.core, x, y, att);
                 indexF += 1;
             }
             else if (obj == MUSHROOM)
             {
-                g_gameConfig.Core->Rabbits[indexM] = *Mushroom_create(g_gameConfig.Core, x, y);
+                g_gameConfig.core->Rabbits[indexM] = *Mushroom_create(g_gameConfig.core, x, y);
                 indexM += 1;
             }
         }
@@ -73,9 +73,9 @@ void GameLoader_saveGame(char* fileName)
 
     assert(l_File);
 
-    fprintf(l_File, "%d %d %d %d %f\n", GAME_GRID_SIZE, RABBIT_COUNT, FOX_COUNT, MUSHROOM_COUNT, g_gameConfig.Settings->TotalTime);
+    fprintf(l_File, "%d %d %d %d %f\n", GAME_GRID_SIZE, RABBIT_COUNT, FOX_COUNT, MUSHROOM_COUNT, g_gameConfig.settings->TotalTime);
 
-    Rabbit* l_Usable = GameEditor_buildUsableArray(g_gameConfig.Core->Rabbits);
+    Rabbit* l_Usable = GameEditor_buildUsableArray(g_gameConfig.core->Rabbits);
 
     for (int y = 0; y < GAME_GRID_SIZE; y++)
     {

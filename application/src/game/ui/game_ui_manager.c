@@ -16,7 +16,7 @@ static void GameUIManager_closePages(GameUIManager* self);
 static void GameUIManager_onLeaveClicked(void* selectable)
 {
     g_gameConfig.inLevel = false;
-    g_gameConfig.State = NONE;
+    g_gameConfig.state = NONE;
 
     //GameCore_destroyGame(g_gameConfig.Core);
 
@@ -26,6 +26,13 @@ static void GameUIManager_onLeaveClicked(void* selectable)
     l_Manager->m_nextAction = GAME_UI_ACTION_OPEN_TITLE;
 }
 
+static void GameUIManager_onNextMoveClick(void* selectable)
+{
+    solve(g_gameConfig.core);
+
+    g_gameConfig.core->Rabbits[g_gameConfig.solveObjectIndex] = g_gameConfig.solveNextSol[1];
+}
+
 static void GameUIManager_startGambling(void* selectable)
 {
     GameUIManager* l_Man = (GameUIManager*)UISelectable_getUserData(selectable);
@@ -33,19 +40,24 @@ static void GameUIManager_startGambling(void* selectable)
 
     printf("Gambled\n");
 
-    EGamblingResult l_Result = OUPI_GOUPI;
+    EGamblingResult l_Result = CANDY;
 
-    l_Result = (rand() % GAMBLING_COUNT + rand() % GAMBLING_COUNT) % GAMBLING_COUNT;
+    l_Result = (SDL_rand(GAMBLING_COUNT));
 
-    g_gameConfig.InputLockTime = 0.5f;
+    if (l_Result == FISC_GUY)
+    {
+        solve(g_gameConfig.core);
+    }
 
-    g_gameConfig.GamblingResult = l_Result;
-    g_gameConfig.GamblingAnimTime = 0.f;
-    g_gameConfig.State = GAMBLING;
-    g_gameConfig.CandyWaitingForLeftClick = true;
+    g_gameConfig.inputLockTime = 0.5f;
 
-    g_gameConfig.CandyVel = Vec2_zero;
-    g_gameConfig.CandyPos = Vec2_set(HD_WIDTH / 2, 12);
+    g_gameConfig.gamblingResult = l_Result;
+    g_gameConfig.gamblingAnimTime = 0.f;
+    g_gameConfig.state = GAMBLING;
+    g_gameConfig.candyWaitingForLeftClick = true;
+
+    g_gameConfig.candyVel = Vec2_zero;
+    g_gameConfig.candyPos = Vec2_set(HD_WIDTH / 2, 12);
 }
 
 GameUIManager* GameUIManager_create(Scene* scene)
@@ -76,21 +88,29 @@ GameUIManager* GameUIManager_create(Scene* scene)
     UILabel_setAnchor(self->m_timeText, Vec2_anchor_north);
     UILabel_setColor(self->m_timeText, g_colors.orange4);
 
-    self->LeaveGameButton = UIButton_create("leave-button", AssetManager_getFont(assets, FONT_NORMAL));
-    UIButton_setLabelString(self->LeaveGameButton, "Leave");
-    UISelectable_setUserData(self->LeaveGameButton, self);
-    UISelectable_setUserId(self->LeaveGameButton, 0);
-    UIButton_setOnClickCallback(self->LeaveGameButton, GameUIManager_onLeaveClicked);
+    self->m_leaveGameButton = UIButton_create("leave-button", AssetManager_getFont(assets, FONT_NORMAL));
+    UIButton_setLabelString(self->m_leaveGameButton, "Leave");
+    UISelectable_setUserData(self->m_leaveGameButton, self);
+    UISelectable_setUserId(self->m_leaveGameButton, 0);
+    UIButton_setOnClickCallback(self->m_leaveGameButton, GameUIManager_onLeaveClicked);
 
-    UIFocusManager_addSelectable(self->FocusManager, self->LeaveGameButton);
+    UIFocusManager_addSelectable(self->FocusManager, self->m_leaveGameButton);
 
-    self->GambleButton = UIButton_create("gamble-button", AssetManager_getFont(assets, FONT_NORMAL));
-    UIButton_setLabelString(self->GambleButton, "gabmle");
-    UISelectable_setUserData(self->GambleButton, self);
-    UISelectable_setUserId(self->GambleButton, 0);
-    UIButton_setOnClickCallback(self->GambleButton, GameUIManager_startGambling);
+    self->m_gambleButton = UIButton_create("gamble-button", AssetManager_getFont(assets, FONT_NORMAL));
+    UIButton_setLabelString(self->m_gambleButton, "gabmle");
+    UISelectable_setUserData(self->m_gambleButton, self);
+    UISelectable_setUserId(self->m_gambleButton, 0);
+    UIButton_setOnClickCallback(self->m_gambleButton, GameUIManager_startGambling);
 
-    UIFocusManager_addSelectable(self->FocusManager, self->GambleButton);
+    UIFocusManager_addSelectable(self->FocusManager, self->m_gambleButton);
+
+    self->m_nextMoveButton = UIButton_create("next-move-button-of-bodin", AssetManager_getFont(assets, FONT_NORMAL));
+    UIButton_setLabelString(self->m_nextMoveButton, "Solve of bodin");
+    UISelectable_setUserData(self->m_nextMoveButton, self);
+    UISelectable_setUserId(self->m_nextMoveButton, 0);
+    UIButton_setOnClickCallback(self->m_nextMoveButton, GameUIManager_onNextMoveClick);
+
+    UIFocusManager_addSelectable(self->FocusManager, self->m_nextMoveButton);
 
     self->m_lostTextLayout = UIGridLayout_create("lost-text-layout", 2, 1);
     UIObject_setParent(self->m_lostTextLayout, canvas);
@@ -107,9 +127,10 @@ GameUIManager* GameUIManager_create(Scene* scene)
     UIObject_setEnabled(self->m_lostText, false);
 
     UIGridLayout_addObject(self->m_timeTextLayout, self->m_timeText, 0, 2, 1, 1);
-    UIGridLayout_addObject(self->m_timeTextLayout, self->LeaveGameButton, 2, 0, 1, 1);
+    UIGridLayout_addObject(self->m_timeTextLayout, self->m_leaveGameButton, 2, 0, 1, 1);
     UIGridLayout_addObject(self->m_lostTextLayout, self->m_lostText, 0, 0, 1, 1);
-    UIGridLayout_addObject(self->m_timeTextLayout, self->GambleButton, 2, 4, 1, 1);
+    UIGridLayout_addObject(self->m_timeTextLayout, self->m_gambleButton, 2, 4, 1, 1);
+    UIGridLayout_addObject(self->m_timeTextLayout, self->m_nextMoveButton, 3, 4, 1, 1);
 
     return self;
 }
@@ -137,18 +158,18 @@ static void GameUIManager_closePages(GameUIManager* self)
 
 void GameUIManager_update(GameUIManager* self, UIInput* input)
 {
-    UIObject_setEnabled(self->m_timeTextLayout, g_gameConfig.State == PLAYING || (g_gameConfig.State == GAMBLING && g_gameConfig.GamblingResult == OUPI_GOUPI) && !g_gameConfig.isEditing);
-    UIObject_setEnabled(self->m_lostText, g_gameConfig.State == GETTING_LARRIED || g_gameConfig.State == WINNING);
+    UIObject_setEnabled(self->m_timeTextLayout, g_gameConfig.state == PLAYING || (g_gameConfig.state == GAMBLING && g_gameConfig.gamblingResult == OUPI_GOUPI) && !g_gameConfig.isEditing);
+    UIObject_setEnabled(self->m_lostText, g_gameConfig.state == GETTING_LARRIED || g_gameConfig.state == WINNING);
 
-    UIObject_setEnabled(self->GambleButton, g_gameConfig.isEditing == false);
-    UIObject_setEnabled(self->LeaveGameButton, g_gameConfig.isEditing == false);
+    UIObject_setEnabled(self->m_gambleButton, g_gameConfig.isEditing == false);
+    UIObject_setEnabled(self->m_leaveGameButton, g_gameConfig.isEditing == false);
     UIObject_setEnabled(self->m_timeText, g_gameConfig.isEditing == false);
 
-    if (g_gameConfig.Core && g_gameConfig.inLevel)
+    if (g_gameConfig.core && g_gameConfig.inLevel)
     {
-        UILabel_setTextString(self->m_timeText, GameUIManager_formatTime(g_gameConfig.Remaining));
+        UILabel_setTextString(self->m_timeText, GameUIManager_formatTime(g_gameConfig.remaining));
 
-        UILabel_setColor(self->m_timeText, GameUIManager_getColorByTime(g_gameConfig.Remaining));
+        UILabel_setColor(self->m_timeText, GameUIManager_getColorByTime(g_gameConfig.remaining));
     }
 
     Scene* scene = self->m_scene;
@@ -167,7 +188,7 @@ void GameUIManager_update(GameUIManager* self, UIInput* input)
     }
 
 
-    if (g_gameConfig.State != GAMBLING && !g_gameConfig.isEditing)
+    if (g_gameConfig.state != GAMBLING && !g_gameConfig.isEditing)
         UIFocusManager_update(self->FocusManager, input);
 
     if (self->m_nextAction != GAME_UI_ACTION_NONE)
@@ -181,7 +202,7 @@ void GameUIManager_update(GameUIManager* self, UIInput* input)
 
         case GAME_UI_ACTION_OPEN_TITLE:
             GameUIManager_closePages(self);
-            GameCore_destroyGame(g_gameConfig.Core);
+            GameCore_destroyGame(g_gameConfig.core);
             printf("opening at least");
             self->m_titlePage = GameTitlePage_create(scene, self);
             break;

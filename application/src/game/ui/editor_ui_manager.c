@@ -10,6 +10,11 @@
 
 #pragma warning(disable: 6031);
 
+static void EditorUI_emptyCallback(void* selectable)
+{
+
+}
+
 static void EditorUI_levelButtonClick(void* selectable)
 {
     EditorUI* l_Ui = (EditorUI*)UISelectable_getUserData(selectable);
@@ -44,8 +49,8 @@ static void EditorUI_levelButtonClick(void* selectable)
 
         GameLoader_loadGame(l_Path, false);
 
-        UIList_setSelectedItem(l_Ui->TimeList, (g_gameConfig.Settings->TotalTime - 10) / 25);
-        UIList_setSelectedItem(l_Ui->GridSizeList, (g_gameConfig.Settings->GridSize - 5) / 2);
+        UIList_setSelectedItem(l_Ui->TimeList, (g_gameConfig.settings->TotalTime - 10) / 25);
+        UIList_setSelectedItem(l_Ui->GridSizeList, (g_gameConfig.settings->GridSize - 5) / 2);
     }
     else
     {
@@ -53,9 +58,9 @@ static void EditorUI_levelButtonClick(void* selectable)
 
         GameLoader_loadGame(l_Path, true);
 
-        g_gameConfig.Remaining = g_gameConfig.Settings->TotalTime;
+        g_gameConfig.remaining = g_gameConfig.settings->TotalTime;
 
-        resoudre();
+        solve(g_gameConfig.core);
     }
 }
 
@@ -84,12 +89,12 @@ static void EditorUI_newLevelButtonClick(void* selectable)
 {
     EditorUI* self = (EditorUI*)UISelectable_getUserData(selectable);
 
-    g_gameConfig.Settings->RabbitCount = 0;
-    g_gameConfig.Settings->MushroomCount = 0;
-    g_gameConfig.Settings->FoxCount = 0;
-    g_gameConfig.Settings->TotalTime = 60.f;
+    g_gameConfig.settings->RabbitCount = 0;
+    g_gameConfig.settings->MushroomCount = 0;
+    g_gameConfig.settings->FoxCount = 0;
+    g_gameConfig.settings->TotalTime = 60.f;
 
-    GameCore_destroyGame(g_gameConfig.Core);
+    GameCore_destroyGame(g_gameConfig.core);
 
     char* l_Path = calloc(260, sizeof(char));
     assert(l_Path);
@@ -156,8 +161,8 @@ static void EditorUI_onAddButtonClicked(void* selectable)
         g_gameEditor.AddingObject = Mushroom_create(NULL, 0, 0);
         break;
     case EDITOR_ACTION_PLAY:
-        g_gameConfig.State = g_gameConfig.State == PLAYING ? NONE : PLAYING;
-        UIButton_setLabelString(l_UI->ActionsButtons[EDITOR_ACTION_PLAY], g_gameConfig.State == PLAYING ? "Stop" : "Simulate");
+        g_gameConfig.state = g_gameConfig.state == PLAYING ? NONE : PLAYING;
+        UIButton_setLabelString(l_UI->ActionsButtons[EDITOR_ACTION_PLAY], g_gameConfig.state == PLAYING ? "Stop" : "Simulate");
         break;
     case EDITOR_ACTION_SAVE:
         char* l_Path = calloc(1024, sizeof(char));
@@ -218,6 +223,7 @@ int EditorUI_loadFiles(EditorUI* self)
             fileCount++;
             UIObject_setEnabled(self->ExistingLevelsButtons[x], true);
             UIButton_setLabelString(self->ExistingLevelsButtons[x], fd.cFileName);
+            UIButton_setOnClickCallback(self->ExistingLevelsButtons[x], EditorUI_levelButtonClick);
             self->FileNames[x] = calloc(260, sizeof(char));
             assert(self->FileNames[x]);
             strcpy(self->FileNames[x], fd.cFileName);
@@ -225,6 +231,7 @@ int EditorUI_loadFiles(EditorUI* self)
         else
         {
             UIObject_setEnabled(self->ExistingLevelsButtons[x], false);
+            UIButton_setOnClickCallback(self->ExistingLevelsButtons[x], EditorUI_emptyCallback);
 
             if (x == 0)
             {
@@ -479,15 +486,15 @@ void EditorUI_update(EditorUI* self, UIInput* input)
     else
     {
         UIFocusManager_update(self->EditFocusManager, input);
-        g_gameConfig.Settings->TotalTime = 10 + (UIList_getSelectedItem(self->TimeList) * 25);
-        g_gameConfig.Settings->GridSize = 5 + (UIList_getSelectedItem(self->GridSizeList) * 2);
+        g_gameConfig.settings->TotalTime = 10 + (UIList_getSelectedItem(self->TimeList) * 25);
+        g_gameConfig.settings->GridSize = 5 + (UIList_getSelectedItem(self->GridSizeList) * 2);
     }
 
     for (int x = 0; x < EDITOR_ACTION_COUNT; x++)
     {
         if (x != EDITOR_ACTION_PLAY && x != EDITOR_ACTION_SAVE && x != EDITOR_ACTION_LEAVE)
         {
-            UIObject_setEnabled(self->ActionsButtons[x], g_gameConfig.State != PLAYING);
+            UIObject_setEnabled(self->ActionsButtons[x], g_gameConfig.state != PLAYING);
         }
     }
 
